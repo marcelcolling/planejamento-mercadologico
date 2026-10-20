@@ -13,7 +13,7 @@ O núcleo (sessão, salvamento, planilha, testes) veio dos portais "Vieses e Dec
 | GitHub | https://github.com/marcelcolling/planejamento-mercadologico (público) |
 | Site (GitHub Pages) | https://marcelcolling.github.io/planejamento-mercadologico/ (publica sozinho a cada `git push`, cerca de 1 min) |
 | Planilha de respostas | "PLANEJAMENTO MERCADOLÓGICO", id `1JTyA6T_uhDcLE4yB2dv4WWbcWWJbV38nRTIMLITLF8M` (dá para ler pelo conector do Google Drive) |
-| URL do Apps Script | em `assets/js/config.js` |
+| URL do Apps Script | em `assets/js/config.js` (implantação de 20/10/2026, testada contra a planilha real; o código implantado já é o desta versão, com "não se aplica" no Painel) |
 
 ## Decisões do professor (não reverter sem perguntar)
 
