@@ -6,7 +6,9 @@ Confere, depois de gerar as leituras:
   2. links: todo link interno do site (páginas, âncoras #id) aponta para algo que existe, inclusive as referências
      das entregas para as leituras (assets/js/especificacoes.js);
   3. anonimização: nenhum nome real das empresas parceiras aparece no site publicado
-     (a lista de nomes fica em conteudo/, fora do git: conteudo/nomes_proibidos.txt, um por linha).
+     (a lista de nomes fica em conteudo/, fora do git: conteudo/nomes_proibidos.txt, um por linha);
+  4. sem aulas: o texto visível do site não menciona numeração ou nome de aulas/encontros
+     (decisão do professor: o material precisa servir a outros cursos).
 
 Uso (na raiz):  python ferramentas/conferir_integridade.py      (no Git Bash: PYTHONIOENCODING=utf-8)
 Sai com código 1 se algo falhar.
@@ -96,7 +98,7 @@ for p in paginas:
             erros.append(f"{p.relative_to(RAIZ)} → {url} (página não existe)")
         elif anc and anc[1:] and anc[1:] not in ids.get(alvo, set()) and anc not in ("#ajuda",):
             erros.append(f"{p.relative_to(RAIZ)} → {url}{anc} (âncora não existe)")
-leit = dict(re.findall(r"'(aula-[\w-]+)': \{ url: '([^']+)'", esp))
+leit = dict(re.findall(r"'([\w-]+)': \{ url: '([^']+)'", esp))
 for ref, anc in re.findall(r"leitura: \['([\w-]+)', '([\w-]+)'\]", esp):
     alvo = (RAIZ / leit[ref]).resolve()
     if anc not in ids.get(alvo, set()):
@@ -122,5 +124,25 @@ else:
         print("FALHA", a)
     falhas += len(achados)
     print(("OK  " if not achados else "") + f"{len(nomes)} nomes procurados, {len(achados)} ocorrência(s)")
+
+print("== 4. Menções a aulas e encontros")
+SEM_AULA = re.compile(r"\b(Aulas?|Encontros?)\s+\d|\bUnidade\s+\d|\b(desta|nesta|da|na|próxima|fechar a) aula\b|\bdeste encontro\b|\baula de hoje\b|\bsala de aula\b", re.I)
+EXCECOES = ["Segmentação Aula 1"]  # título de uma obra citada nas referências
+mencoes = []
+for p in list(paginas) + [RAIZ / "assets/js/especificacoes.js", RAIZ / "assets/js/entrega.js", RAIZ / "assets/js/portal.js"]:
+    t = p.read_text(encoding="utf-8")
+    if p.suffix == ".html":
+        t = html.unescape(re.sub(r"<[^>]+>", " ", re.sub(r"<(script|style)[^>]*>.*?</\1>", " ", t, flags=re.S)))
+    for e in EXCECOES:
+        t = t.replace(e, "")
+    for m in SEM_AULA.finditer(t):
+        trecho = t[max(0, m.start() - 40):m.end() + 20].replace("\n", " ")
+        if p.suffix == ".js" and ("fora da sala de aula'" in trecho or "valor antigo" in trecho):
+            continue  # valor antigo guardado nas respostas; o texto exibido é outro
+        mencoes.append(f"{p.relative_to(RAIZ)}: ...{trecho}...")
+for x in mencoes:
+    print("FALHA", x)
+falhas += len(mencoes)
+print(("OK  " if not mencoes else "") + f"{len(mencoes)} menção(ões) encontrada(s)")
 
 sys.exit(1 if falhas else 0)

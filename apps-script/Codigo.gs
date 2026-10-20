@@ -240,7 +240,7 @@ function montarPainel() {
   if (!sh) sh = ss.insertSheet(ABA_PAINEL, 0);
   sh.clear();
 
-  var cab = ['Grupo', 'Turma', 'E0 · Empresa e acordo', 'Aula 2 · Roteiro de entrevista', 'Aula 2 · Auditoria de coerência', 'E1 · Análise de mercado', 'E2 · Posicionamento', 'E3 · Mix e jornada', 'E4 · Objetivos e ações', 'E5 · Comunicação', 'E6 · Governança e síntese', 'Último acesso'];
+  var cab = ['Grupo', 'Turma', 'E0 · Empresa e acordo', 'Atividade · Roteiro de entrevista', 'Atividade · Auditoria de coerência', 'E1 · Análise de mercado', 'E2 · Posicionamento', 'E3 · Mix e jornada', 'E4 · Objetivos e ações', 'E5 · Comunicação', 'E6 · Governança e síntese', 'Último acesso'];
   var alunos = al.linhas.map(function (l) { var a = alunoDe(l); a.ultimo = Number(l[6]) || 0; return a; });
   alunos.sort(function (x, y) { return (x.turma + '|' + x.nome).localeCompare(y.turma + '|' + y.nome, 'pt'); });
 
@@ -256,6 +256,7 @@ function montarPainel() {
     // "✓ data · N respostas": N = linhas do resumo com alguma resposta
     function q(r) {
       if (!r) return '—';
+      if ((r.resumo || []).some(function (x) { return x[0] === 'Entrega' && x[1] === 'Não se aplica'; })) return 'não se aplica · ' + quando(r.atualizado, tz);
       var n = (r.resumo || []).filter(function (x) { return x[2] && x[2] !== '—'; }).length;
       return '✓ ' + quando(r.atualizado, tz) + ' · ' + n + ' resposta' + (n === 1 ? '' : 's');
     }

@@ -10,13 +10,17 @@ Portal da disciplina Planejamento Mercadológico (graduação em Administração
 
 | Etapa | Leituras | Entregável (o que o grupo preenche) |
 |---|---|---|
-| **E0** · Aulas 1 a 3 | A trilha (apresentação da Aula 1); A lógica do plano (Aula 2) | Perfil da empresa, como ela define o próprio negócio, acordo de trabalho e **termo de aceite** para assinatura. Atividades da Aula 2: **Auditoria de coerência** (caso Grão Nascente) e **Roteiro de entrevista**, com registro das respostas da empresa |
-| **E1** · Aulas 4 a 6 | TAM/SAM/SOM e tendências; Benchmarking; SWOT de Marketing e TOWS | Bloco 1: mercado, tendências, clientes atuais, benchmarking de 3 concorrentes, SWOT com evidência, TOWS e síntese |
-| **E2** · Aulas 7 a 9 | Segmentação e persona (VPC: em breve) | Bloco 2: segmentos com avaliação MASDA, 1 ou 2 personas com JTBD, Value Proposition Canvas e declaração de posicionamento (a frase se monta sozinha) |
-| **E3** · Aulas 10 a 13 | em breve | Bloco 3: 7Ps (hoje × escolha estratégica), jornada com momentos de verdade, canais prioritários, mix de mídia |
-| **E4** · Aulas 14 a 16 | em breve | Blocos 4 e 5: objetivos SMART, KPIs com baseline, ICE Score (calcula sozinho), 5W2H, orçamento (soma sozinho) e cronograma. O 5W2H baixa em **planilha CSV** no formato do seu modelo de plano de ação |
-| **E5** · Aulas 17 e 18 | em breve | Bloco 6: identidade, tom de voz, arquitetura de mensagem, pilares, plano editorial de 10 peças, comunicação integrada |
-| **E6** · Aulas 19 e 20 | em breve | Bloco 7: painel, rituais, roadmap, síntese final, checklist de coerência e preparação do pitch |
+| **1 · E0** Ponto de partida | A trilha do plano (apresentação); A lógica do plano | Perfil da empresa, como ela define o próprio negócio, acordo de trabalho e **termo de aceite** para assinatura. Atividades: **Auditoria de coerência** (caso Grão Nascente) e **Roteiro de entrevista**, com registro das respostas da empresa |
+| **2 · E1** Diagnóstico | TAM/SAM/SOM e tendências; Benchmarking; SWOT de Marketing e TOWS | Bloco 1: mercado, tendências, clientes atuais, benchmarking de 3 concorrentes, SWOT com evidência, TOWS e síntese |
+| **3 · E2** Estratégia | Segmentação e persona; **Proposta de valor e declaração de posicionamento** | Bloco 2: segmentos com avaliação MASDA, 1 ou 2 personas com JTBD, Value Proposition Canvas com prioridades e teste do encaixe, alternativas competitivas, pontos de paridade e de diferença, declaração de posicionamento (a frase se monta sozinha) |
+| **4 · E3** Execução | em breve | Bloco 3: 7Ps (hoje × escolha estratégica), jornada com momentos de verdade, canais prioritários, mix de mídia |
+| **5 · E4** Medição e ações | em breve | Blocos 4 e 5: objetivos SMART, KPIs com baseline, ICE Score (calcula sozinho), 5W2H, orçamento (soma sozinho) e cronograma. O 5W2H baixa em **planilha CSV** no formato do seu modelo de plano de ação |
+| **6 · E5** Identidade | em breve | Bloco 6: identidade, tom de voz, arquitetura de mensagem, pilares, plano editorial de 10 peças, comunicação integrada |
+| **7 · E6** Controle e entrega | em breve | Bloco 7: painel, rituais, roadmap, síntese final, checklist de coerência e preparação do pitch |
+
+**Sem menção a aulas:** nenhuma página do portal cita número ou nome de aula ou encontro; tudo se refere a etapas (1 a 7) e entregas (E0 a E6). Assim o material serve a outros cursos. O nome da disciplina e do curso que aparece nos PDFs e no termo de aceite vem de `assets/js/config.js` (`NOME_DISCIPLINA` e `PROGRAMA`).
+
+**Não se aplica:** cada entrega, cada seção e cada trecho numerado de uma seção (Persona 2, Objetivo 3, Ação 2...) tem o botão **Não se aplica**, com campo opcional para o motivo. O que não se aplica sai do PDF, do plano completo e da contagem de progresso; as seções e os trechos seguintes são renumerados (na tela, no PDF e na planilha). No plano completo, as entregas que não se aplicam saem e os blocos seguintes são renumerados. O que já estava escrito fica guardado: **Reativar** devolve tudo. Na planilha, o Painel mostra "não se aplica" e a aba do grupo registra o motivo.
 
 Além disso, a página **Plano completo** junta todas as entregas do grupo num documento único, pronto para salvar em PDF e enviar à empresa.
 
@@ -28,7 +32,7 @@ Além disso, a página **Plano completo** junta todas as entregas do grupo num d
 
 ## Empresas parceiras no site público
 
-Por decisão sua, a leitura das Aulas 7 e 8 aparece no site com as empresas anonimizadas (Empresas A, B, C e D), e o detalhe sobre quem seria a "cara da marca" foi suavizado. Os seus arquivos originais continuam intactos na pasta acima do repositório. A versão anonimizada e o script que a produz ficam em `conteudo/`, que **não vai para o GitHub**.
+Por decisão sua, a leitura de segmentação e persona aparece no site com as empresas anonimizadas (Empresas A, B, C e D), e o detalhe sobre quem seria a "cara da marca" foi suavizado. Os seus arquivos originais continuam intactos na pasta acima do repositório. A versão anonimizada e o script que a produz ficam em `conteudo/`, que **não vai para o GitHub**.
 
 ## Ligar a planilha (uma vez, cerca de 10 minutos)
 
@@ -49,7 +53,7 @@ Enquanto a URL não estiver configurada, o portal funciona em "modo local": as r
 
 | Aba | Conteúdo |
 |---|---|
-| **Painel** | Uma linha por grupo, com uma coluna por entrega (E0 a E6) e pelas duas atividades da Aula 2: quando salvou e quantas respostas há. O nome do grupo é um link para a aba dele. |
+| **Painel** | Uma linha por grupo, com uma coluna por entrega (E0 a E6) e pelas duas atividades da etapa inicial: quando salvou e quantas respostas há (ou "não se aplica"). O nome do grupo é um link para a aba dele. |
 | **Uma aba por grupo** | Todas as respostas em formato legível: seção, campo, resposta. |
 | `_alunos`, `_dados` (ocultas) | Base usada pelo portal. Não edite, exceto para redefinir palavra-chave (abaixo). |
 
@@ -59,7 +63,7 @@ Enquanto a URL não estiver configurada, o portal funciona em "modo local": as r
 
 ## Publicar as próximas leituras
 
-Quando tiver o material das próximas aulas (VPC e posicionamento, 7Ps, jornada, canais, SMART e KPIs, ICE e 5W2H, orçamento, identidade, conteúdo, governança), abra o Claude Code nesta pasta e use o prompt [`prompts/nova-leitura.md`](prompts/nova-leitura.md). O entregável de cada etapa já está pronto; a leitura só troca o cartão "em breve" da trilha pelo link e ganha as pontes para as seções do entregável.
+Quando tiver os próximos materiais (7Ps, jornada, canais, SMART e KPIs, ICE e 5W2H, orçamento, identidade, conteúdo, governança), abra o Claude Code nesta pasta e use o prompt [`prompts/nova-leitura.md`](prompts/nova-leitura.md). O entregável de cada etapa já está pronto; a leitura só troca o cartão "em breve" da trilha pelo link e ganha as pontes para as seções do entregável.
 
 ## Privacidade
 

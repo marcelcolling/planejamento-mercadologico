@@ -423,7 +423,7 @@
     var corpo = abrirModal(
       '<div class="vd-modal-eyebrow"><span class="vd-dot"></span>Guia rápido</div>' +
       '<h3>Como usar o portal</h3>' +
-      '<p>O semestre é organizado pelas <strong>entregas</strong> do plano de marketing da empresa parceira (E0 a E6). Em cada etapa da trilha há <strong>leituras</strong> (cartões claros) e o <strong>entregável</strong> do grupo (botão azul), que vira um documento em PDF para a empresa.</p>' +
+      '<p>A disciplina é organizada pelas <strong>entregas</strong> do plano de marketing da empresa parceira (E0 a E6). Em cada etapa da trilha há <strong>leituras</strong> (cartões claros) e o <strong>entregável</strong> do grupo (botão azul), que vira um documento em PDF para a empresa.</p>' +
       '<ol class="vd-guia">' +
         item('1', 'Entre com nome e palavra-chave',
           'Clique em <em>Entrar</em> e use o nome do grupo e uma palavra-chave de pelo menos 4 caracteres. No primeiro acesso, o portal pede para confirmar o cadastro e a turma. Não use uma senha pessoal.') +
@@ -437,6 +437,8 @@
           'Todos os membros usam o mesmo nome de grupo e a mesma palavra-chave. Combinem quem digita cada entrega: se duas pessoas editarem a mesma entrega ao mesmo tempo, o portal avisa e pergunta qual versão manter.') +
         item('6', 'PDF para a empresa',
           'O botão <strong>Salvar em PDF</strong> monta um relatório limpo, só com o que o grupo preencheu, pronto para enviar à empresa parceira. A página <strong>Plano completo</strong> junta todas as entregas num documento só. Quem usou a Ferramenta Interativa (arquivo HTML) pode importar o JSON exportado por ela.') +
+        item('7', 'Não se aplica',
+          'Se uma entrega, uma seção ou um trecho (como a Persona 2 ou a Ação 3) não fizer sentido para a empresa parceira, use o botão <strong>Não se aplica</strong> e, se quiser, explique o motivo. Ele sai do PDF e do plano completo, e a numeração seguinte se ajusta. O que já estava escrito fica guardado: <strong>Reativar</strong> devolve tudo.') +
         item('?', 'Esqueceu a palavra-chave?', 'Fale com o professor: ele pode redefini-la.') +
       '</ol>' +
       '<div class="vd-acoes"><button type="button" class="vd-btn vd-btn-roxo" data-a="ok">Entendi</button></div>',

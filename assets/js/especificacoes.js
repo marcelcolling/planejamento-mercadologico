@@ -1,5 +1,5 @@
 /*
- * Especificação das entregas (E0 a E6) e das atividades da Aula 2.
+ * Especificação das entregas (E0 a E6) e das atividades da etapa inicial (roteiro de entrevista e auditoria de coerência).
  * O motor (entrega.js) monta o formulário, o salvamento, o resumo da planilha e o relatório em PDF a partir daqui.
  *
  * AS CHAVES (k) NÃO PODEM MUDAR depois que os grupos começarem: as respostas salvas dependem delas.
@@ -11,7 +11,9 @@
  *   campo   { k, r: rótulo, tipo: 'texto' (padrão) | 'linha' | 'numero' | 'data' | 'opcoes' | 'check', ph, d: dica, op: [...] }
  *   grupo   { t:'grupo', cols: 2|3, itens: [campos ou {t:'sub', r}] }
  *   tabela  { t:'tabela', r: título, cols: [{ r, tipo, op, ph, w, relatorio:false }], linhas: [{ r, d, k: [chaves], rotuloDe }] }
- *   sub     { t:'sub', r: subtítulo }
+ *   sub     { t:'sub', r: subtítulo } (nas entregas, abre um sub-bloco com botão "Não se aplica"; a chave do
+ *           sub-bloco vem do texto do subtítulo sem o trecho entre parênteses: não renomeie subtítulos em uso)
+ *   solto: true  (em qualquer item) o item pertence à seção, não ao sub-bloco anterior
  *   nota    { t:'nota', html } (orientação; não vai para o relatório)
  *   html    { t:'html', html } (conteúdo fixo, ex.: o caso da Auditoria; não vai para o relatório)
  *   espelho { t:'espelho', de: entrega, k, r } (mostra, sem editar, uma resposta de outra entrega)
@@ -25,12 +27,13 @@
 
   /* ---------------- leituras (caminhos a partir da raiz do portal) ---------------- */
   var L = {
-    'aula-1': { url: 'materiais/aula-1-a-trilha.html', nome: 'A trilha do semestre (apresentação da Aula 1)' },
-    'aula-2': { url: 'leituras/aula-2-a-logica-do-plano.html', nome: 'A lógica do plano: de onde parte, onde chega, o que conecta' },
-    'aula-4': { url: 'leituras/aula-4-tam-sam-som-e-tendencias.html', nome: 'Análise de mercado: TAM, SAM, SOM e tendências' },
-    'aula-5': { url: 'leituras/aula-5-benchmarking-competitivo.html', nome: 'Benchmarking competitivo' },
-    'aula-6': { url: 'leituras/aula-6-swot-de-marketing-e-tows.html', nome: 'SWOT de Marketing e TOWS' },
-    'aula-7-8': { url: 'leituras/aulas-7-8-segmentacao-e-persona.html', nome: 'Segmentação, persona e comportamento do consumidor' }
+    'trilha': { url: 'materiais/a-trilha-do-plano.html', nome: 'A trilha do plano (apresentação de abertura)' },
+    'logica': { url: 'leituras/a-logica-do-plano.html', nome: 'A lógica do plano: de onde parte, onde chega, o que conecta' },
+    'mercado': { url: 'leituras/analise-de-mercado-tam-sam-som-e-tendencias.html', nome: 'Análise de mercado: TAM, SAM, SOM e tendências' },
+    'benchmarking': { url: 'leituras/benchmarking-competitivo.html', nome: 'Benchmarking competitivo' },
+    'swot': { url: 'leituras/swot-de-marketing-e-tows.html', nome: 'SWOT de Marketing e TOWS' },
+    'segmentacao': { url: 'leituras/segmentacao-e-persona.html', nome: 'Segmentação, persona e comportamento do consumidor' },
+    'vpc': { url: 'leituras/proposta-de-valor-e-posicionamento.html', nome: 'Proposta de valor e declaração de posicionamento' }
   };
 
   /* ---------------- auxiliares ---------------- */
@@ -49,10 +52,10 @@
    * ===================================================================== */
   var E0 = {
     id: 'e0', codigo: 'E0', titulo: 'Empresa parceira e acordo',
-    etapa: 'Etapa 0 · Aulas 1 e 2', bloco: 'Perfil da empresa e termo de aceite',
+    etapa: 'Etapa 1 · Ponto de partida', bloco: 'Perfil da empresa e termo de aceite',
     pergunta: 'Com quem vamos trabalhar e o que combinamos?',
     resumo: 'Registra quem é a empresa parceira, como ela se enxerga e o que foi combinado com ela. Gera o termo de aceite para assinatura.',
-    leituras: ['aula-1', 'aula-2'],
+    leituras: ['trilha', 'logica'],
     secoes: [
       { id: 'id', n: '0.1', titulo: 'Identificação do plano',
         dica: 'Estas informações aparecem na capa de todos os PDFs do plano.',
@@ -69,7 +72,7 @@
         ] },
       { id: 'perfil', n: '0.2', titulo: 'Perfil da empresa',
         dica: 'O retrato inicial, nas palavras da própria empresa. O diagnóstico aprofundado vem no Bloco 1.',
-        leitura: ['aula-2', '05-o-terreno-real-por-que-isso-muda-quando-existe-uma-empresa-esperand'],
+        leitura: ['logica', '05-o-terreno-real-por-que-isso-muda-quando-existe-uma-empresa-esperand'],
         itens: [
           { k: 'e0_historia', r: 'Como a empresa surgiu e que problema queria resolver' },
           { k: 'e0_oferta', r: 'Produtos e serviços principais' },
@@ -81,7 +84,7 @@
         ] },
       { id: 'negocio', n: '0.3', titulo: 'Como a empresa define o próprio negócio',
         dica: 'O primeiro teste de coerência do semestre (miopia em marketing, de Levitt): a empresa se descreve pelo que produz ou pelo problema que resolve?',
-        leitura: ['aula-2', '01-fundamentacao-da-fotografia-ao-roteiro'],
+        leitura: ['logica', '01-fundamentacao-da-fotografia-ao-roteiro'],
         itens: [
           { t: 'grupo', cols: 2, itens: [
             { k: 'e0_def_produto', r: 'Definição por produto', ph: 'Ex.: "Alugamos carros."' },
@@ -102,7 +105,7 @@
           { k: 'e0_canal', r: 'Como o grupo vai manter contato', ph: 'E-mail, WhatsApp, reunião curta no meio do semestre...' },
           { k: 'e0_dados', r: 'Dados e documentos que a empresa vai compartilhar', ph: 'Faturamento, número de clientes, ticket médio, materiais de marca...' },
           { t: 'grupo', cols: 2, itens: [
-            { k: 'e0_confidencial', r: 'Uso das informações fora da sala de aula', tipo: 'opcoes', op: ['Pode citar o nome da empresa e os dados', 'Pode citar o nome, sem números internos', 'Manter a empresa anônima fora da sala de aula'] },
+            { k: 'e0_confidencial', r: 'Uso das informações fora do ambiente acadêmico', tipo: 'opcoes', op: ['Pode citar o nome da empresa e os dados', 'Pode citar o nome, sem números internos', ['Manter a empresa anônima fora da sala de aula', 'Manter a empresa anônima fora do ambiente acadêmico']] },
             { k: 'e0_pitch', r: 'Quem da empresa vai assistir ao pitch final', tipo: 'linha' }
           ] },
           { k: 'e0_conflito', r: 'Algum integrante tem vínculo com a empresa?', ph: 'Se sim, descreva. O professor avalia se há conflito de interesse.' },
@@ -123,7 +126,7 @@
   };
 
   /* =====================================================================
-   * Atividade da Aula 2 · Roteiro de entrevista
+   * Atividade da etapa inicial · Roteiro de entrevista
    * ===================================================================== */
   var BANCO = [
     { b: 0, titulo: 'Bloco 0 · Perfil e contexto do negócio', alimenta: 'Aquecimento · E0',
@@ -198,11 +201,11 @@
         }) } ] };
   });
   var ROTEIRO = {
-    id: 'roteiro', codigo: 'Aula 2', tipo: 'atividade', titulo: 'Roteiro de entrevista com a empresa parceira',
-    etapa: 'Etapa 0 · Aula 2', bloco: 'Preparação de campo · alimenta os Blocos 1 a 7',
+    id: 'roteiro', codigo: 'Atividade', tipo: 'atividade', titulo: 'Roteiro de entrevista com a empresa parceira',
+    etapa: 'Etapa 1 · Ponto de partida', bloco: 'Preparação de campo · alimenta os Blocos 1 a 7',
     pergunta: 'O que só a empresa sabe e precisa ser perguntado agora?',
     resumo: 'Escolham de 15 a 18 perguntas do banco, distribuam quem pergunta e, depois da conversa, registrem as respostas aqui. Elas aparecem como referência nas entregas seguintes. O PDF sai como roteiro impresso para levar à reunião.',
-    leituras: ['aula-2'],
+    leituras: ['logica'],
     relatorioTitulo: 'Roteiro e registro da entrevista',
     secoes: [
       { id: 'por-que', n: '·', titulo: 'Por que um roteiro tão completo',
@@ -232,7 +235,7 @@
         itens: [ { t: 'tabela', cols: [{ r: 'Resposta da empresa' }],
           linhas: FECHAMENTO.map(function (q, i) { return { r: q, k: ['rt_fech' + (i + 1)] }; }) } ] },
       { id: 'fora', n: '·', titulo: 'Fora da reunião: o que buscar por conta própria',
-        dica: 'Parte da informação é pública e pode ser levantada antes ou depois do encontro, sem gastar tempo de conversa.',
+        dica: 'Parte da informação é pública e pode ser levantada antes ou depois da reunião, sem gastar tempo de conversa.',
         itens: [ { t: 'tabela', cols: [{ r: 'O que o grupo encontrou (com link ou fonte)' }],
           linhas: FORA.map(function (q, i) { return { r: q, k: ['rt_fora' + (i + 1)] }; }) } ] },
       { id: 'registro', n: '·', titulo: 'Registro da conversa',
@@ -258,7 +261,7 @@
   };
 
   /* =====================================================================
-   * Atividade da Aula 2 · Auditoria de coerência (caso Grão Nascente)
+   * Atividade da etapa inicial · Auditoria de coerência (caso Grão Nascente)
    * ===================================================================== */
   var CASO = '<div class="caso">' +
     '<div class="caso-ficha"><span class="caso-rot">Ficha da empresa</span><p>Grão Nascente é uma torrefação de café artesanal fundada há quatro anos em Belo Horizonte (MG). Vende por três canais: prateleiras de supermercados de bairro, um perfil no Instagram e um quiosque aos sábados em uma feira de produtores.</p></div>' +
@@ -274,18 +277,18 @@
   var PARES = ['Persona × Praça (onde ela compra)', 'Persona × Preço (o que ela valoriza pagar)', 'Posicionamento × Promoção (o que se comunica)',
     'Persona × Jornada (como ela realmente descobre e decide)', 'Posicionamento × Orçamento (para onde vai o dinheiro)', 'Posicionamento × Produto'];
   var AUDITORIA = {
-    id: 'auditoria', codigo: 'Aula 2', tipo: 'atividade', titulo: 'Auditoria de coerência: o caso Grão Nascente',
-    etapa: 'Etapa 0 · Aula 2', bloco: 'Treino de coerência, antes de auditar o próprio plano',
+    id: 'auditoria', codigo: 'Atividade', tipo: 'atividade', titulo: 'Auditoria de coerência: o caso Grão Nascente',
+    etapa: 'Etapa 1 · Ponto de partida', bloco: 'Treino de coerência, antes de auditar o próprio plano',
     pergunta: 'Onde o fio do posicionamento permanece inteiro e onde ele se rompe?',
     resumo: 'Sete blocos de um plano de marketing fictício, mas verossímil. Decidam, par a par, se os blocos estão conectados, com evidência tirada do próprio texto, não de opinião.',
-    leituras: ['aula-2'],
+    leituras: ['logica'],
     secoes: [
       { id: 'caso', n: '1', titulo: 'O caso: Grão Nascente, torrefação de café artesanal',
         dica: 'Leiam os sete blocos com atenção. Eles vêm de partes diferentes do plano de marketing dessa empresa — exatamente como cada grupo vai produzir para a própria empresa parceira.',
         itens: [ { t: 'html', html: CASO } ] },
       { id: 'planilha', n: '2', titulo: 'Planilha de auditoria',
         dica: 'Para cada par de blocos, decidam se estão conectados e registrem a evidência retirada do próprio texto — não da impressão geral que ficou da leitura.',
-        leitura: ['aula-2', '04-o-risco-o-erro-mais-comum-um-plano-em-pedacos-nao-em-sistema'],
+        leitura: ['logica', '04-o-risco-o-erro-mais-comum-um-plano-em-pedacos-nao-em-sistema'],
         itens: [ { t: 'tabela', cols: [
           { r: 'Conectado?', tipo: 'opcoes', op: SIM_NAO, w: '12%' }, { r: 'Evidência no texto' }, { r: 'Se quebrado, o que precisaria mudar?' }],
           linhas: PARES.map(function (p, i) { var n = i + 1; return { r: p, k: ['au_par' + n + '_con', 'au_par' + n + '_evid', 'au_par' + n + '_mudar'] }; }) } ] },
@@ -334,14 +337,14 @@
   }
   var E1 = {
     id: 'e1', codigo: 'E1', titulo: 'Análise de mercado e SWOT de Marketing',
-    etapa: 'Etapa 2 · Aulas 4 a 6', bloco: 'Bloco 1 · Análise situacional',
+    etapa: 'Etapa 2 · Diagnóstico', bloco: 'Bloco 1 · Análise situacional',
     pergunta: 'Como está o mercado e onde estamos?',
     resumo: 'Tamanho do mercado, tendências, clientes atuais, três concorrentes, a SWOT de marketing e os cruzamentos TOWS, fechando com a principal oportunidade e o principal risco.',
-    leituras: ['aula-4', 'aula-5', 'aula-6'],
+    leituras: ['mercado', 'benchmarking', 'swot'],
     secoes: [
       { id: 'mercado', n: '1.1', titulo: 'Análise de mercado: TAM, SAM, SOM e tendências',
         dica: 'Declare a premissa de cada camada, não só o resultado. O SOM, e não o TAM, é o número que vai orientar os objetivos SMART da E4.',
-        leitura: ['aula-4', '1-6-modelo-para-aplicar-na-empresa-parceira'],
+        leitura: ['mercado', '1-6-modelo-para-aplicar-na-empresa-parceira'],
         itens: [
           { t: 'sub', r: 'Tamanho do mercado' },
           { t: 'tabela', cols: [
@@ -357,7 +360,7 @@
           { k: 'b1_mercado_validacao', r: 'Validação cruzada e cuidados com os dados', ph: 'As duas rotas convergem? Qual a defasagem dos dados usados? Algum número veio de fonte com viés?' },
           { t: 'sub', r: 'Tendências de mercado (de 2 a 4)' },
           { t: 'nota', html: '<p>Uma tendência registrável tem três elementos: <strong>o sinal observado, com fonte e data</strong>; <strong>a conexão específica com a empresa parceira</strong>; e <strong>a implicação prática</strong> — o que muda, ou o que vale testar. Antes de registrar, passe pelo filtro: faz sentido para o público da empresa? Combina com o posicionamento que começa a aparecer? A empresa tem condição real de testar em pequena escala?</p>' },
-          { t: 'tabela', leitura: ['aula-4', '3-6-tendencia-fato-generico-como-escrever-a-implicacao-estrategica'], cols: [
+          { t: 'tabela', leitura: ['mercado', '3-6-tendencia-fato-generico-como-escrever-a-implicacao-estrategica'], cols: [
             { r: 'Sinal observado', w: '20%' }, { r: 'Fonte e data', w: '13%' },
             { r: 'Camada', tipo: 'opcoes', op: ['Macrotendência', 'Mercado e consumo', 'Microtendência'], w: '12%' },
             { r: 'Conexão com a empresa' }, { r: 'Implicação prática' },
@@ -366,7 +369,7 @@
         ] },
       { id: 'clientes', n: '1.2', titulo: 'Análise de clientes atual',
         dica: 'Sobre o cliente que a empresa já tem hoje, não o que gostaria de ter. Separe o que é fato relatado pela empresa do que é percepção do grupo a validar.',
-        leitura: ['aula-4', 'modelo-para-o-bloco-1-2'],
+        leitura: ['mercado', 'modelo-para-o-bloco-1-2'],
         itens: [
           { t: 'referencia', de: 'roteiro', blocos: [2, 3], r: 'Respostas registradas na entrevista (Blocos 2 e 3 do roteiro)' },
           { t: 'tabela', cols: [
@@ -382,7 +385,7 @@
         ] },
       { id: 'benchmarking', n: '1.3', titulo: 'Benchmarking competitivo',
         dica: 'Três concorrentes diretos, com papéis diferentes. Anote o dado observável separado da interpretação do grupo, e registre a fonte de cada observação.',
-        leitura: ['aula-5', '6-preenchendo-o-bloco-1-3-da-ferramenta'],
+        leitura: ['benchmarking', '6-preenchendo-o-bloco-1-3-da-ferramenta'],
         itens: [
           { t: 'sub', r: 'Os três concorrentes escolhidos' },
           { t: 'tabela', cols: [
@@ -402,14 +405,14 @@
           { k: 'b1_conc_sint_frac', r: 'Principal fraqueza comum', d: 'Existe algum ponto fraco que se repete nos três (ou em pelo menos dois) concorrentes?' },
           { k: 'b1_conc_sint_oport', r: 'Oportunidade de posicionamento', d: 'Dado o que foi observado, que espaço relevante para o segmento da empresa parceira parece estar livre?' },
           { t: 'sub', r: 'Do benchmarking para a SWOT' },
-          { t: 'tabela', leitura: ['aula-5', '5-2-do-benchmarking-para-a-swot-de-marketing'], cols: [
+          { t: 'tabela', leitura: ['benchmarking', '5-2-do-benchmarking-para-a-swot-de-marketing'], cols: [
             { r: 'Concorrente', tipo: 'linha', w: '15%' }, { r: 'O que foi observado' },
             { r: 'Aponta para', tipo: 'opcoes', op: ['Ameaça', 'Oportunidade'], w: '13%' }, { r: 'Frase pronta para a SWOT de marketing' }],
             linhas: seq(3).map(function (i) { var p = 'b1_trad' + i; return { r: String(i), k: [p + '_conc', p + '_obs', p + '_tipo', p + '_frase'] }; }) }
         ] },
       { id: 'swot', n: '1.4', titulo: 'SWOT de Marketing',
-        dica: 'Substantivo solto não é SWOT. Cada linha: substantivo específico + evidência de onde veio + por que importa para o marketing da empresa. Preencham primeiro a evidência, revisitando as anotações das Aulas 3 a 5.',
-        leitura: ['aula-6', '4-a-regra-de-ouro-substantivo-solto-nao-e-swot'],
+        dica: 'Substantivo solto não é SWOT. Cada linha: substantivo específico + evidência de onde veio + por que importa para o marketing da empresa. Preencham primeiro a evidência, revisitando as anotações da entrevista, da análise de mercado e do benchmarking.',
+        leitura: ['swot', '4-a-regra-de-ouro-substantivo-solto-nao-e-swot'],
         itens: [
           swotQuadrante('for', 'Forças', CAT_INTERNAS),
           swotQuadrante('fra', 'Fraquezas', CAT_INTERNAS),
@@ -418,14 +421,14 @@
         ] },
       { id: 'tows', n: '1.5', titulo: 'TOWS: dos quadrantes às hipóteses de ação',
         dica: 'Cada cruzamento nomeia qual força ou fraqueza está sendo cruzada com qual oportunidade ou ameaça e termina em um verbo de ação: lançar, redirecionar, suspender, comunicar, testar.',
-        leitura: ['aula-6', '5-tows-dos-quadrantes-as-hipoteses-de-acao'],
+        leitura: ['swot', '5-tows-dos-quadrantes-as-hipoteses-de-acao'],
         itens: [ { t: 'tabela', cols: [
           { r: 'Força ou fraqueza usada', w: '24%' }, { r: 'Oportunidade ou ameaça usada', w: '24%' }, { r: 'Frase de ação' }],
           linhas: [['so', 'SO', 'Forças + oportunidades: aproveitar'], ['st', 'ST', 'Forças + ameaças: neutralizar'], ['wo', 'WO', 'Fraquezas + oportunidades: desenvolver'], ['wt', 'WT', 'Fraquezas + ameaças: evitar']]
             .map(function (c) { return { r: c[1], d: c[2], k: ['b1_tows_' + c[0] + '_int', 'b1_tows_' + c[0] + '_ext', 'b1_tows_' + c[0]] }; }) } ] },
       { id: 'sintese', n: '1.6', titulo: 'Síntese da análise situacional',
         dica: 'Escrevam como se estivessem explicando por telefone ao gestor da empresa, sem usar as palavras SWOT, TOWS ou posicionamento. Duas ou três frases cada.',
-        leitura: ['aula-6', '6-a-sintese-da-analise-situacional-bloco-1-6'],
+        leitura: ['swot', '6-a-sintese-da-analise-situacional-bloco-1-6'],
         itens: [
           { k: 'b1_sintese_oport', r: 'Principal oportunidade' },
           { k: 'b1_sintese_risco', r: 'Principal risco' },
@@ -498,15 +501,14 @@
   }
   var E2 = {
     id: 'e2', codigo: 'E2', titulo: 'Segmentação, persona e posicionamento',
-    etapa: 'Etapa 3 · Aulas 7 a 9', bloco: 'Bloco 2 · Segmento, persona e posicionamento',
+    etapa: 'Etapa 3 · Estratégia', bloco: 'Bloco 2 · Segmento, persona e posicionamento',
     pergunta: 'Para quem somos? Por que nos escolher?',
     resumo: 'O coração do plano: o segmento prioritário escolhido com critério, uma ou duas personas com evidência, o Value Proposition Canvas e a declaração de posicionamento.',
-    leituras: ['aula-7-8'],
-    leiturasEmBreve: ['Value Proposition Canvas e declaração de posicionamento (Aula 9)'],
+    leituras: ['segmentacao', 'vpc'],
     secoes: [
       { id: 'segmentacao', n: '2.1', titulo: 'Segmentação de mercado',
         dica: 'Não existe produto para todo mundo. Combine mais de uma variável e teste os cinco critérios de atratividade, perguntando para cada um: "como sabemos que isso é verdade?".',
-        leitura: ['aula-7-8', '7-preenchendo-o-bloco-2-1-da-ferramenta'],
+        leitura: ['segmentacao', '7-preenchendo-o-bloco-2-1-da-ferramenta'],
         itens: [
           { t: 'grupo', cols: 2, itens: [
             { k: 'b2_variaveis', r: 'Variáveis de segmentação usadas', ph: 'Geográfica, demográfica, psicográfica, comportamental ou firmográfica — e quais recortes de cada uma.' },
@@ -525,12 +527,13 @@
         ] },
       { id: 'personas', n: '2.2', titulo: 'Personas',
         dica: 'Persona é hipótese testável, não personagem de ficção: só o nome é inventado. Construam duas quando houver mais de um decisor relevante (quem usa e quem paga, quem compra e quem recomenda).',
-        leitura: ['aula-7-8', '16-preenchendo-o-bloco-2-2-da-ferramenta'],
+        leitura: ['segmentacao', '16-preenchendo-o-bloco-2-2-da-ferramenta'],
         itens: [ { t: 'referencia', de: 'roteiro', blocos: [2], r: 'Respostas registradas na entrevista (Bloco 2 do roteiro)' } ]
           .concat(persona(1)).concat(persona(2))
-          .concat([{ k: 'b2_personas_porque', r: 'Por que uma (ou duas) personas?', ph: 'Existe mais de um tipo de decisor relevante? Como as duas se conectam?' }]) },
+          .concat([{ k: 'b2_personas_porque', solto: true, r: 'Por que uma (ou duas) personas?', ph: 'Existe mais de um tipo de decisor relevante? Como as duas se conectam?' }]) },
       { id: 'vpc', n: '2.3', titulo: 'Value Proposition Canvas',
-        dica: 'Preencham o lado do cliente com base na Persona 1; depois, o lado da empresa. O fit está nos aliviadores e criadores que mais importam para aquela persona específica.',
+        dica: 'Preencham o lado do cliente com base na Persona 1, em ordem de importância; depois, o lado da empresa, dizendo entre parênteses que dor ou ganho cada item atinge. O fit está nos aliviadores e criadores que mais importam para aquela persona específica.',
+        leitura: ['vpc', '2-6-modelo-para-o-bloco-2-3'],
         itens: [
           { t: 'trazer', r: '↻ Trazer jobs, dores e ganhos da Persona 1', de: 'e2', mapa: {
             b2_vpc_jobs: function (c) { return juntar([['Funcional', c.b2_p1_job_func], ['Emocional', c.b2_p1_job_emoc], ['Social', c.b2_p1_job_soc]]); },
@@ -546,11 +549,19 @@
             { k: 'b2_vpc_gains', r: 'Ganhos', ph: 'O que o cliente quer conquistar, economizar, sentir.' },
             { k: 'b2_vpc_gainc', r: 'Criadores de ganho', ph: 'Como a oferta gera ganhos.' }
           ] },
-          { k: 'b2_vpc_fit', r: 'Fit: onde há maior alinhamento entre cliente e empresa?' }
+          { k: 'b2_vpc_top', r: 'O que mais importa para a persona', ph: 'A tarefa mais importante, a dor mais intensa e o ganho mais relevante: é aí que o encaixe precisa acontecer.' },
+          { k: 'b2_vpc_fit', r: 'Fit: onde há maior alinhamento entre cliente e empresa?', ph: 'Onde o encaixe é forte, onde há lacunas e que decisão cada lacuna pede (para o mix, a comunicação ou a oferta).' },
+          { k: 'b2_vpc_teste', r: 'Como o fit pode ser testado com a empresa parceira', ph: 'Com quem conversar, o que observar, que evidência confirmaria ou derrubaria o encaixe.' }
         ] },
       { id: 'posicionamento', n: '2.4', titulo: 'Declaração de posicionamento',
-        dica: 'Preencham os componentes e vejam a frase se montar. Escrevam três versões e escolham a mais precisa: se um concorrente pudesse assinar a mesma frase, ela ainda não é posicionamento.',
+        dica: 'Comecem pelas alternativas que o cliente teria sem a empresa parceira; depois preencham os componentes e vejam a frase se montar. Escrevam três versões e escolham a mais precisa: se um concorrente pudesse assinar a mesma frase, ela ainda não é posicionamento.',
+        leitura: ['vpc', '4-2-componente-por-componente-como-preencher'],
         itens: [
+          { k: 'b2_pos_alternativas', r: 'Alternativas competitivas', ph: 'O que o cliente faria se a empresa parceira não existisse, incluindo soluções improvisadas (fazer sozinho, não fazer nada).' },
+          { t: 'grupo', cols: 2, itens: [
+            { k: 'b2_pos_paridade', r: 'Pontos de paridade', ph: 'O mínimo que o cliente exige da categoria para considerar a empresa.' },
+            { k: 'b2_pos_diferenca', r: 'Ponto de diferença (com prova)', ph: 'Relevante e crível para o cliente, distintivo frente às alternativas, viável e sustentável para a empresa.' }
+          ] },
           { t: 'tabela', cols: [{ r: 'Conteúdo' }], linhas: [
             ['b2_pos_para', 'Para...', 'O segmento-alvo.'], ['b2_pos_que', 'que...', 'O problema central ou a necessidade.'],
             ['b2_pos_oq', 'nossa [oferta] é...', 'A categoria da solução.'], ['b2_pos_pq', 'que...', 'O diferencial único.'],
@@ -570,7 +581,9 @@
           ['e2_chk5', 'Cada campo da persona tem uma fonte identificada; se a empresa não tem cliente atual, a persona está rotulada como hipótese a validar.'],
           ['e2_chk6', 'Os jobs funcional, emocional e social estão todos preenchidos, e a persona evita adjetivos genéricos sem uma frase específica por trás.'],
           ['e2_chk7', 'A persona aparece no Value Proposition Canvas.'],
-          ['e2_chk8', 'A declaração de posicionamento é específica: nenhum concorrente poderia assiná-la como está.']
+          ['e2_chk8', 'A declaração de posicionamento é específica: nenhum concorrente poderia assiná-la como está.'],
+          ['e2_chk9', 'No canvas, cada aliviador e cada criador nomeia a dor ou o ganho que atinge, e o fit aponta as lacunas e as decisões que elas pedem.'],
+          ['e2_chk10', 'O "pois" da declaração é uma evidência que a empresa consegue mostrar hoje, e a alternativa citada é a que o cliente realmente usa.']
         ] } ] }
     ],
     importar: function (j, out) {
@@ -587,11 +600,11 @@
   var SETE_P = [['produto', 'Produto'], ['preco', 'Preço'], ['praca', 'Praça'], ['promocao', 'Promoção'], ['pessoas', 'Pessoas'], ['processos', 'Processos'], ['evidencias', 'Evidências físicas']];
   var E3 = {
     id: 'e3', codigo: 'E3', titulo: 'Mix de marketing e jornada do cliente',
-    etapa: 'Etapa 4 · Aulas 10 a 13', bloco: 'Bloco 3 · Mix de marketing',
+    etapa: 'Etapa 4 · Execução', bloco: 'Bloco 3 · Mix de marketing',
     pergunta: 'O que oferecemos e como chegamos ao cliente?',
     resumo: 'Os 7Ps coerentes com o posicionamento, a jornada real do cliente, até quatro canais prioritários e o mix de mídia paga, própria e conquistada.',
     leituras: [],
-    leiturasEmBreve: ['Os 7Ps do mix de marketing (Aula 10)', 'Jornada do cliente e pontos de contato (Aula 11)', 'Canais prioritários e mix de mídia (Aula 12)'],
+    leiturasEmBreve: ['Os 7Ps do mix de marketing', 'Jornada do cliente e pontos de contato', 'Canais prioritários e mix de mídia'],
     secoes: [
       { id: 'sete-ps', n: '3.1', titulo: 'Os 7Ps do mix de marketing',
         dica: 'Primeiro descrevam o mix atual; depois, a escolha estratégica — o que deveria existir para servir o segmento-alvo. A declaração de posicionamento precisa ser reconhecível em cada P.',
@@ -671,11 +684,11 @@
   }
   var E4 = {
     id: 'e4', codigo: 'E4', titulo: 'Objetivos, KPIs e plano de ações',
-    etapa: 'Etapa 5 · Aulas 14 a 16', bloco: 'Blocos 4 e 5 · Objetivos, KPIs e plano de ações',
+    etapa: 'Etapa 5 · Medição e ações', bloco: 'Blocos 4 e 5 · Objetivos, KPIs e plano de ações',
     pergunta: 'Onde queremos chegar, como vamos medir, o que faremos e quanto custa?',
     resumo: 'Objetivos SMART ligados ao objetivo de negócio, o painel de KPIs com baseline e meta, a priorização das ações pelo ICE Score, o 5W2H das três prioritárias, o orçamento por trimestre e o cronograma.',
     leituras: [],
-    leiturasEmBreve: ['Objetivos SMART e KPIs de marketing (Aula 14)', 'Priorização de ações: ICE Score e 5W2H (Aula 15)', 'Orçamento, responsabilidades e cronograma (Aula 16)'],
+    leiturasEmBreve: ['Objetivos SMART e KPIs de marketing', 'Priorização de ações: ICE Score e 5W2H', 'Orçamento, responsabilidades e cronograma'],
     secoes: [
       { id: 'alinhamento', n: '4.1', titulo: 'Alinhamento estratégico',
         dica: 'Os objetivos de marketing precisam contribuir diretamente para o objetivo de negócio da empresa. Lembrem do SOM calculado na E1: ele é a régua do que é alcançável.',
@@ -741,7 +754,7 @@
               { k: p + 'how', r: 'How · Como?' }, { k: p + 'kpi', r: 'KPI que esta ação move' }
             ] }]);
           }, []))
-          .concat([{ t: 'especial', nome: 'csv5w2h' }]) },
+          .concat([{ t: 'especial', nome: 'csv5w2h', solto: true }]) },
       { id: 'orcamento', n: '5.3', titulo: 'Orçamento de marketing por trimestre',
         dica: 'Estimem por categoria; se não souberem o valor exato, usem faixas. O total deve ser compatível com o percentual do faturamento informado.',
         itens: [
@@ -782,11 +795,11 @@
   var PILARES = [['educ', 'Educação'], ['insp', 'Inspiração'], ['social', 'Prova social'], ['prod', 'Produto / oferta'], ['cult', 'Cultura / marca']];
   var E5 = {
     id: 'e5', codigo: 'E5', titulo: 'Comunicação e marca',
-    etapa: 'Etapa 6 · Aulas 17 e 18', bloco: 'Bloco 6 · Comunicação e marca',
+    etapa: 'Etapa 6 · Identidade', bloco: 'Bloco 6 · Comunicação e marca',
     pergunta: 'Como vamos nos comunicar?',
     resumo: 'Identidade de marca, tom de voz, arquitetura de mensagem, pilares de conteúdo, um plano editorial de dez peças e a comunicação integrada por canal.',
     leituras: [],
-    leiturasEmBreve: ['Identidade de marca e tom de voz (Aula 17)', 'Pilares de conteúdo, plano editorial e comunicação integrada (Aula 18)'],
+    leiturasEmBreve: ['Identidade de marca e tom de voz', 'Pilares de conteúdo, plano editorial e comunicação integrada'],
     secoes: [
       { id: 'identidade', n: '6.1', titulo: 'Identidade de marca',
         dica: 'Cada elemento deve ser coerente com os demais e com o posicionamento. "Somos inovadores, confiáveis e comprometidos" não é identidade.',
@@ -860,11 +873,11 @@
     ['Mix de marketing: o que sugerimos ajustar', '5 min'], ['Objetivos, KPIs e as três ações prioritárias', '5 min'], ['Identidade de comunicação e plano editorial', '3 min'], ['Governança: como implementar e medir', '2 min']];
   var E6 = {
     id: 'e6', codigo: 'E6', titulo: 'Governança, síntese e pitch',
-    etapa: 'Etapa 7 · Aulas 19 e 20', bloco: 'Bloco 7 · Governança + síntese final',
+    etapa: 'Etapa 7 · Controle e entrega', bloco: 'Bloco 7 · Governança + síntese final',
     pergunta: 'Como vamos acompanhar e ajustar o plano? Ele está coerente do início ao fim?',
     resumo: 'O painel de acompanhamento, os rituais de gestão, o roadmap em três fases, a síntese do plano e a preparação do pitch para a empresa parceira.',
     leituras: [],
-    leiturasEmBreve: ['Governança simplificada, síntese e preparação do pitch (Aula 19)'],
+    leiturasEmBreve: ['Governança simplificada, síntese e preparação do pitch'],
     secoes: [
       { id: 'painel', n: '7.1', titulo: 'Painel de acompanhamento',
         dica: 'Os mesmos 3 a 5 KPIs da E4 (4.3). É o painel que os rituais abaixo vão usar para comparar meta e realizado.',

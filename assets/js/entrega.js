@@ -49,8 +49,77 @@
     return (l.rotuloDe && campos[l.rotuloDe]) ? l.r + ' · ' + campos[l.rotuloDe] : l.r;
   }
   function rotuloColuna(c, campos) { return (c.rotuloDe && campos[c.rotuloDe]) ? campos[c.rotuloDe] : c.r; }
-  function tituloSecao(s) { return (s.n && /\d/.test(s.n) ? s.n + ' ' : '') + s.titulo; }
+  function tituloSecao(s, num) {
+    var n = num ? num.sec[s.id] : s.n;
+    return (n && /\d/.test(n) ? n + ' ' : '') + s.titulo;
+  }
   function tituloEsp(esp) { return esp.codigo + ' · ' + esp.titulo; }
+
+  /* ================= "Não se aplica" e numeração =================
+   * Chaves (guardadas junto com as respostas):
+   *   na__entrega / na__entrega_motivo           a entrega inteira
+   *   na__s_<seção> / na__s_<seção>_motivo        uma seção
+   *   na__b_<seção>__<sub> / ..._motivo           um sub-bloco (o trecho que começa num subtítulo da seção)
+   * O que não se aplica sai do PDF, do plano completo e do progresso, e a numeração seguinte se ajusta.
+   * As respostas já escritas continuam guardadas: reativar devolve tudo. */
+  function ehEntrega(esp) { return esp.tipo !== 'atividade'; }
+  function podeNA(esp, s) { return ehEntrega(esp) && !/^(checklist|coerencia|pitch)$/.test(s.id); }
+  function slugJs(t) {
+    var s = String(t || '');
+    if (s.normalize) s = s.normalize('NFD').replace(/[̀-ͯ]/g, '');
+    return s.toLowerCase().replace(/\(.*?\)/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  }
+  function subId(s, sub) { return s.id + '__' + slugJs(sub.r); }
+  /* Divide os itens de uma seção em trechos: cada subtítulo (t:'sub') abre um trecho; itens "soltos" fecham o trecho. */
+  function segmentos(s) {
+    var out = [{ sub: null, itens: [] }];
+    (s.itens || []).forEach(function (it) {
+      if (it.t === 'sub') out.push({ sub: it, itens: [] });
+      else if (it.solto) out.push({ sub: null, itens: [it] });
+      else out[out.length - 1].itens.push(it);
+    });
+    return out.filter(function (g) { return g.sub || g.itens.length; });
+  }
+  function naEntrega(esp, c) { return ehEntrega(esp) && !!c.na__entrega; }
+  function naSecao(esp, s, c) { return podeNA(esp, s) && (naEntrega(esp, c) || !!c['na__s_' + s.id]); }
+  function naSub(esp, s, sub, c) { return podeNA(esp, s) && !!c['na__b_' + subId(s, sub)]; }
+  /* Números exibidos: seções "1.3" renumeradas dentro do bloco; subtítulos "Objetivo 3" renumerados entre os iguais.
+   * mapaBloco (opcional, plano completo) troca o número do bloco: { '4': '3' }. */
+  function numeracao(esp, c, mapaBloco) {
+    var cont = {}, sec = {}, sub = {};
+    esp.secoes.forEach(function (s) {
+      var m = /^(\d+)\.(\d+)$/.exec(s.n || '');
+      if (m && naSecao(esp, s, c)) sec[s.id] = '—';
+      else if (m) {
+        cont[m[1]] = (cont[m[1]] || 0) + 1;
+        sec[s.id] = (mapaBloco && mapaBloco[m[1]] != null ? mapaBloco[m[1]] : m[1]) + '.' + cont[m[1]];
+      } else sec[s.id] = s.n;
+      var iguais = {};
+      segmentos(s).forEach(function (g) {
+        if (!g.sub) return;
+        // só subtítulos "Nome N" (com parêntese opcional no fim) são uma sequência: "Objetivo 3 (opcional)", "Ação 2"
+        var id = subId(s, g.sub), mm = /^(.*?\S\s)(\d+)(\s*\([^)]*\))?$/.exec(g.sub.r);
+        if (naSub(esp, s, g.sub, c) || !mm) { sub[id] = g.sub.r; return; }
+        iguais[mm[1]] = (iguais[mm[1]] || 0) + 1;
+        sub[id] = mm[1] + iguais[mm[1]] + (mm[3] || '');
+      });
+    });
+    return { sec: sec, sub: sub };
+  }
+  /* Itens de uma seção que se aplicam (subtítulos já renumerados) e a lista dos sub-blocos marcados. */
+  function itensDaSecao(esp, s, c, num) {
+    var itens = [], naSubs = [];
+    segmentos(s).forEach(function (g) {
+      if (g.sub) {
+        var id = subId(s, g.sub);
+        if (naSub(esp, s, g.sub, c)) { naSubs.push({ r: g.sub.r, motivo: c['na__b_' + id + '_motivo'] }); return; }
+        itens.push({ t: 'sub', r: num.sub[id] || g.sub.r });
+      }
+      itens = itens.concat(g.itens);
+    });
+    return { itens: itens, naSubs: naSubs };
+  }
+  function cfgPortal() { return window.VD_CONFIG || {}; }
   function urlLeitura(ref) {
     var l = PM.LEITURAS[ref[0]];
     return l ? (window.VD ? VD.raiz : '') + l.url + (ref[1] ? '#' + ref[1] : '') : '';
@@ -113,9 +182,14 @@
   /* ================= resumo para a planilha ================= */
   function resumo(esp, campos) {
     var L = [];
+    if (naEntrega(esp, campos)) return [['Entrega', 'Não se aplica', campos.na__entrega_motivo || '—']];
+    var num = numeracao(esp, campos);
     esp.secoes.forEach(function (s) {
-      var sec = tituloSecao(s);
-      cadaItem(s.itens, function (it) {
+      var sec = tituloSecao(s, num);
+      if (naSecao(esp, s, campos)) { L.push([sec, 'Seção não se aplica', campos['na__s_' + s.id + '_motivo'] || '—']); return; }
+      var r = itensDaSecao(esp, s, campos, num);
+      r.naSubs.forEach(function (x) { L.push([sec, x.r, 'Não se aplica' + (x.motivo ? ': ' + x.motivo : '')]); });
+      cadaItem(r.itens, function (it) {
         if (it.k && !it.t && !vazio(campos[it.k])) L.push([sec, it.r, valorLegivel(it, campos[it.k])]);
         if (it.t === 'tabela') {
           it.linhas.forEach(function (l) {
@@ -147,12 +221,14 @@
     if (!linhas.length) return '';
     cols = cols.filter(function (x) { return linhas.some(function (l) { return !vazio(campos[l.k[x.j]]); }) || it.banco; });
     var unica = it.cols.length === 1;
+    // linhas numeradas (1, 2, 3...): no relatório, a numeração segue só as linhas preenchidas
+    var numerada = !it.banco && it.linhas.every(function (l) { return /^\d+$/.test(l.r); });
     var h = (it.r ? '<h4 class="r-sub">' + esc(it.r) + '</h4>' : '') + '<table class="r-tab' + (cols.length > 4 ? ' r-tab-larga' : '') + '"><thead><tr><th></th>';
     if (!unica) cols.forEach(function (x) { h += '<th>' + esc(rotuloColuna(x.c, campos)) + '</th>'; });
     else h += '<th>' + esc(it.cols[0].r) + '</th>';
     h += '</tr></thead><tbody>';
-    linhas.forEach(function (l) {
-      h += '<tr' + (l.total ? ' class="r-total"' : '') + '><th scope="row">' + esc(rotuloLinha(l, campos)) + (l.d && !it.banco ? '<small>' + esc(l.d) + '</small>' : '') + '</th>';
+    linhas.forEach(function (l, i) {
+      h += '<tr' + (l.total ? ' class="r-total"' : '') + '><th scope="row">' + esc(numerada ? String(i + 1) : rotuloLinha(l, campos)) + (l.d && !it.banco ? '<small>' + esc(l.d) + '</small>' : '') + '</th>';
       cols.forEach(function (x) { h += '<td>' + paragrafos(valorLegivel(x.c, campos[l.k[x.j]])) + '</td>'; });
       h += '</tr>';
     });
@@ -195,12 +271,18 @@
       return resto.replace(/\s/g, '') ? '<h3 class="r-subtitulo">' + t + '</h3>' + resto : '';
     });
   }
-  function relatorioCorpo(esp, campos) {
-    var h = '';
+  function relatorioCorpo(esp, campos, mapaBloco) {
+    if (naEntrega(esp, campos)) {
+      return '<div class="r-na"><strong>Esta entrega não se aplica a esta empresa.</strong>' +
+        (campos.na__entrega_motivo ? '<p>' + paragrafos(campos.na__entrega_motivo) + '</p>' : '') + '</div>';
+    }
+    var h = '', num = numeracao(esp, campos, mapaBloco);
     esp.secoes.forEach(function (s) {
       if (s.id === 'checklist' && !s.itens.some(function (i) { return i.t === 'especial'; })) return;
-      var dentro = relatorioItens(s.itens, campos, esp);
-      if (dentro.replace(/<[^>]+>|\s/g, '')) h += '<section class="r-secao"><h2><span>' + esc(s.n && /\d/.test(s.n) ? s.n : '') + '</span>' + esc(s.titulo) + '</h2>' + dentro + '</section>';
+      if (naSecao(esp, s, campos)) return;
+      var dentro = relatorioItens(itensDaSecao(esp, s, campos, num).itens, campos, esp);
+      var n = num.sec[s.id];
+      if (dentro.replace(/<[^>]+>|\s/g, '')) h += '<section class="r-secao"><h2><span>' + esc(n && /\d/.test(n) ? n : '') + '</span>' + esc(s.titulo) + '</h2>' + dentro + '</section>';
     });
     return h;
   }
@@ -219,7 +301,8 @@
         (integr.length ? '<div><dt>Integrantes</dt><dd>' + integr.map(esc).join(' · ') + '</dd></div>' : '') +
         '<div><dt>Data</dt><dd>' + String(hoje.getDate()).padStart(2, '0') + '/' + String(hoje.getMonth() + 1).padStart(2, '0') + '/' + hoje.getFullYear() + '</dd></div>' +
       '</dl>' +
-      '<p class="r-capa-nota">Projeto Integrador de Planejamento Mercadológico · Curso de Administração. Proposta elaborada por estudantes, a partir das informações compartilhadas pela empresa e de fontes públicas.</p>' +
+      '<p class="r-capa-nota">Projeto integrador · ' + esc(cfgPortal().NOME_DISCIPLINA || 'Planejamento Mercadológico') + (cfgPortal().PROGRAMA ? ' · ' + esc(cfgPortal().PROGRAMA) : '') +
+        '. Proposta elaborada por estudantes, a partir das informações compartilhadas pela empresa e de fontes públicas.</p>' +
       '</header>';
   }
 
@@ -228,11 +311,15 @@
     var empresa = c.meta_empresa || '[empresa parceira]';
     var resp = c.meta_responsavel_empresa || '[responsável]';
     var grupo = c.meta_grupo || (VD.sessao() ? VD.sessao().nome : '[grupo]');
+    var cfg = cfgPortal();
+    var disciplina = 'da disciplina ' + (cfg.NOME_DISCIPLINA || 'Planejamento Mercadológico') + (cfg.PROGRAMA ? ' (' + cfg.PROGRAMA + ')' : '');
+    // o valor antigo dizia "sala de aula"; o texto exibido é o rótulo atual
+    var conf = c.e0_confidencial === 'Manter a empresa anônima fora da sala de aula' ? 'Manter a empresa anônima fora do ambiente acadêmico' : c.e0_confidencial;
     return [
-      empresa + ', representada por ' + resp + ', aceita participar como empresa parceira do Projeto Integrador da disciplina de Planejamento Mercadológico do curso de Administração, com o grupo de estudantes "' + grupo + '".',
-      'Ao longo do semestre, o grupo vai elaborar um plano de marketing para a empresa — análise de mercado, segmentação e posicionamento, mix de marketing, objetivos e ações, comunicação e governança — e apresentá-lo à empresa ao final da disciplina.',
+      empresa + ', representada por ' + resp + ', aceita participar como empresa parceira do projeto integrador ' + disciplina + ', com o grupo de estudantes "' + grupo + '".',
+      'Ao longo da disciplina, o grupo vai elaborar um plano de marketing para a empresa — análise de mercado, segmentação e posicionamento, mix de marketing, objetivos e ações, comunicação e governança — e apresentá-lo à empresa ao final.',
       'A empresa se dispõe a receber o grupo em pelo menos duas reuniões' + (c.e0_reunioes ? ' (' + c.e0_reunioes.replace(/\n+/g, '; ') + ')' : '') + ' e a compartilhar as informações que julgar possíveis' + (c.e0_dados ? ', como: ' + c.e0_dados.replace(/\n+/g, '; ') : '') + '.',
-      'Quanto ao uso das informações fora da sala de aula: ' + (c.e0_confidencial ? c.e0_confidencial.charAt(0).toLowerCase() + c.e0_confidencial.slice(1) : 'a combinar') + '.',
+      'Quanto ao uso das informações fora do ambiente acadêmico: ' + (conf ? conf.charAt(0).toLowerCase() + conf.slice(1) : 'a combinar') + '.',
       'O plano é uma proposta acadêmica, elaborada por estudantes sob orientação do professor. Não se trata de consultoria remunerada e não há garantia de resultado; cabe à empresa decidir o que aplicar.'
     ];
   }
@@ -300,7 +387,7 @@
     var linhas = [cab];
     [1, 2, 3].forEach(function (n) {
       var p = 'b5_5w2h' + n + '_';
-      if (!c[p + 'what']) return;
+      if (!c[p + 'what'] || c['na__b_5w2h__acao-' + n] || c['na__s_5w2h'] || c.na__entrega) return;
       linhas.push([String(n), c[p + 'what'], c[p + 'why'], c[p + 'where'], c[p + 'when'], c[p + 'who'], c[p + 'how'], c[p + 'howmuch'], c[p + 'kpi'], 'A INICIAR', '', '', '']);
     });
     if (linhas.length === 1) { VD.toast('Preencham ao menos o "What" de uma ação antes de baixar.'); return; }
@@ -376,6 +463,28 @@
   }
   var SECAO_ATUAL = null;
 
+  function painelNA(chave, texto) {
+    return '<div class="na-painel" data-na-painel hidden><p>' + texto + '</p>' +
+      '<label><span class="campo-rot">Por que não se aplica (opcional)</span><textarea rows="2" data-k="' + esc(chave) + '_motivo" placeholder="Ex.: a empresa ainda não vende pela internet."></textarea></label></div>';
+  }
+  function botaoNA(alvo, chave, classe) {
+    return '<button type="button" class="btn-na' + (classe ? ' ' + classe : '') + '" data-na="' + esc(alvo) + '" aria-pressed="false">Não se aplica</button>' +
+      '<input type="checkbox" hidden data-k="' + esc(chave) + '">';
+  }
+  /* Corpo da seção: em entregas, cada subtítulo vira um sub-bloco com o próprio botão "Não se aplica". */
+  function htmlCorpoSecao(esp, s) {
+    if (!podeNA(esp, s)) return htmlItens(s.itens, esp);
+    return segmentos(s).map(function (g) {
+      if (!g.sub) return htmlItens(g.itens, esp);
+      var id = subId(s, g.sub);
+      return '<div class="e-bloco" data-bloco="' + esc(id) + '"><div class="sub-cab"><h3 class="sub" data-sub-tit="' + esc(id) + '">' + esc(g.sub.r) + '</h3>' +
+        botaoNA('b:' + id, 'na__b_' + id, 'btn-na-sub') + '</div>' +
+        '<div class="e-bloco-corpo">' + htmlItens(g.itens, esp) + '</div>' +
+        painelNA('na__b_' + id, 'Este trecho foi marcado como não aplicável: sai do PDF e a numeração dos trechos seguintes se ajusta. O que já estava escrito fica guardado.') +
+        '</div>';
+    }).join('');
+  }
+
   function montar(esp) {
     var raiz = VD.raiz;
     var ehAtividade = esp.tipo === 'atividade';
@@ -397,7 +506,8 @@
       '<div class="e-acoes no-print">' +
         '<button type="button" class="vd-btn vd-btn-amarelo" data-vd-salvar>Salvar respostas</button>' +
         '<button type="button" class="vd-btn vd-btn-claro" id="btnPdf">Salvar em PDF' + (ehAtividade ? '' : ' para a empresa') + '</button>' +
-        (ehAtividade ? '' : '<button type="button" class="vd-btn vd-btn-claro" id="btnImportar" title="Para quem preencheu a Ferramenta Interativa (arquivo HTML) e exportou o JSON">Importar JSON da Ferramenta</button><input type="file" id="arqImportar" accept=".json,application/json" hidden>') +
+        (ehAtividade ? '' : '<button type="button" class="vd-btn vd-btn-claro" id="btnImportar" title="Para quem preencheu a Ferramenta Interativa (arquivo HTML) e exportou o JSON">Importar JSON da Ferramenta</button><input type="file" id="arqImportar" accept=".json,application/json" hidden>' +
+          '<button type="button" class="vd-btn vd-btn-claro btn-na-entrega" data-na="entrega" aria-pressed="false" title="Para quando esta entrega inteira não fizer sentido para a empresa parceira">Esta entrega não se aplica</button><input type="checkbox" hidden data-k="na__entrega">') +
       '</div></div></header>';
 
     h += '<nav class="e-nav no-print" aria-label="Seções"><div class="e-wrap"><div class="e-nav-in">' + esp.secoes.map(function (s) {
@@ -406,13 +516,23 @@
 
     h += '<main class="e-wrap e-main">';
     if (leit) h += '<div class="e-leituras no-print"><span class="e-leituras-rot">Leituras desta etapa</span>' + leit + '</div>';
+    if (!ehAtividade) {
+      h += '<div class="na-entrega" hidden><strong>Esta entrega foi marcada como não aplicável à empresa parceira.</strong>' +
+        '<p>Ela sai do PDF e do plano completo, e a numeração dos blocos seguintes se ajusta no plano completo. O que já estava escrito fica guardado: reativar devolve tudo.</p>' +
+        '<label><span class="campo-rot">Por que não se aplica (opcional)</span><textarea rows="2" data-k="na__entrega_motivo"></textarea></label>' +
+        '<button type="button" class="vd-btn vd-btn-roxo" data-na="entrega">Reativar a entrega</button></div>';
+    }
     esp.secoes.forEach(function (s) {
       SECAO_ATUAL = s;
+      var na = podeNA(esp, s);
       h += '<section class="e-secao" id="s-' + esc(s.id) + '" data-sec="' + esc(s.id) + '">' +
-        '<div class="e-secao-cab"><span class="e-secao-n">' + esc(s.n) + '</span><div><h2>' + esc(s.titulo) + '</h2>' +
-        (s.alimenta ? '<span class="e-alimenta">' + esc(s.alimenta) + '</span>' : '') + '</div></div>' +
+        '<div class="e-secao-cab"><span class="e-secao-n">' + esc(s.n) + '</span><div class="e-secao-tit"><h2>' + esc(s.titulo) + '</h2>' +
+        (s.alimenta ? '<span class="e-alimenta">' + esc(s.alimenta) + '</span>' : '') + '</div>' +
+        (na ? botaoNA('s:' + s.id, 'na__s_' + s.id) : '') + '</div>' +
+        (na ? painelNA('na__s_' + s.id, 'Esta seção foi marcada como não aplicável: sai do PDF e a numeração das seções seguintes se ajusta. O que já estava escrito fica guardado.') : '') +
+        '<div class="e-secao-conteudo">' +
         (s.dica ? '<p class="e-dica">' + esc(s.dica) + '</p>' : '') + (s.leitura ? linkLeitura(s.leitura) : '') +
-        '<div class="e-secao-corpo">' + htmlItens(s.itens, esp) + '</div></section>';
+        '<div class="e-secao-corpo">' + htmlCorpoSecao(esp, s) + '</div></div></section>';
     });
     SECAO_ATUAL = null;
     h += '<nav class="e-rodape no-print">' +
@@ -465,13 +585,57 @@
         var e = ESPECIAIS[el.dataset.esp];
         if (e && e.atualizar) e.atualizar(el, c);
       });
+      estadoNA(c);
       progresso(c);
     }
+    /* mostra/esconde o que não se aplica e atualiza a numeração na tela */
+    function marcarBotao(b, ativo, textoAtivo, textoNormal) {
+      b.setAttribute('aria-pressed', ativo ? 'true' : 'false');
+      b.classList.toggle('ativo', ativo);
+      b.textContent = ativo ? textoAtivo : textoNormal;
+    }
+    function estadoNA(c) {
+      if (!ehEntrega(esp)) return;
+      var num = numeracao(esp, c), naE = naEntrega(esp, c);
+      var painelE = document.querySelector('.na-entrega');
+      if (painelE) painelE.hidden = !naE;
+      var be = document.querySelector('.btn-na-entrega');
+      if (be) marcarBotao(be, naE, 'Reativar a entrega', 'Esta entrega não se aplica');
+      var nav = document.querySelector('.e-nav');
+      if (nav) nav.hidden = naE;
+      esp.secoes.forEach(function (s) {
+        var el = document.getElementById('s-' + s.id);
+        if (!el) return;
+        el.hidden = naE;
+        var naS = !naE && naSecao(esp, s, c);
+        el.classList.toggle('na', naS);
+        var b = el.querySelector('.e-secao-cab [data-na]'), painel = el.querySelector(':scope > [data-na-painel]'), cont = el.querySelector('.e-secao-conteudo');
+        if (b) marcarBotao(b, naS, 'Reativar seção', 'Não se aplica');
+        if (painel) painel.hidden = !naS;
+        if (cont) cont.hidden = naS;
+        el.querySelector('.e-secao-n').textContent = num.sec[s.id];
+        var chip = document.querySelector('.e-nav a[data-sec="' + s.id + '"]');
+        if (chip) { chip.querySelector('b').textContent = num.sec[s.id]; chip.classList.toggle('na', naS); }
+        segmentos(s).forEach(function (g) {
+          if (!g.sub) return;
+          var id = subId(s, g.sub), bl = el.querySelector('[data-bloco="' + id + '"]');
+          if (!bl) return;
+          var naB = naSub(esp, s, g.sub, c);
+          bl.classList.toggle('na', naB);
+          marcarBotao(bl.querySelector('[data-na]'), naB, 'Reativar', 'Não se aplica');
+          bl.querySelector('.e-bloco-corpo').hidden = naB;
+          bl.querySelector('[data-na-painel]').hidden = !naB;
+          // marcado: nome original riscado, para não confundir com o trecho seguinte, que herda o número
+          bl.querySelector('[data-sub-tit]').innerHTML = naB ? '<s>' + esc(g.sub.r.replace(/\s*\(.*?\)\s*$/, '')) + '</s> · não se aplica' : esc(num.sub[id]);
+        });
+      });
+    }
     function progresso(c) {
-      var totalG = 0, feitosG = 0;
+      var totalG = 0, feitosG = 0, num = numeracao(esp, c);
       esp.secoes.forEach(function (s) {
         var ks = [];
-        cadaItem(s.itens, function (it) {
+        var itens = naSecao(esp, s, c) ? [] : itensDaSecao(esp, s, c, num).itens;  // o que não se aplica não conta
+        cadaItem(itens, function (it) {
           if (it.k && !it.t) ks.push(it.k);
           if (it.t === 'tabela' && !it.banco) it.linhas.forEach(function (l) { l.k.forEach(function (k, j) { if (it.cols[j].tipo !== 'calc' && !l.calc) ks.push(k); }); });
           if (it.t === 'tabela' && it.banco) it.linhas.forEach(function (l) { ks.push(l.k[0]); });
@@ -483,8 +647,21 @@
         if (a) { a.textContent = f ? f : ''; a.parentNode.classList.toggle('tem', f > 0); }
       });
       var pg = document.getElementById('progGeral');
-      if (pg) pg.textContent = feitosG ? feitosG + ' campo' + (feitosG === 1 ? '' : 's') + ' preenchido' + (feitosG === 1 ? '' : 's') : 'Nada preenchido ainda';
+      if (pg) pg.textContent = naEntrega(esp, c) ? 'Não se aplica a esta empresa' : feitosG ? feitosG + ' campo' + (feitosG === 1 ? '' : 's') + ' preenchido' + (feitosG === 1 ? '' : 's') : 'Nada preenchido ainda';
     }
+
+    /* ---- botões "Não se aplica" (marcam a caixa escondida correspondente) ---- */
+    document.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-na]');
+      if (!b) return;
+      var alvo = b.dataset.na;
+      var chave = alvo === 'entrega' ? 'na__entrega' : alvo.charAt(0) === 's' ? 'na__s_' + alvo.slice(2) : 'na__b_' + alvo.slice(2);
+      var cx = porChave(chave);
+      if (!cx) return;
+      cx.checked = !cx.checked;
+      cx.dispatchEvent(new Event('change', { bubbles: true }));
+      if (cx.checked && alvo === 'entrega') window.scrollTo({ top: 0 });
+    });
     function espelhos() {
       document.querySelectorAll('[data-espelho-de]').forEach(function (el) {
         var de = el.dataset.espelhoDe, k = el.dataset.espelhoK;
@@ -565,7 +742,7 @@
     function prepararRelatorio() {
       var c = recalcular();
       var el = document.getElementById('relatorio');
-      el.innerHTML = capa(tituloEsp(esp).replace(/^Aula 2 · /, ''), esp.relatorioTitulo || esp.bloco, esp.id === 'e0' ? c : null) +
+      el.innerHTML = capa(tituloEsp(esp).replace(/^Atividade · /, ''), esp.relatorioTitulo || esp.bloco, esp.id === 'e0' ? c : null) +
         (relatorioCorpo(esp, c) || '<p class="r-vazio">Nenhuma resposta preenchida ainda.</p>');
     }
     window.addEventListener('beforeprint', prepararRelatorio);
@@ -635,15 +812,30 @@
   }
 
   /* ================= página "Plano completo" ================= */
+  /* Plano completo: as entregas que não se aplicam saem do documento; partes e blocos são renumerados na sequência. */
   function plano(alvo) {
-    var partes = [], indice = [];
+    var partes = [], indice = [], dados = {}, ordemBlocos = [];
     PM.ENTREGAS.forEach(function (id) {
       var e = PM.ESPEC[id], c = ((VD.dados(id) || {}).campos) || {};
       Object.assign(c, calcular(e, c));
-      var corpo = relatorioCorpo(e, c);
-      indice.push('<li class="' + (corpo ? 'tem' : '') + '"><a href="#p-' + id + '"><b>' + esc(e.codigo) + '</b> ' + esc(e.titulo) + '</a><span>' + (corpo ? esc(e.bloco) : 'ainda sem respostas') + '</span></li>');
-      partes.push('<section class="r-entrega" id="p-' + id + '"><div class="r-entrega-cab"><span>' + esc(e.codigo) + '</span><div><h2>' + esc(e.titulo) + '</h2><p>' + esc(e.bloco) + '</p></div></div>' +
-        (corpo || '<p class="r-vazio">Esta entrega ainda não tem respostas.</p>') + '</section>');
+      dados[id] = c;
+      if (naEntrega(e, c)) return;
+      e.secoes.forEach(function (s) {
+        var m = /^(\d+)\./.exec(s.n || '');
+        if (m && !naSecao(e, s, c) && ordemBlocos.indexOf(m[1]) < 0) ordemBlocos.push(m[1]);
+      });
+    });
+    var mapaBloco = {};
+    ordemBlocos.forEach(function (b, i) { mapaBloco[b] = String(ordemBlocos[0] === '0' ? i : i + 1); });
+    var n = 0;
+    PM.ENTREGAS.forEach(function (id) {
+      var e = PM.ESPEC[id], c = dados[id];
+      if (naEntrega(e, c)) return;
+      n++;
+      var corpo = relatorioCorpo(e, c, mapaBloco);
+      indice.push('<li class="' + (corpo ? 'tem' : '') + '"><a href="#p-' + id + '"><b>' + n + '</b> ' + esc(e.titulo) + '</a><span>' + (corpo ? '' : 'ainda sem respostas') + '</span></li>');
+      partes.push('<section class="r-entrega" id="p-' + id + '"><div class="r-entrega-cab"><span>' + n + '</span><div><h2>' + esc(e.titulo) + '</h2></div></div>' +
+        (corpo || '<p class="r-vazio">Esta parte ainda não tem respostas.</p>') + '</section>');
     });
     alvo.innerHTML = capa('Plano de marketing', 'Plano completo, da análise de mercado à governança') +
       '<nav class="r-indice"><h2>Conteúdo</h2><ol>' + indice.join('') + '</ol></nav>' + partes.join('');
@@ -655,4 +847,5 @@
   PM.calcular = calcular;
   PM.chavesDe = chavesDe;
   PM.relatorioCorpo = relatorioCorpo;
+  PM.numeracao = numeracao;
 })();

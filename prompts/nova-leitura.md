@@ -6,17 +6,17 @@ Como usar: abra uma conversa nova no Claude Code **na pasta do repositório**
 
 ---
 
-Quero publicar a leitura da **Aula [9 | 10 | 11 | ...]**, sobre **[tema]**, no portal "Planejamento Mercadológico", que já está no ar e em uso pelos grupos.
+Quero publicar a leitura sobre **[tema]**, no portal "Planejamento Mercadológico", que já está no ar e em uso pelos grupos.
 
 **Material:** [nome do arquivo .md e/ou .html na pasta acima do repositório]
-**Etapa / entregável:** [ex.: E2 · seção 2.3 Value Proposition Canvas e 2.4 Declaração de posicionamento]
+**Etapa / entregável:** [ex.: E3 · seção 3.1 Os 7Ps do mix de marketing]
 **Pedidos específicos (opcional):** [ex.: "o modelo da seção 6 deve levar para a 2.4 do entregável", ou "nenhum"]
 
 ## Antes de tudo
 1. Leia o `CLAUDE.md` inteiro (decisões do professor, salvamento, armadilhas, como validar) e o `README.md`.
 2. `git status` e `git log --oneline -5`: tudo limpo e sincronizado.
 3. **Os grupos já estão respondendo.** Não mude chaves (`k`) existentes em `assets/js/especificacoes.js`, nem `assets/js/portal.js` ou `apps-script/Codigo.gs`, a menos que eu peça.
-4. Se o material citar as empresas parceiras reais, anonimize como nas Aulas 7–8 (Empresas A, B, C e D) em `conteudo/preparar_conteudo.py` e confirme que os nomes estão em `conteudo/nomes_proibidos.txt`.
+4. Se o material citar as empresas parceiras reais, anonimize como na leitura de segmentação (Empresas A, B, C e D) em `conteudo/preparar_conteudo.py` e confirme que os nomes estão em `conteudo/nomes_proibidos.txt`. Se citar aulas ou encontros, troque por etapas e entregas em `conteudo/neutralizar.py`: o portal não menciona numeração nem nome de aulas.
 5. Me apresente um plano curto: onde a leitura entra na trilha, que pontes ligam o texto às seções do entregável e se algo do entregável deveria mudar por causa do material (campos novos com chaves novas). Pergunte só o que for decisão minha.
 
 ## O que fazer

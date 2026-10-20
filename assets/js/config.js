@@ -7,7 +7,7 @@
  * ficam salvas apenas no navegador de cada grupo.
  */
 window.VD_CONFIG = {
-  APPS_SCRIPT_URL: '',
+  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbxEiHnRe8VLmEKrdbi2yrMCTHhUXiymhux05oZTfa-gam8DJCD3BcAzzkf1bGk0kDHb/exec',
 
   NOME_DISCIPLINA: 'Planejamento Mercadológico',
   PROGRAMA: 'Graduação em Administração'

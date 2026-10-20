@@ -27,11 +27,11 @@ RAIZ = pathlib.Path(__file__).resolve().parent.parent
 CONT = RAIZ / "conteudo"
 
 LEITURAS = [
-    {"fonte": "aula-2-a-logica-do-plano.md", "selo": "Leitura · Aula 2", "curto": "A lógica do plano",
-     "etapa": "Etapa 0 · E0", "entrega": ("../entregas/e0.html", "E0 · Empresa parceira e acordo"),
+    {"fonte": "a-logica-do-plano.md", "selo": "Leitura · Etapa 1", "curto": "A lógica do plano",
+     "etapa": "Etapa 1 · E0", "entrega": ("../entregas/e0.html", "E0 · Empresa parceira e acordo"),
      "atividades": [("../atividades/auditoria.html", "Auditoria de coerência"), ("../atividades/roteiro.html", "Roteiro de entrevista")],
      "pontes": {}},
-    {"fonte": "aula-4-tam-sam-som-e-tendencias.md", "selo": "Leitura · Aula 4", "curto": "TAM, SAM, SOM e tendências",
+    {"fonte": "analise-de-mercado-tam-sam-som-e-tendencias.md", "selo": "Leitura · Etapa 2", "curto": "TAM, SAM, SOM e tendências",
      "etapa": "Etapa 2 · E1", "entrega": ("../entregas/e1.html", "E1 · Análise de mercado e SWOT de Marketing"),
      "pontes": {
          "1-6-modelo-para-aplicar-na-empresa-parceira": ("../entregas/e1.html#s-mercado", "E1 · 1.1 Tamanho do mercado"),
@@ -39,24 +39,32 @@ LEITURAS = [
          "modelo-para-o-bloco-1-2": ("../entregas/e1.html#s-clientes", "E1 · 1.2 Análise de clientes atual"),
          "5-do-material-para-a-ferramenta-preenchendo-o-bloco-1-1-e-o-bloco-1-2": ("../entregas/e1.html#s-checklist", "E1 · checklist de qualidade"),
      }},
-    {"fonte": "aula-5-benchmarking-competitivo.md", "selo": "Leitura · Aula 5", "curto": "Benchmarking competitivo",
+    {"fonte": "benchmarking-competitivo.md", "selo": "Leitura · Etapa 2", "curto": "Benchmarking competitivo",
      "etapa": "Etapa 2 · E1", "entrega": ("../entregas/e1.html", "E1 · Análise de mercado e SWOT de Marketing"),
      "pontes": {
          "5-2-do-benchmarking-para-a-swot-de-marketing": ("../entregas/e1.html#s-benchmarking", "E1 · 1.3 Do benchmarking para a SWOT"),
          "6-preenchendo-o-bloco-1-3-da-ferramenta": ("../entregas/e1.html#s-benchmarking", "E1 · 1.3 Benchmarking competitivo"),
          "7-exercicio-de-sintese-diferencial-fraqueza-oportunidade": ("../entregas/e1.html#s-benchmarking", "E1 · 1.3 Síntese"),
      }},
-    {"fonte": "aula-6-swot-de-marketing-e-tows.md", "selo": "Leitura · Aula 6", "curto": "SWOT de Marketing e TOWS",
+    {"fonte": "swot-de-marketing-e-tows.md", "selo": "Leitura · Etapa 2", "curto": "SWOT de Marketing e TOWS",
      "etapa": "Etapa 2 · E1", "entrega": ("../entregas/e1.html", "E1 · Análise de mercado e SWOT de Marketing"),
      "pontes": {
          "7-checklist-de-qualidade-antes-de-entregar": ("../entregas/e1.html#s-checklist", "E1 · checklist de qualidade"),
          "9-template-blocos-1-4-1-5-e-1-6-com-orientacoes-de-preenchimento": ("../entregas/e1.html#s-swot", "E1 · 1.4 a 1.6 SWOT, TOWS e síntese"),
      }},
-    {"fonte": "aulas-7-8-segmentacao-e-persona.md", "selo": "Leitura · Aulas 7 e 8", "curto": "Segmentação e persona",
+    {"fonte": "segmentacao-e-persona.md", "selo": "Leitura · Etapa 3", "curto": "Segmentação e persona",
      "etapa": "Etapa 3 · E2", "entrega": ("../entregas/e2.html", "E2 · Segmentação, persona e posicionamento"),
      "pontes": {
          "7-preenchendo-o-bloco-2-1-da-ferramenta": ("../entregas/e2.html#s-segmentacao", "E2 · 2.1 Segmentação"),
          "16-preenchendo-o-bloco-2-2-da-ferramenta": ("../entregas/e2.html#s-personas", "E2 · 2.2 Personas"),
+     }},
+    {"fonte": "proposta-de-valor-e-posicionamento.md", "selo": "Leitura · Etapa 3", "curto": "Proposta de valor e posicionamento",
+     "etapa": "Etapa 3 · E2", "entrega": ("../entregas/e2.html", "E2 · Segmentação, persona e posicionamento"),
+     "pontes": {
+         "2-6-modelo-para-o-bloco-2-3": ("../entregas/e2.html#s-vpc", "E2 · 2.3 Value Proposition Canvas"),
+         "4-2-componente-por-componente-como-preencher": ("../entregas/e2.html#s-posicionamento", "E2 · 2.4 Componentes da declaração"),
+         "4-8-modelo-para-o-bloco-2-4": ("../entregas/e2.html#s-posicionamento", "E2 · 2.4 Declaração de posicionamento"),
+         "5-do-material-para-a-ferramenta-checklist-dos-blocos-2-3-e-2-4": ("../entregas/e2.html#s-checklist", "E2 · checklist antes de entregar"),
      }},
 ]
 
@@ -295,7 +303,7 @@ def gerar(cfg):
             corpo.append(f'<h4 class="sub">{inline(txt)}</h4>')
             continue
         if antes_do_corpo and not titulo == "" and tipo == "p" and not corpo:
-            # linhas de metadados logo abaixo do título (Encontro, Tema central, Alimenta...)
+            # linhas de metadados logo abaixo do título (etapa, tema central, alimenta...)
             meta.extend(x for x in re.split(r"\s(?=\*\*)", b[1]) if x.strip())
             continue
         if tipo == "p":

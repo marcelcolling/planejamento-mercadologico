@@ -38,7 +38,7 @@ const dadosNoServidor = (est, f) => { const r = Object.entries(est.dados).find((
     ok(!w.VD.sessao(), 'sessões dos portais Vieses e Porter não são reaproveitadas (prefixo próprio)');
     ok(!q(w, '.vd-modal').hidden, 'sem sessão, o modal de login abre');
     ok(w.document.querySelectorAll('.e-secao').length === 7 && w.document.querySelectorAll('#app [data-k]').length > 200, 'E1 montada a partir da especificação: 7 seções e mais de 200 campos');
-    ok(w.document.querySelectorAll('.e-nav a').length === 7 && q(w, '.e-leituras a[href$="aula-4-tam-sam-som-e-tendencias.html"]'), 'navegação por seção e leituras da etapa');
+    ok(w.document.querySelectorAll('.e-nav a').length === 7 && q(w, '.e-leituras a[href$="analise-de-mercado-tam-sam-som-e-tendencias.html"]'), 'navegação por seção e leituras da etapa');
 
     /* ---- rascunho anônimo e cadastro do grupo ---- */
     q(w, '.vd-modal-x').click();
@@ -79,6 +79,21 @@ const dadosNoServidor = (est, f) => { const r = Object.entries(est.dados).find((
     ok(rel && rel.parentNode === w.document.body && rel.textContent.includes('Tradição familiar') && rel.textContent.includes('Café especial cresce'), 'relatório para a empresa contém as respostas');
     ok(!rel.textContent.includes('Checklist de qualidade') && !rel.textContent.includes('Variáveis de segmentação'), 'relatório não traz o checklist interno nem campos vazios');
     ok(rel.querySelectorAll('.r-tab').length >= 3 && semXss(w), 'relatório monta as tabelas e continua escapado');
+
+    /* ---- "Não se aplica" numa seção: some do PDF e a numeração se ajusta ---- */
+    q(w, '[data-na="s:clientes"]').click();
+    await sleep(300);
+    ok(q(w, '#s-clientes').classList.contains('na') && q(w, '#s-clientes .e-secao-conteudo').hidden && !q(w, '#s-clientes > [data-na-painel]').hidden, 'seção marcada como não se aplica: conteúdo recolhido e campo de motivo aberto');
+    ok(q(w, '#s-benchmarking .e-secao-n').textContent === '1.2' && q(w, '#s-swot .e-secao-n').textContent === '1.3' && q(w, '.e-nav a[data-sec="benchmarking"] b').textContent === '1.2', 'numeração das seções seguintes se ajusta (tela e navegação)');
+    digitar(w, 'na__s_clientes_motivo', 'A empresa ainda não tem base de clientes');
+    w.dispatchEvent(new w.Event('beforeprint'));
+    await sleep(200);
+    ok(!q(w, '#relatorio').textContent.includes('Análise de clientes atual') && /1\.2\s*Benchmarking/.test(q(w, '#relatorio').textContent), 'PDF: a seção que não se aplica sai e a numeração se ajusta');
+    q(w, '[data-vd-salvar]').click();
+    await sleep(2500);
+    est = await estado();
+    const res1 = dadosNoServidor(est, 'e1').resumo;
+    ok(res1.some(x => x[1] === 'Seção não se aplica' && x[2].startsWith('A empresa ainda não')) && res1.some(x => x[0].startsWith('1.2 Benchmarking')), 'planilha registra a seção que não se aplica, com o motivo, e a numeração nova');
 
     /* ---- E0: termo de aceite e capa ---- */
     w = await carregar('/entregas/e0.html');
@@ -144,6 +159,15 @@ const dadosNoServidor = (est, f) => { const r = Object.entries(est.dados).find((
     await sleep(300);
     ok(k(w, 'b5_5w2h1_what').value === 'Parar promoções' && k(w, 'b5_5w2h2_what').value === 'E-commerce próprio', '5W2H: "Trazer" usa as ações de maior ICE, em ordem');
     ok(q(w, '.espelho').textContent.includes('Ainda não preenchido na E1') || q(w, '.espelho p').textContent.length > 0, 'espelho do SOM da E1 aparece (ou avisa que falta)');
+    /* ---- "Não se aplica" num sub-bloco: a Ação 3 vira Ação 2 ---- */
+    q(w, '[data-na="b:5w2h__acao-2"]').click();
+    await sleep(300);
+    ok(q(w, '[data-sub-tit="5w2h__acao-3"]').textContent === 'Ação 2' && q(w, '[data-bloco="5w2h__acao-2"] .e-bloco-corpo').hidden, 'sub-bloco "Ação 2" não se aplica: a Ação 3 passa a ser a Ação 2');
+    digitar(w, 'b5_5w2h3_what', 'Feira mensal de degustação');
+    w.dispatchEvent(new w.Event('beforeprint'));
+    await sleep(200);
+    const rel4 = q(w, '#relatorio').textContent;
+    ok(rel4.includes('Ação 2') && !rel4.includes('Ação 3') && rel4.includes('Feira mensal de degustação'), 'PDF renumera os sub-blocos que se aplicam');
     digitar(w, 'b4_kpi1_nome', 'Clientes recorrentes'); digitar(w, 'b4_kpi1_meta', '+20%');
     q(w, '[data-vd-salvar]').click();
     await sleep(2500);
@@ -177,9 +201,24 @@ const dadosNoServidor = (est, f) => { const r = Object.entries(est.dados).find((
     /* ---- plano completo ---- */
     w = await carregar('/plano.html');
     await sleep(2000);
-    const doc = q(w, '#doc').textContent;
+    let doc = q(w, '#doc').textContent;
     ok(doc.includes('Torrefação Exemplo') && doc.includes('Tradição familiar') && doc.includes('Clientes recorrentes') && doc.includes('Premium'), 'plano completo junta as respostas de todas as entregas');
-    ok(w.document.querySelectorAll('.r-entrega').length === 7 && semXss(w), 'plano completo: sete entregas, escapado');
+    ok(w.document.querySelectorAll('.r-entrega').length === 7 && semXss(w), 'plano completo: sete partes, escapado');
+
+    /* ---- "Não se aplica" na entrega inteira ---- */
+    w = await carregar('/entregas/e5.html');
+    q(w, '.btn-na-entrega').click();
+    await sleep(300);
+    ok(!q(w, '.na-entrega').hidden && q(w, '#s-identidade').hidden && q(w, '#progGeral').textContent.includes('Não se aplica'), 'entrega inteira marcada como não se aplica');
+    digitar(w, 'na__entrega_motivo', 'A marca será revista no próximo ano');
+    q(w, '[data-vd-salvar]').click();
+    await sleep(2500);
+    est = await estado();
+    ok(dadosNoServidor(est, 'e5').resumo.length === 1 && dadosNoServidor(est, 'e5').resumo[0][1] === 'Não se aplica', 'planilha registra a entrega que não se aplica');
+    w = await carregar('/plano.html');
+    await sleep(2000);
+    doc = q(w, '#doc').textContent;
+    ok(w.document.querySelectorAll('.r-entrega').length === 6 && !doc.includes('Comunicação e marca') && doc.includes('6.1Painel de acompanhamento'), 'plano completo: a entrega sai e os blocos seguintes são renumerados (bloco 7 vira 6)');
 
     /* ---- outro computador ---- */
     r = await w.VD.entrar({ nome: 'grupo teste', chave: 'errada' });
@@ -209,6 +248,8 @@ const dadosNoServidor = (est, f) => { const r = Object.entries(est.dados).find((
     ok(card.includes('Grupo Teste') && card.includes('Salva'), 'home mostra o progresso do grupo');
     ok(q(w, '[data-ferramenta="e1"]').textContent.includes('✓') && q(w, '[data-ferramenta="roteiro"]').textContent.includes('✓'), 'home marca as entregas e atividades iniciadas');
     ok(w.document.querySelectorAll('.etapa').length === 7 && w.document.querySelectorAll('.rec-entrega').length === 7, 'trilha com sete etapas e um entregável em cada');
+    ok(q(w, '[data-ferramenta="e5"]').textContent === 'Não se aplica', 'home mostra a entrega que não se aplica');
+    ok(!/\b(Aulas?|Encontros?)\s+\d/.test(w.document.body.innerText) && q(w, 'a[href="leituras/proposta-de-valor-e-posicionamento.html"]'), 'home sem menção a aulas e com a leitura de proposta de valor');
     w.VD.sair();
     await sleep(300);
     ok(!w.VD.sessao(), 'sair encerra a sessão');
