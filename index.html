@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Planejamento Mercadológico — Portal da disciplina</title>
+<meta name="description" content="Leituras e entregáveis da disciplina Planejamento Mercadológico: um plano de marketing completo para uma empresa parceira real.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/portal.css">
+<style>
+  :root {
+    --az:#1F3A5F; --az-deep:#152A45; --az-noite:#0E1D31; --ard:#455066; --ard-tint:rgba(69,80,102,0.09);
+    --papel:#FCFCFA; --papel-dim:#EFEEE7; --linha:rgba(31,58,95,0.14);
+    --am:#EFB93C; --am-ink:#5B4212; --tx:#1E2733; --muted:#5E6878;
+    --display:'Fraunces', Georgia, serif; --body:'Inter', -apple-system, sans-serif;
+  }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; scroll-padding-top:70px; -webkit-text-size-adjust:100%; }
+  body { margin:0; font-family:var(--body); background:var(--papel); color:var(--tx); line-height:1.6; overflow-x:hidden; }
+  a { color:inherit; }
+  ::selection { background:var(--am); color:var(--az-deep); }
+  .wrap { max-width:var(--vd-largura); margin:0 auto; padding:0 1.5rem; }
+
+  /* ---------- primeira dobra ---------- */
+  .hero { background:var(--az); color:#fff; position:relative; overflow:hidden; }
+  .hero::before { content:''; position:absolute; right:-140px; top:-160px; width:460px; height:460px; border-radius:50%; border:2px solid rgba(239,185,60,0.2); }
+  .hero-grid { display:grid; grid-template-columns:1.35fr 1fr; gap:3rem; align-items:center; padding-top:clamp(2.2rem,5vw,3.2rem); padding-bottom:clamp(2rem,4vw,2.8rem); position:relative; z-index:1; }
+  .tag { display:inline-flex; align-items:center; gap:0.55rem; border:1px solid rgba(239,185,60,0.5); color:var(--am); font-size:0.72rem; letter-spacing:0.12em; text-transform:uppercase; padding:0.35rem 0.95rem; border-radius:100px; font-weight:600; }
+  .tag i { width:8px; height:8px; border-radius:50%; background:var(--am); display:inline-block; }
+  .hero h1 { font-family:var(--display); font-weight:700; font-size:clamp(2.4rem,5.2vw,3.9rem); line-height:1.02; margin:1.1rem 0 0.9rem; letter-spacing:-0.01em; }
+  .hero h1 em { font-style:italic; font-weight:500; color:var(--am); }
+  .hero-sub { font-family:var(--display); font-style:italic; font-size:clamp(1.05rem,1.8vw,1.25rem); color:rgba(255,255,255,0.84); max-width:50ch; margin:0 0 1.2rem; line-height:1.5; }
+  .hero-pontos { list-style:none; margin:0; padding:0; display:grid; gap:0.45rem; font-size:0.92rem; color:rgba(255,255,255,0.8); }
+  .hero-pontos li { display:flex; gap:0.6rem; } .hero-pontos li::before { content:'◆'; color:var(--am); font-size:0.7rem; margin-top:0.3rem; }
+
+  .sessao-card { background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.16); border-radius:20px; padding:1.5rem 1.6rem; }
+  .sessao-card .eyebrow { font-size:0.72rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--am); margin-bottom:0.5rem; }
+  .sessao-card h2 { font-family:var(--display); font-weight:600; font-size:1.4rem; margin:0 0 0.45rem; line-height:1.2; }
+  .sessao-card p { font-size:0.88rem; color:rgba(255,255,255,0.78); margin:0 0 1.1rem; line-height:1.6; }
+  .sessao-card .vd-btn { padding:0.7rem 1.15rem; font-size:0.88rem; text-decoration:none; }
+  .progresso { list-style:none; margin:0 0 1.1rem; padding:0; display:flex; flex-direction:column; gap:0.35rem; }
+  .progresso li { display:flex; justify-content:space-between; gap:1rem; font-size:0.83rem; background:rgba(255,255,255,0.06); border-radius:10px; padding:0.42rem 0.8rem; }
+  .progresso li a { text-decoration:none; }
+  .progresso li span:last-child { color:rgba(255,255,255,0.65); white-space:nowrap; }
+  .progresso li.feito span:last-child { color:#8fe0b6; }
+  .sessao-acoes { display:flex; gap:0.6rem; flex-wrap:wrap; }
+
+  /* faixa: o que a empresa recebe */
+  .faixa { background:var(--az-noite); color:#fff; padding:1.4rem 0; position:relative; z-index:1; }
+  .faixa .wrap { display:flex; justify-content:space-between; align-items:center; gap:1rem 2rem; flex-wrap:wrap; }
+  .faixa p { margin:0; color:rgba(255,255,255,0.78); font-size:0.95rem; max-width:80ch; }
+  .faixa strong { color:#fff; font-family:var(--display); font-weight:600; font-size:1.08rem; display:block; margin-bottom:0.15rem; }
+  .faixa .vd-btn { text-decoration:none; }
+
+  /* ---------- trilha ---------- */
+  section.bloco { padding:clamp(2.8rem,6vw,4.2rem) 0; }
+  .trilha-topo { display:flex; justify-content:space-between; align-items:flex-end; gap:1.5rem 3rem; flex-wrap:wrap; margin-bottom:2rem; }
+  .eyebrow-sec { display:flex; align-items:center; gap:0.6rem; font-size:0.76rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--am-ink); margin-bottom:0.7rem; }
+  .eyebrow-sec i { width:8px; height:8px; border-radius:50%; border:2px solid var(--am); display:inline-block; }
+  h2.titulo-sec { font-family:var(--display); font-weight:600; font-size:clamp(1.8rem,3.6vw,2.4rem); color:var(--az); margin:0 0 0.6rem; line-height:1.12; }
+  p.intro-sec { color:var(--ard); font-size:1rem; max-width:80ch; margin:0; line-height:1.7; }
+  .legenda { display:flex; gap:0.6rem; flex-wrap:wrap; }
+  .legenda span { display:inline-flex; align-items:center; gap:0.5rem; font-size:0.8rem; font-weight:600; border-radius:100px; padding:0.4rem 0.85rem 0.4rem 0.45rem; }
+  .legenda b { width:24px; height:24px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:0.8rem; }
+  .lg-leitura { background:#fff; border:1px solid var(--linha); } .lg-leitura b { background:var(--ard-tint); color:var(--ard); }
+  .lg-atividade { background:var(--papel-dim); border:1px solid var(--linha); } .lg-atividade b { background:#fff; color:var(--az); }
+  .lg-entrega { background:var(--az); color:#fff; } .lg-entrega b { background:rgba(255,255,255,0.14); color:var(--am); }
+
+  .etapas { list-style:none; margin:0; padding:0; position:relative; display:grid; gap:1.1rem; }
+  .etapas::before { content:''; position:absolute; left:27px; top:30px; bottom:30px; width:2px; background:var(--az); opacity:0.18; }
+  .etapa { display:grid; grid-template-columns:56px 1fr; gap:1.1rem; }
+  .marco { width:56px; height:56px; border-radius:50%; background:var(--az); color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:var(--display); font-weight:700; font-size:1.15rem; position:relative; z-index:1; box-shadow:0 0 0 6px var(--papel); line-height:1; }
+  .marco small { font-family:var(--body); font-size:0.55rem; letter-spacing:0.08em; font-weight:600; opacity:0.75; margin-top:0.15rem; }
+  .etapa.agora .marco { background:var(--am); color:var(--az-deep); }
+  .etapa-card { background:#fff; border:1px solid var(--linha); border-radius:20px; padding:1.3rem 1.4rem; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.15fr); gap:1.4rem 2rem; transition:border-color .2s, box-shadow .2s; }
+  .etapa-card:hover { border-color:rgba(31,58,95,0.3); box-shadow:0 18px 40px -30px rgba(21,42,69,0.5); }
+  .etapa-aula { display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap; font-size:0.72rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--am-ink); }
+  .badge { font-size:0.64rem; letter-spacing:0.06em; padding:0.2rem 0.6rem; border-radius:100px; background:var(--papel-dim); color:var(--ard); }
+  .etapa.agora .badge-agora { background:var(--am); color:var(--az-deep); }
+  .etapa h3 { font-family:var(--display); font-weight:600; font-size:1.3rem; color:var(--az); margin:0.4rem 0 0.5rem; line-height:1.2; }
+  .etapa p.desc { font-size:0.9rem; color:var(--ard); margin:0 0 0.7rem; line-height:1.6; }
+  .etapa p.entrega { font-size:0.82rem; color:var(--muted); margin:0; padding-top:0.6rem; border-top:1px dashed var(--linha); line-height:1.5; }
+  .etapa p.entrega strong { color:var(--tx); }
+  .recursos { display:grid; gap:0.55rem; align-content:start; }
+  .rec { display:flex; align-items:center; gap:0.7rem; text-decoration:none; border-radius:14px; padding:0.65rem 0.85rem; transition:transform .15s, background .15s, border-color .15s; }
+  .rec:focus-visible { outline:3px solid var(--am); outline-offset:2px; }
+  .rec-ico { width:30px; height:30px; border-radius:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:0.95rem; }
+  .rec-txt { min-width:0; }
+  .rec-tipo { display:block; font-size:0.64rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; }
+  .rec-nome { display:block; font-weight:600; font-size:0.9rem; line-height:1.3; }
+  .rec-status { display:block; font-size:0.74rem; }
+  .rec-leitura { background:var(--papel); border:1.5px solid var(--linha); color:var(--tx); }
+  .rec-leitura .rec-ico { background:var(--ard-tint); color:var(--ard); }
+  .rec-leitura .rec-tipo { color:var(--ard); }
+  .rec-leitura:hover { border-color:var(--ard); background:#fff; transform:translateY(-1px); }
+  .rec-breve { background:transparent; border:1.5px dashed var(--linha); color:var(--muted); }
+  .rec-breve .rec-ico { background:var(--papel-dim); }
+  .rec-atividade { background:var(--papel-dim); border:1.5px solid var(--linha); color:var(--tx); }
+  .rec-atividade .rec-ico { background:#fff; color:var(--az); }
+  .rec-atividade .rec-tipo { color:var(--az); }
+  .rec-atividade .rec-status { color:var(--muted); }
+  .rec-atividade .rec-status.feito { color:var(--vd-ok); font-weight:600; }
+  .rec-atividade:hover { border-color:var(--az); transform:translateY(-1px); }
+  .rec-entrega { background:var(--az); border:1.5px solid var(--az); color:#fff; box-shadow:0 10px 24px -16px rgba(21,42,69,0.8); }
+  .rec-entrega .rec-ico { background:rgba(255,255,255,0.12); color:var(--am); }
+  .rec-entrega .rec-tipo { color:var(--am); }
+  .rec-entrega .rec-status { color:rgba(255,255,255,0.75); }
+  .rec-entrega .rec-status.feito { color:#8fe0b6; font-weight:600; }
+  .rec-entrega:hover { background:var(--az-deep); transform:translateY(-1px); }
+
+  /* ---------- avaliação ---------- */
+  .avaliacao { background:var(--papel-dim); }
+  .notas { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:1rem; margin-top:1.6rem; }
+  .nota-card { background:#fff; border:1px solid var(--linha); border-radius:18px; padding:1.2rem 1.3rem; }
+  .nota-card b { font-family:var(--display); font-size:2.1rem; color:var(--az); line-height:1; }
+  .nota-card p { margin:0.5rem 0 0; font-size:0.88rem; color:var(--ard); }
+  .aviso-pitch { margin:1.2rem 0 0; font-size:0.9rem; color:var(--ard); }
+
+  footer { background:var(--az-deep); color:rgba(255,255,255,0.65); font-size:0.82rem; padding:2rem 0; }
+  footer .wrap { display:flex; justify-content:space-between; gap:1rem; flex-wrap:wrap; align-items:center; }
+  footer strong { color:#fff; font-family:var(--display); font-weight:600; }
+  footer button { background:none; border:none; color:var(--am); font:inherit; font-weight:600; cursor:pointer; padding:0; text-decoration:underline; }
+
+  @media (max-width:980px) {
+    .hero-grid { grid-template-columns:1fr; gap:1.8rem; }
+    .etapa-card { grid-template-columns:1fr; }
+    .notas { grid-template-columns:repeat(2, minmax(0,1fr)); }
+  }
+  @media (max-width:560px) {
+    .wrap { padding-left:1rem; padding-right:1rem; }
+    .etapas::before { left:19px; }
+    .etapa { grid-template-columns:40px 1fr; gap:0.7rem; }
+    .marco { width:40px; height:40px; font-size:0.95rem; box-shadow:0 0 0 4px var(--papel); }
+    .marco small { display:none; }
+    .etapa-card { padding:1.1rem 1rem; }
+  }
+  @media (prefers-reduced-motion: reduce) { .rec, .etapa-card { transition:none; } }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="tag"><i></i><span id="programa">Graduação em Administração</span></span>
+      <h1>Planejamento <em>Mercadológico</em></h1>
+      <p class="hero-sub">Um plano de marketing de verdade, para uma empresa de verdade, construído entrega a entrega.</p>
+      <ul class="hero-pontos">
+        <li>Cada etapa tem leituras e um entregável que o grupo preenche para a empresa parceira.</li>
+        <li>As respostas são salvas sozinhas, no navegador e na planilha da turma.</li>
+        <li>Cada entregável vira um PDF limpo para a empresa; o plano completo junta todos.</li>
+      </ul>
+    </div>
+    <div class="sessao-card" id="sessaoCard" aria-live="polite"></div>
+  </div>
+  <div class="faixa">
+    <div class="wrap">
+      <p><strong>O que a empresa parceira recebe</strong>Um plano de marketing completo, da análise de mercado à governança, em um documento único: o plano completo, montado com as entregas E0 a E6 do grupo.</p>
+      <a class="vd-btn vd-btn-amarelo" href="plano.html">Ver o plano completo</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="bloco" id="trilha">
+    <div class="wrap">
+      <div class="trilha-topo">
+        <div>
+          <div class="eyebrow-sec"><i></i>A trilha da disciplina</div>
+          <h2 class="titulo-sec">Sete entregas, um plano</h2>
+          <p class="intro-sec">Cada etapa corresponde a um bloco do plano de marketing. As leituras explicam o porquê e o como; o entregável é onde o grupo aplica tudo à empresa parceira. O que vocês escrevem numa entrega volta, com um clique, nas seguintes.</p>
+        </div>
+        <div class="legenda" aria-label="Legenda">
+          <span class="lg-leitura"><b aria-hidden="true">📖</b>Leitura</span>
+          <span class="lg-atividade"><b aria-hidden="true">✎</b>Atividade</span>
+          <span class="lg-entrega"><b aria-hidden="true">★</b>Entregável</span>
+        </div>
+      </div>
+
+      <ol class="etapas">
+        <li class="etapa" data-etapa="e0">
+          <span class="marco">E0<small>Aulas 1–3</small></span>
+          <article class="etapa-card">
+            <div>
+              <div class="etapa-aula">Aulas 1 a 3 · Nivelamento e empresa parceira</div>
+              <h3>A empresa parceira e a lógica do plano</h3>
+              <p class="desc">O plano como um sistema com uma só direção, do diagnóstico à governança. A escolha da empresa, o acordo com ela e a preparação da primeira conversa.</p>
+              <p class="entrega"><strong>Entrega E0:</strong> perfil da empresa e termo de aceite assinado.</p>
+            </div>
+            <div class="recursos">
+              <a class="rec rec-leitura" href="materiais/aula-1-a-trilha.html"><span class="rec-ico">📖</span><span class="rec-txt"><span class="rec-tipo">Leitura · Aula 1</span><span class="rec-nome">A trilha do semestre</span></span></a>
+              <a class="rec rec-leitura" href="leituras/aula-2-a-logica-do-plano.html"><span class="rec-ico">📖</span><span class="rec-txt"><span class="rec-tipo">Leitura · Aula 2 · 15 min</span><span class="rec-nome">A lógica do plano: de onde parte, onde chega, o que conecta</span></span></a>
+              <a class="rec rec-atividade" href="atividades/auditoria.html"><span class="rec-ico">✎</span><span class="rec-txt"><span class="rec-tipo">Atividade · Aula 2</span><span class="rec-nome">Auditoria de coerência: o caso Grão Nascente</span><span class="rec-status" data-ferramenta="auditoria">Não iniciada</span></span></a>
+              <a class="rec rec-atividade" href="atividades/roteiro.html"><span class="rec-ico">✎</span><span class="rec-txt"><span class="rec-tipo">Atividade · Aula 2</span><span class="rec-nome">Roteiro de entrevista com a empresa parceira</span><span class="rec-status" data-ferramenta="roteiro">Não iniciada</span></span></a>
+              <a class="rec rec-entrega" href="entregas/e0.html"><span class="rec-ico">★</span><span class="rec-txt"><span class="rec-tipo">Entregável E0</span><span class="rec-nome">Empresa parceira e acordo</span><span class="rec-status" data-ferramenta="e0">Não iniciada</span></span></a>
+            </div>
+          </article>
+        </li>
+
+        <li class="etapa" data-etapa="e1">
+          <span class="marco">E1<small>Aulas 4–6</small></span>
+          <article class="etapa-card">
+            <div>
+              <div class="etapa-aula">Aulas 4 a 6 · Bloco 1</div>
+              <h3>Análise de mercado e SWOT de Marketing</h3>
+              <p class="desc">Tamanho do mercado (TAM, SAM, SOM), tendências, clientes atuais, benchmarking de três concorrentes, SWOT de marketing e cruzamentos TOWS.</p>
+              <p class="entrega"><strong>Entrega E1:</strong> Bloco 1 completo, fechando com a principal oportunidade e o principal risco.</p>
+            </div>
+            <div class="recursos">
+              <a class="rec rec-leitura" href="leituras/aula-4-tam-sam-som-e-tendencias.html"><span class="rec-ico">📖</span><span class="rec-txt"><span class="rec-tipo">Leitura · Aula 4 · 32 min</span><span class="rec-nome">Análise de mercado: TAM, SAM, SOM e tendências</span></span></a>
+              <a class="rec rec-leitura" href="leituras/aula-5-benchmarking-competitivo.html"><span class="rec-ico">📖</span><span class="rec-txt"><span class="rec-tipo">Leitura · Aula 5 · 22 min</span><span class="rec-nome">Benchmarking competitivo</span></span></a>
+              <a class="rec rec-leitura" href="leituras/aula-6-swot-de-marketing-e-tows.html"><span class="rec-ico">📖</span><span class="rec-txt"><span class="rec-tipo">Leitura · Aula 6 · 29 min</span><span class="rec-nome">SWOT de Marketing e TOWS</span></span></a>
+              <a class="rec rec-entrega" href="entregas/e1.html"><span class="rec-ico">★</span><span class="rec-txt"><span class="rec-tipo">Entregável E1</span><span class="rec-nome">Análise de mercado e SWOT de Marketing</span><span class="rec-status" data-ferramenta="e1">Não iniciada</span></span></a>
+            </div>
+          </article>
+        </li>
+
+        <li class="etapa" data-etapa="e2">
+          <span class="marco">E2<small>Aulas 7–9</small></span>
+          <article class="etapa-card">
+            <div>
+              <div class="etapa-aula">Aulas 7 a 9 · Bloco 2</div>
+              <h3>Segmentação, persona e posicionamento</h3>
+              <p class="desc">O coração do plano: o segmento prioritário escolhido com critério, personas com evidência, o Value Proposition Canvas e a declaração de posicionamento.</p>
+              <p class="entrega"><strong>Entrega E2:</strong> Bloco 2, com 1 ou 2 personas e a declaração de posicionamento.</p>
+            </div>
+            <div class="recursos">
+              <a class="rec rec-leitura" href="leituras/aulas-7-8-segmentacao-e-persona.html"><span class="rec-ico">📖</span><span class="rec-txt"><span class="rec-tipo">Leitura · Aulas 7 e 8 · 36 min</span><span class="rec-nome">Segmentação, persona e comportamento do consumidor</span></span></a>
+              <span class="rec rec-breve"><span class="rec-ico">⏳</span><span class="rec-txt"><span class="rec-tipo">Leitura · Aula 9 · em breve</span><span class="rec-nome">Value Proposition Canvas e declaração de posicionamento</span></span></span>
+              <a class="rec rec-entrega" href="entregas/e2.html"><span class="rec-ico">★</span><span class="rec-txt"><span class="rec-tipo">Entregável E2</span><span class="rec-nome">Segmentação, persona e posicionamento</span><span class="rec-status" data-ferramenta="e2">Não iniciada</span></span></a>
+            </div>
+          </article>
+        </li>
+
+        <li class="etapa" data-etapa="e3">
+          <span class="marco">E3<small>Aulas 10–13</small></span>
+          <article class="etapa-card">
+            <div>
+              <div class="etapa-aula">Aulas 10 a 13 · Bloco 3</div>
+              <h3>Mix de marketing e jornada do cliente</h3>
+              <p class="desc">Os 7Ps coerentes com o posicionamento, a jornada real do cliente com seus momentos de verdade, os canais prioritários e o mix de mídia paga, própria e conquistada.</p>
+              <p class="entrega"><strong>Entrega E3:</strong> Bloco 3: 7Ps, jornada, canais e mix de mídia.</p>
+            </div>
+            <div class="recursos">
+              <span class="rec rec-breve"><span class="rec-ico">⏳</span><span class="rec-txt"><span class="rec-tipo">Leituras · Aulas 10 a 12 · em breve</span><span class="rec-nome">7Ps, jornada do cliente, canais e mix de mídia</span></span></span>
+              <a class="rec rec-entrega" href="entregas/e3.html"><span class="rec-ico">★</span><span class="rec-txt"><span class="rec-tipo">Entregável E3</span><span class="rec-nome">Mix de marketing e jornada do cliente</span><span class="rec-status" data-ferramenta="e3">Não iniciada</span></span></a>
+            </div>
+          </article>
+        </li>
+
+        <li class="etapa" data-etapa="e4">
+          <span class="marco">E4<small>Aulas 14–16</small></span>
+          <article class="etapa-card">
+            <div>
+              <div class="etapa-aula">Aulas 14 a 16 · Blocos 4 e 5</div>
+              <h3>Objetivos, KPIs e plano de ações</h3>
+              <p class="desc">Objetivos SMART ligados ao negócio, painel de KPIs com baseline, priorização pelo ICE Score, 5W2H das ações prioritárias, orçamento e cronograma.</p>
+              <p class="entrega"><strong>Entrega E4:</strong> Blocos 4 e 5, com plano de ação em planilha para a empresa.</p>
+            </div>
+            <div class="recursos">
+              <span class="rec rec-breve"><span class="rec-ico">⏳</span><span class="rec-txt"><span class="rec-tipo">Leituras · Aulas 14 a 16 · em breve</span><span class="rec-nome">SMART e KPIs, ICE Score e 5W2H, orçamento e cronograma</span></span></span>
+              <a class="rec rec-entrega" href="entregas/e4.html"><span class="rec-ico">★</span><span class="rec-txt"><span class="rec-tipo">Entregável E4</span><span class="rec-nome">Objetivos, KPIs e plano de ações</span><span class="rec-status" data-ferramenta="e4">Não iniciada</span></span></a>
+            </div>
+          </article>
+        </li>
+
+        <li class="etapa" data-etapa="e5">
+          <span class="marco">E5<small>Aulas 17–18</small></span>
+          <article class="etapa-card">
+            <div>
+              <div class="etapa-aula">Aulas 17 e 18 · Bloco 6</div>
+              <h3>Comunicação e marca</h3>
+              <p class="desc">Identidade de marca, tom de voz, arquitetura de mensagem, pilares de conteúdo, plano editorial de dez peças e comunicação integrada por canal.</p>
+              <p class="entrega"><strong>Entrega E5:</strong> Bloco 6, com o plano editorial pronto para usar.</p>
+            </div>
+            <div class="recursos">
+              <span class="rec rec-breve"><span class="rec-ico">⏳</span><span class="rec-txt"><span class="rec-tipo">Leituras · Aulas 17 e 18 · em breve</span><span class="rec-nome">Identidade e tom de voz, pilares e plano editorial</span></span></span>
+              <a class="rec rec-entrega" href="entregas/e5.html"><span class="rec-ico">★</span><span class="rec-txt"><span class="rec-tipo">Entregável E5</span><span class="rec-nome">Comunicação e marca</span><span class="rec-status" data-ferramenta="e5">Não iniciada</span></span></a>
+            </div>
+          </article>
+        </li>
+
+        <li class="etapa" data-etapa="e6">
+          <span class="marco">E6<small>Aulas 19–20</small></span>
+          <article class="etapa-card">
+            <div>
+              <div class="etapa-aula">Aulas 19 e 20 · Bloco 7 e síntese</div>
+              <h3>Governança, síntese e pitch</h3>
+              <p class="desc">Painel de acompanhamento, rituais de gestão, roadmap em três fases, a síntese do plano, o checklist de coerência e a preparação do pitch para a empresa.</p>
+              <p class="entrega"><strong>Entrega E6:</strong> plano final consolidado + pitch de 25 minutos para a empresa parceira.</p>
+            </div>
+            <div class="recursos">
+              <span class="rec rec-breve"><span class="rec-ico">⏳</span><span class="rec-txt"><span class="rec-tipo">Leitura · Aula 19 · em breve</span><span class="rec-nome">Governança simplificada e preparação do pitch</span></span></span>
+              <a class="rec rec-entrega" href="entregas/e6.html"><span class="rec-ico">★</span><span class="rec-txt"><span class="rec-tipo">Entregável E6</span><span class="rec-nome">Governança, síntese e pitch</span><span class="rec-status" data-ferramenta="e6">Não iniciada</span></span></a>
+              <a class="rec rec-atividade" href="plano.html"><span class="rec-ico">▤</span><span class="rec-txt"><span class="rec-tipo">Documento final</span><span class="rec-nome">Plano completo, pronto para salvar em PDF</span></span></a>
+            </div>
+          </article>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="bloco avaliacao" id="avaliacao">
+    <div class="wrap">
+      <div class="eyebrow-sec"><i></i>Como o semestre é avaliado</div>
+      <h2 class="titulo-sec">A nota se constrói entrega após entrega</h2>
+      <div class="notas">
+        <div class="nota-card"><b>40%</b><p>Entregas E1 a E5, com peer review estruturado</p></div>
+        <div class="nota-card"><b>10%</b><p>Qualidade dos peer reviews dados aos outros grupos</p></div>
+        <div class="nota-card"><b>20%</b><p>Entrega E6: o plano completo</p></div>
+        <div class="nota-card"><b>30%</b><p>Pitch final para a empresa parceira e arguição</p></div>
+      </div>
+      <p class="aviso-pitch">No pitch final, perguntas podem ser direcionadas a integrantes específicos do grupo: todos precisam saber defender qualquer parte do plano.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span><strong id="rodapeNome">Planejamento Mercadológico</strong> · Portal da disciplina · Projeto integrador com empresa parceira</span>
+    <span>Dúvidas sobre o uso? <button type="button" id="rodapeAjuda">Como usar o portal</button></span>
+  </div>
+</footer>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/portal.js"></script>
+<script>
+(function () {
+  var C = window.VD_CONFIG || {};
+  if (C.PROGRAMA) document.getElementById('programa').textContent = C.PROGRAMA;
+  if (C.NOME_DISCIPLINA) document.getElementById('rodapeNome').textContent = C.NOME_DISCIPLINA;
+
+  VD.iniciarPagina();
+  document.getElementById('rodapeAjuda').onclick = function () { VD.abrirInstrucoes(); };
+  if (location.hash === '#ajuda') VD.abrirInstrucoes();
+
+  var esc = VD.esc;
+  var ENTREGAS = [
+    { id: 'e0', nome: 'E0 · Empresa e acordo', url: 'entregas/e0.html' },
+    { id: 'e1', nome: 'E1 · Análise de mercado e SWOT', url: 'entregas/e1.html' },
+    { id: 'e2', nome: 'E2 · Segmentação e posicionamento', url: 'entregas/e2.html' },
+    { id: 'e3', nome: 'E3 · Mix e jornada', url: 'entregas/e3.html' },
+    { id: 'e4', nome: 'E4 · Objetivos e ações', url: 'entregas/e4.html' },
+    { id: 'e5', nome: 'E5 · Comunicação e marca', url: 'entregas/e5.html' },
+    { id: 'e6', nome: 'E6 · Governança e síntese', url: 'entregas/e6.html' }
+  ];
+
+  function rotulo(reg) {
+    if (!reg) return null;
+    if (VD.emPlanilha() && reg.pendente) return 'Alterações ainda não enviadas';
+    return 'Salva ' + VD.fmtHora(reg.base || reg.atualizado);
+  }
+
+  function render() {
+    var s = VD.sessao();
+    var card = document.getElementById('sessaoCard');
+    if (!s) {
+      card.innerHTML =
+        '<div class="eyebrow">Comece por aqui</div>' +
+        '<h2>Entre com o nome do grupo</h2>' +
+        '<p>Todos do grupo usam o mesmo nome e a mesma palavra-chave. Assim as entregas ficam guardadas na planilha da turma e o grupo continua de onde parou, em qualquer computador.</p>' +
+        '<div class="sessao-acoes"><button type="button" class="vd-btn vd-btn-amarelo" id="btnEntrar">Entrar</button>' +
+        '<button type="button" class="vd-btn vd-btn-claro" id="btnGuia">Como usar o portal</button></div>';
+      document.getElementById('btnEntrar').onclick = function () { VD.abrirLogin(); };
+      document.getElementById('btnGuia').onclick = function () { VD.abrirInstrucoes(); };
+    } else {
+      card.innerHTML =
+        '<div class="eyebrow">' + (s.turma ? esc(s.turma) : 'Área do grupo') + '</div>' +
+        '<h2>Olá, ' + esc(s.nome) + '</h2>' +
+        '<p>' + (VD.emPlanilha() ? 'As entregas do grupo estão sendo salvas na planilha da turma.' : 'Modo local: as entregas ficam salvas neste navegador.') + '</p>' +
+        '<ul class="progresso">' + ENTREGAS.map(function (a) {
+          var r = rotulo(VD.registro(a.id));
+          return '<li class="' + (r ? 'feito' : '') + '"><a href="' + a.url + '">' + esc(a.nome) + '</a><span>' + (r ? esc(r) : 'Não iniciada') + '</span></li>';
+        }).join('') + '</ul>' +
+        '<div class="sessao-acoes"><a class="vd-btn vd-btn-amarelo" href="' + proxima() + '">Continuar</a>' +
+        '<button type="button" class="vd-btn vd-btn-claro" id="btnSair">Trocar de grupo</button></div>';
+      document.getElementById('btnSair').onclick = function () { VD.sair(); };
+    }
+    document.querySelectorAll('[data-ferramenta]').forEach(function (el) {
+      var r = rotulo(VD.registro(el.dataset.ferramenta));
+      el.classList.toggle('feito', !!r);
+      el.textContent = r ? '✓ ' + r : 'Não iniciada';
+    });
+  }
+  function proxima() {
+    for (var i = 0; i < ENTREGAS.length; i++) if (!VD.registro(ENTREGAS[i].id)) return ENTREGAS[i].url;
+    return 'plano.html';
+  }
+  VD.onSessao(render);
+  render();
+})();
+</script>
+</body>
+</html>

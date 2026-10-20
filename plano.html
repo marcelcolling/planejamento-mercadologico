@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plano completo — Planejamento Mercadológico</title>
+<!-- Junta as respostas de todas as entregas (E0 a E6) num documento único, pronto para salvar em PDF. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/portal.css">
+<link rel="stylesheet" href="assets/css/entrega.css">
+<style>
+  .plano-barra { background: var(--az); color: #fff; padding: 1.6rem 0 1.4rem; }
+  .plano-barra h1 { font-family: var(--display); font-size: clamp(1.6rem, 3.5vw, 2.2rem); margin: 0.7rem 0 0.4rem; }
+  .plano-barra p { margin: 0 0 1rem; color: rgba(255,255,255,0.78); max-width: 90ch; }
+  .plano-folha { background: #fff; border: 1px solid var(--az-linha); border-radius: 20px; padding: clamp(1.2rem, 4vw, 2.6rem); margin: 1.8rem auto 4rem; max-width: 980px; box-shadow: 0 20px 50px -40px rgba(21,42,69,0.6); }
+  .plano-aviso { background: var(--am-tint); border-radius: 12px; padding: 0.8rem 1rem; margin: 1.8rem auto 0; max-width: 980px; font-size: 0.9rem; }
+  @media print {
+    .plano-barra, .plano-aviso, .vd-topbar { display: none !important; }
+    .plano-folha { border: none; box-shadow: none; padding: 0; margin: 0; max-width: none; }
+  }
+</style>
+</head>
+<body>
+<header class="plano-barra">
+  <div class="e-wrap">
+    <span class="e-tag"><i></i>Entrega E6 · Plano final consolidado</span>
+    <h1>Plano completo</h1>
+    <p>Todas as entregas do grupo (E0 a E6) num documento só, com a mesma formatação dos PDFs de cada entrega. Use o botão abaixo para salvar em PDF e enviar à empresa parceira.</p>
+    <div class="e-acoes">
+      <button type="button" class="vd-btn vd-btn-amarelo" id="btnPdf">Salvar o plano em PDF</button>
+      <a class="vd-btn vd-btn-claro" href="index.html#trilha">Voltar à trilha</a>
+    </div>
+  </div>
+</header>
+<p class="plano-aviso e-wrap" id="aviso" hidden></p>
+<div class="plano-folha plano-doc" id="doc"></div>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/portal.js"></script>
+<script src="assets/js/especificacoes.js"></script>
+<script src="assets/js/entrega.js"></script>
+<script>
+(function () {
+  VD.iniciarPagina({ crumb: 'Plano completo' });
+  var doc = document.getElementById('doc'), aviso = document.getElementById('aviso');
+  function render() {
+    PM.plano(doc);
+    var s = VD.sessao();
+    aviso.hidden = !!s;
+    if (!s) aviso.innerHTML = 'Entre com o nome do grupo para ver as respostas salvas na planilha. <button type="button" class="vd-btn vd-btn-roxo" id="btnEntrar" style="margin-left:0.6rem;padding:0.45rem 0.9rem">Entrar</button>';
+    var b = document.getElementById('btnEntrar');
+    if (b) b.onclick = function () { VD.abrirLogin(); };
+  }
+  VD.onSessao(render);
+  render();
+  window.addEventListener('beforeprint', render);
+  document.getElementById('btnPdf').onclick = function () { render(); window.print(); };
+})();
+</script>
+</body>
+</html>

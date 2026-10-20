@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>teste</title></head>
+<body>
+<pre id="log">rodando</pre>
+<iframe id="fr" style="width:1200px;height:900px"></iframe>
+<script>
+const log = [];
+const ok = (c, m) => { log.push((c ? 'PASS ' : 'FAIL ') + m); document.getElementById('log').textContent = log.join('\n') + '\n(em andamento)'; };
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const fr = document.getElementById('fr');
+// abre a página no iframe e espera o portal montar a barra superior (o headless às vezes demora a carregar)
+const carregar = url => new Promise(r => {
+  fr.onload = async () => {
+    const w = fr.contentWindow; w.alert = () => {}; w.confirm = () => true;
+    for (let i = 0; i < 120 && !(w.VD && w.document.querySelector('.vd-topbar')); i++) await sleep(250);
+    await sleep(300);
+    r(w);
+  };
+  fr.src = url + (url.includes('?') ? '&' : '?') + 't=' + Date.now();
+});
+const estado = async () => (await fetch('/__estado')).json();
+const XSS = '<img src=x onerror="window.__xss=1">';
+const q = (w, s) => w.document.querySelector(s);
+const k = (w, chave) => q(w, '[data-k="' + chave + '"]');
+const digitar = (w, chave, v) => { const el = k(w, chave); el.value = v; el.dispatchEvent(new w.Event('input', { bubbles: true })); el.dispatchEvent(new w.Event('change', { bubbles: true })); };
+const marcar = (w, chave) => { const el = k(w, chave); el.checked = true; el.dispatchEvent(new w.Event('change', { bubbles: true })); el.dispatchEvent(new w.Event('click', { bubbles: true })); };
+const semXss = w => !w.__xss && !w.document.querySelector('img[src="x"]');
+const dadosNoServidor = (est, f) => { const r = Object.entries(est.dados).find(([kk]) => kk.endsWith('|' + f)); return r ? { data: JSON.parse(r[1].json), resumo: r[1].resumo } : null; };
+
+(async () => {
+  try {
+    localStorage.clear();
+    // os outros portais do professor ficam no mesmo domínio: as sessões deles não podem vazar para cá
+    localStorage.setItem('vd_sessao_v1', JSON.stringify({ id: 'outro', nome: 'Outro Portal', modo: 'planilha', chave: 'x' }));
+    localStorage.setItem('pe_sessao_v1', JSON.stringify({ id: 'porter', nome: 'Porter', modo: 'planilha', chave: 'x' }));
+    let w = await carregar('/entregas/e1.html');
+    await sleep(1500);
+    ok(!w.VD.sessao(), 'sessões dos portais Vieses e Porter não são reaproveitadas (prefixo próprio)');
+    ok(!q(w, '.vd-modal').hidden, 'sem sessão, o modal de login abre');
+    ok(w.document.querySelectorAll('.e-secao').length === 7 && w.document.querySelectorAll('#app [data-k]').length > 200, 'E1 montada a partir da especificação: 7 seções e mais de 200 campos');
+    ok(w.document.querySelectorAll('.e-nav a').length === 7 && q(w, '.e-leituras a[href$="aula-4-tam-sam-som-e-tendencias.html"]'), 'navegação por seção e leituras da etapa');
+
+    /* ---- rascunho anônimo e cadastro do grupo ---- */
+    q(w, '.vd-modal-x').click();
+    digitar(w, 'b1_tam_def', 'R$ 967 mi/ano');
+    await sleep(1500);
+    ok(q(w, '.vd-status').textContent.includes('navegador'), 'rascunho anônimo salvo no navegador');
+    let r = await w.VD.entrar({ nome: 'Grupo  Teste', chave: 'abcd' });
+    ok(r.naoEncontrado, 'nome novo pede confirmação de cadastro');
+    r = await w.VD.entrar({ nome: 'Grupo Teste', chave: 'abcd', turma: '2026.2', criar: true });
+    ok(r.ok && r.criado, 'cadastro do grupo criado');
+    await sleep(12000);
+    let est = await estado();
+    ok(dadosNoServidor(est, 'e1') && dadosNoServidor(est, 'e1').data.campos.b1_tam_def === 'R$ 967 mi/ano', 'rascunho anônimo adotado e enviado à planilha');
+
+    /* ---- preencher a E1: texto, opção, caixa, tabela, XSS ---- */
+    digitar(w, 'b1_conc_nome_a', 'Torra ' + XSS);
+    digitar(w, 'b1_tend1_camada', 'Mercado e consumo');
+    digitar(w, 'b1_conc_pos_a', 'Tradição familiar');
+    digitar(w, 'b1_swot_for1', 'Ficha técnica ' + XSS);
+    digitar(w, 'b1_sintese_oport', 'Café especial cresce mais rápido.');
+    marcar(w, 'e1_chk1');
+    await sleep(300);
+    ok(q(w, 'th [data-rotulo-de="b1_conc_nome_a"]').textContent.startsWith('Torra'), 'coluna do benchmarking assume o nome do concorrente');
+    ok(q(w, '.e-nav a[data-sec="benchmarking"]').classList.contains('tem'), 'navegação marca a seção preenchida');
+    ok(semXss(w), 'E1: nenhum HTML injetado na tela');
+    q(w, '[data-vd-salvar]').click();
+    await sleep(3000);
+    est = await estado();
+    const e1 = dadosNoServidor(est, 'e1');
+    ok(e1 && e1.data.v === 1 && e1.data.campos.b1_tend1_camada === 'Mercado e consumo' && e1.data.campos.e1_chk1 === true, 'botão Salvar respostas envia na hora (formato { v:1, campos })');
+    ok(e1.resumo.some(x => x[0].startsWith('1.3') && x[1].includes('Posicionamento declarado') && x[1].includes('Torra') && x[2] === 'Tradição familiar'), 'resumo legível da planilha: seção, campo (com o nome do concorrente) e resposta');
+    ok(e1.resumo.some(x => x[1].startsWith('TAM ou SAM') || x[2] === '✓'), 'resumo inclui o checklist');
+
+    /* ---- relatório (PDF) ---- */
+    w.dispatchEvent(new w.Event('beforeprint'));
+    await sleep(200);
+    const rel = q(w, '#relatorio');
+    ok(rel && rel.parentNode === w.document.body && rel.textContent.includes('Tradição familiar') && rel.textContent.includes('Café especial cresce'), 'relatório para a empresa contém as respostas');
+    ok(!rel.textContent.includes('Checklist de qualidade') && !rel.textContent.includes('Variáveis de segmentação'), 'relatório não traz o checklist interno nem campos vazios');
+    ok(rel.querySelectorAll('.r-tab').length >= 3 && semXss(w), 'relatório monta as tabelas e continua escapado');
+
+    /* ---- E0: termo de aceite e capa ---- */
+    w = await carregar('/entregas/e0.html');
+    await sleep(1500);
+    digitar(w, 'meta_empresa', 'Torrefação Exemplo');
+    digitar(w, 'meta_responsavel_empresa', 'Maria Silva, sócia');
+    digitar(w, 'meta_grupo', 'Grupo Teste');
+    digitar(w, 'e0_confidencial', 'Pode citar o nome, sem números internos');
+    await sleep(300);
+    ok(q(w, '[data-esp="termo"]').textContent.includes('Torrefação Exemplo, representada por Maria Silva') && q(w, '[data-esp="termo"]').textContent.includes('pode citar o nome'), 'termo de aceite montado com os dados da E0');
+    w.dispatchEvent(new w.Event('beforeprint'));
+    await sleep(200);
+    ok(q(w, '#relatorio .r-assin') && q(w, '#relatorio .r-capa').textContent.includes('Torrefação Exemplo'), 'PDF da E0 traz capa e espaço para assinaturas');
+    q(w, '[data-vd-salvar]').click();
+    await sleep(2500);
+
+    /* ---- Roteiro: seleção, contador e registro de respostas ---- */
+    w = await carregar('/atividades/roteiro.html');
+    await sleep(1500);
+    ['rt_b1_1_usar', 'rt_b1_2_usar', 'rt_b2_1_usar'].forEach(c => marcar(w, c));
+    digitar(w, 'rt_b2_1_resp', 'Mulheres de 30 a 45 anos ' + XSS);
+    digitar(w, 'rt_livre1_perg', 'Qual o ticket médio?');
+    await sleep(300);
+    ok(q(w, '[data-esp="contador"]').textContent.trim().startsWith('4 perguntas'), 'contador soma as perguntas escolhidas e as do grupo');
+    w.dispatchEvent(new w.Event('beforeprint'));
+    await sleep(200);
+    ok(q(w, '#relatorio').textContent.includes('Quem compra hoje') && !q(w, '#relatorio').textContent.includes('Como surgiu a empresa'), 'PDF do roteiro traz só as perguntas escolhidas ou respondidas');
+    q(w, '[data-vd-salvar]').click();
+    await sleep(2500);
+
+    /* ---- E2: referência da entrevista e "Trazer" dentro da mesma entrega ---- */
+    w = await carregar('/entregas/e2.html');
+    await sleep(1500);
+    ok(q(w, '.referencia').textContent.includes('Mulheres de 30 a 45 anos') && semXss(w), 'resposta da entrevista aparece como referência na E2, escapada');
+    digitar(w, 'b2_p1_job_func', 'Manter massa magra');
+    digitar(w, 'b2_p1_pain1', 'Sabor ruim'); digitar(w, 'b2_p1_pain1_int', '4');
+    digitar(w, 'b2_p1_gain_exp', 'Praticidade');
+    q(w, '[data-trazer]').click();
+    await sleep(300);
+    ok(k(w, 'b2_vpc_jobs').value === 'Funcional: Manter massa magra' && k(w, 'b2_vpc_pains').value === '• Sabor ruim (4/5)' && k(w, 'b2_vpc_gains').value === 'Esperados: Praticidade', 'VPC: "Trazer" preenche jobs, dores e ganhos da Persona 1');
+    digitar(w, 'b2_pos_para', 'mulheres que treinam');
+    digitar(w, 'b2_pos_oq', 'creatina em goma');
+    await sleep(200);
+    ok(q(w, '.frase-txt').textContent.startsWith('Para mulheres que treinam, que [problema], nossa oferta é creatina em goma'), 'frase de posicionamento se monta com os componentes');
+    q(w, '[data-usar-frase]').click();
+    digitar(w, 'b2_pos_final', 'Para mulheres que treinam, a creatina mais prática ' + XSS);
+    await sleep(300);
+    ok(k(w, 'b2_pos_v1').value.startsWith('Para mulheres que treinam'), '"Usar como Versão 1" copia a frase montada');
+    q(w, '[data-vd-salvar]').click();
+    await sleep(2500);
+
+    /* ---- E4: cálculos e "Trazer" ---- */
+    w = await carregar('/entregas/e4.html');
+    await sleep(1500);
+    digitar(w, 'b5_ice1_acao', 'E-commerce próprio'); digitar(w, 'b5_ice1_imp', '8'); digitar(w, 'b5_ice1_conf', '6'); digitar(w, 'b5_ice1_fac', '5');
+    digitar(w, 'b5_ice2_acao', 'Parar promoções'); digitar(w, 'b5_ice2_imp', '7'); digitar(w, 'b5_ice2_conf', '8'); digitar(w, 'b5_ice2_fac', '9');
+    digitar(w, 'b5_orc1_t1', '1.500'); digitar(w, 'b5_orc1_t2', 'R$ 2.000,50'); digitar(w, 'b5_orc2_t1', '800');
+    await sleep(300);
+    ok(k(w, 'b5_ice1_score').value === '240' && k(w, 'b5_ice2_score').value === '504', 'ICE Score calculado (8×6×5 = 240; 7×8×9 = 504)');
+    ok(k(w, 'b5_orc1_total').value === 'R$ 3.500,50' && k(w, 'b5_orc_tot_t1').value === 'R$ 2.300,00' && k(w, 'b5_orc_tot_total').value === 'R$ 4.300,50', 'orçamento soma linhas, trimestres e total');
+    ok(q(w, '.ranking li span').textContent === 'Parar promoções', 'ranking mostra a ação de maior ICE primeiro');
+    w.document.querySelectorAll('[data-trazer]')[1].click();
+    await sleep(300);
+    ok(k(w, 'b5_5w2h1_what').value === 'Parar promoções' && k(w, 'b5_5w2h2_what').value === 'E-commerce próprio', '5W2H: "Trazer" usa as ações de maior ICE, em ordem');
+    ok(q(w, '.espelho').textContent.includes('Ainda não preenchido na E1') || q(w, '.espelho p').textContent.length > 0, 'espelho do SOM da E1 aparece (ou avisa que falta)');
+    digitar(w, 'b4_kpi1_nome', 'Clientes recorrentes'); digitar(w, 'b4_kpi1_meta', '+20%');
+    q(w, '[data-vd-salvar]').click();
+    await sleep(2500);
+
+    /* ---- E6: "Trazer" de outra entrega (E4) ---- */
+    w = await carregar('/entregas/e6.html');
+    await sleep(1500);
+    q(w, '[data-trazer]').click();
+    await sleep(300);
+    ok(k(w, 'b7_dash1_kpi').value === 'Clientes recorrentes' && k(w, 'b7_dash1_meta').value === '+20%', 'E6: "Trazer" busca KPIs e metas da E4');
+
+    /* ---- importação do JSON da Ferramenta Interativa ---- */
+    const json = { version: '1.0', author: 'x', data: {
+      meta_setor: 'Alimentos', b1_tam_def: 'NÃO DEVE SOBRESCREVER', b1_sam_def: 'R$ 97 mi',
+      b1_swot_forcas: '- Marca conhecida no bairro\n- Clientes fiéis', b2_persona2_dores: 'Falta de tempo', b3_7p_preco: 'Premium',
+      b5_ice3_acao: 'Feira mensal', b5_ice3_score: '999', __checkStates: { b1: 'complete', b3: 'progress' }, campo_estranho: 'x' } };
+    const arq = new w.File([JSON.stringify(json)], 'plano.json', { type: 'application/json' });
+    const dt = new w.DataTransfer(); dt.items.add(arq);
+    const inp = q(w, '#arqImportar'); inp.files = dt.files; inp.dispatchEvent(new w.Event('change', { bubbles: true }));
+    await sleep(2500);
+    ok(k(w, 'chk_b1').value === 'complete' && k(w, 'chk_b3').value === 'progress', 'importação: situação dos blocos (__checkStates) entra na E6 aberta');
+    const d1 = w.VD.dados('e1').campos, d2 = w.VD.dados('e2').campos, d3 = w.VD.dados('e3').campos, d4 = w.VD.dados('e4').campos, d0 = w.VD.dados('e0').campos;
+    ok(d1.b1_tam_def === 'R$ 967 mi/ano' && d1.b1_sam_def === 'R$ 97 mi', 'importação preenche só campos vazios (não sobrescreve o que o grupo já escreveu)');
+    ok(d1.b1_swot_for1 && d1.b1_swot_for1.startsWith('Ficha técnica') && d1.b1_swot_for2 === 'Clientes fiéis', 'SWOT da Ferramenta (um texto por quadrante) é dividida em linhas vazias');
+    ok(d2.b2_p2_pain1 === 'Falta de tempo' && d3.b3_7p_preco === 'Premium' && d0.meta_setor === 'Alimentos', 'campos antigos da Persona 2 e dos 7Ps mapeados para a estrutura nova');
+    ok(d4.b5_ice3_acao === 'Feira mensal' && !d4.b5_ice3_score, 'cálculos importados são recalculados, não copiados');
+    await sleep(12000);
+    est = await estado();
+    ok(dadosNoServidor(est, 'e3') && dadosNoServidor(est, 'e3').data.campos.b3_7p_preco === 'Premium' && dadosNoServidor(est, 'e3').resumo.length > 0, 'entregas importadas sem a página aberta vão para a planilha, com resumo');
+
+    /* ---- plano completo ---- */
+    w = await carregar('/plano.html');
+    await sleep(2000);
+    const doc = q(w, '#doc').textContent;
+    ok(doc.includes('Torrefação Exemplo') && doc.includes('Tradição familiar') && doc.includes('Clientes recorrentes') && doc.includes('Premium'), 'plano completo junta as respostas de todas as entregas');
+    ok(w.document.querySelectorAll('.r-entrega').length === 7 && semXss(w), 'plano completo: sete entregas, escapado');
+
+    /* ---- outro computador ---- */
+    r = await w.VD.entrar({ nome: 'grupo teste', chave: 'errada' });
+    ok(r.chaveIncorreta, 'palavra-chave errada é recusada');
+    localStorage.clear();
+    w = await carregar('/entregas/e1.html');
+    await sleep(800);
+    r = await w.VD.entrar({ nome: 'GRUPO TESTE', chave: 'ABCD' });
+    await sleep(1500);
+    ok(r.ok && k(w, 'b1_tam_def').value === 'R$ 967 mi/ano' && k(w, 'b1_tend1_camada').value === 'Mercado e consumo' && k(w, 'e1_chk1').checked && k(w, 'b1_swot_for2').value === 'Clientes fiéis', 'em outro computador, a E1 volta da planilha (texto, opção, caixa e importados)');
+    ok(semXss(w), 'dados recarregados continuam escapados');
+
+    /* ---- conflito: alguém do grupo salvou antes ---- */
+    await fetch('/__mexer');
+    digitar(w, 'b1_som_def', 'R$ 485 mil');
+    await sleep(14000);
+    const corpo = q(w, '.vd-modal-corpo');
+    ok(!q(w, '.vd-modal').hidden && corpo.textContent.includes('salvou antes'), 'conflito entre duas versões é detectado');
+    corpo.querySelector('[data-a=carregar]').click();
+    await sleep(500);
+    ok(k(w, 'b1_tam_def').value === 'ALTERADO POR OUTRO', 'opção "carregar a versão da planilha" funciona');
+
+    /* ---- home ---- */
+    w = await carregar('/index.html');
+    await sleep(2000);
+    const card = w.document.getElementById('sessaoCard').textContent;
+    ok(card.includes('Grupo Teste') && card.includes('Salva'), 'home mostra o progresso do grupo');
+    ok(q(w, '[data-ferramenta="e1"]').textContent.includes('✓') && q(w, '[data-ferramenta="roteiro"]').textContent.includes('✓'), 'home marca as entregas e atividades iniciadas');
+    ok(w.document.querySelectorAll('.etapa').length === 7 && w.document.querySelectorAll('.rec-entrega').length === 7, 'trilha com sete etapas e um entregável em cada');
+    w.VD.sair();
+    await sleep(300);
+    ok(!w.VD.sessao(), 'sair encerra a sessão');
+  } catch (e) {
+    log.push('ERRO ' + e.message + ' ' + e.stack);
+  }
+  document.getElementById('log').textContent = log.join('\n');
+  document.title = 'FIM';
+})();
+</script>
+</body></html>

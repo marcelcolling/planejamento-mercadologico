@@ -1,0 +1,6 @@
+# Fontes das leituras e script de anonimização: ficam só na pasta local (OneDrive), não vão para o GitHub
+conteudo/
+*.pdf
+__pycache__/
+# arquivo vazio que já existia na pasta antes do repositório
+Planejamento Mercadológico
