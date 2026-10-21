@@ -53,6 +53,15 @@ for origem, destino in MATERIAIS:
     for velho, novo in SEM_AULAS:
         assert velho in s, velho
         s = s.replace(velho, novo)
+    # sem a seção de avaliação (o professor vai tratar a avaliação de outra forma)
+    i = s.index("<!-- ============ AVALIAÇÃO ============ -->"); j = s.index("</section>", i) + len("</section>")
+    s = s[:i] + s[j:]
+    i = s.index("  /* ---------- AVALIAÇÃO ---------- */"); j = s.index("  /* ---------- CLOSING ---------- */", i)
+    s = s[:i] + s[j:]  # e o estilo dela
+    for velho, novo in [('      <li><a href="#avaliacao" data-nav>Avaliação</a></li>\n', ''),
+                        ("['dinamica','empresa','trilha','avaliacao']", "['dinamica','empresa','trilha']")]:
+        assert velho in s, velho
+        s = s.replace(velho, novo)
     s = re.sub(r'(<ul class="nav-links">)', r'\1\n      <li><a class="pm-voltar" href="../index.html#trilha">← Voltar ao portal</a></li>', s, count=1)
     s = s.replace("<title>", "<!-- Cópia do material original do professor, preparada por ferramentas/preparar_materiais.py. Não edite à mão. -->\n<title>", 1)
     (RAIZ / "materiais").mkdir(exist_ok=True)

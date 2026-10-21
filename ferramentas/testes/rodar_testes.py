@@ -22,7 +22,7 @@ AQUI = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(AQUI.parent))
 from capturar_telas import WS, EDGE, encerrar  # noqa: E402
 
-PORTA_SITE, PORTA_CDP, LIMITE, ARRANQUE, TENTATIVAS = 8766, 9337, 300, 30, 3
+PORTA_SITE, PORTA_CDP, LIMITE, ARRANQUE, TENTATIVAS = 8766, 9337, 480, 30, 3
 
 
 def rodar(tentativa):

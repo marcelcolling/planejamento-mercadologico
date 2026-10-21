@@ -13,6 +13,10 @@ Sintaxe aceita, além do Markdown comum:
     > texto                     citação em destaque (vira caixa)
     ```  ...  ```               fórmula (bloco monoespaçado)
     ::: exemplos Título  ...  :::   bloco recolhível (lista ou parágrafos)
+    ::: pausa q1 | Pergunta  **Pistas de resposta:** ...  :::
+                                questão de compreensão ("Pausa para responder"): campo de resposta salvo na
+                                planilha (ferramenta = "id" da leitura, chave = q1...) e pistas que só abrem
+                                depois que o aluno escreve. As pausas vêm de conteudo/revisar.py.
     # PARTE I · Título          abre uma parte
     - [ ] item  /  * \\[ ] item  lista de verificação
 Escapes de editor (\\[, \\-, \\*, \\---) são desfeitos.
@@ -27,11 +31,11 @@ RAIZ = pathlib.Path(__file__).resolve().parent.parent
 CONT = RAIZ / "conteudo"
 
 LEITURAS = [
-    {"fonte": "a-logica-do-plano.md", "selo": "Leitura · Etapa 1", "curto": "A lógica do plano",
+    {"fonte": "a-logica-do-plano.md", "id": "leitura-logica", "selo": "Leitura · Etapa 1", "curto": "A lógica do plano",
      "etapa": "Etapa 1 · E0", "entrega": ("../entregas/e0.html", "E0 · Empresa parceira e acordo"),
      "atividades": [("../atividades/auditoria.html", "Auditoria de coerência"), ("../atividades/roteiro.html", "Roteiro de entrevista")],
      "pontes": {}},
-    {"fonte": "analise-de-mercado-tam-sam-som-e-tendencias.md", "selo": "Leitura · Etapa 2", "curto": "TAM, SAM, SOM e tendências",
+    {"fonte": "analise-de-mercado-tam-sam-som-e-tendencias.md", "id": "leitura-mercado", "selo": "Leitura · Etapa 2", "curto": "TAM, SAM, SOM e tendências",
      "etapa": "Etapa 2 · E1", "entrega": ("../entregas/e1.html", "E1 · Análise de mercado e SWOT de Marketing"),
      "pontes": {
          "1-6-modelo-para-aplicar-na-empresa-parceira": ("../entregas/e1.html#s-mercado", "E1 · 1.1 Tamanho do mercado"),
@@ -39,26 +43,26 @@ LEITURAS = [
          "modelo-para-o-bloco-1-2": ("../entregas/e1.html#s-clientes", "E1 · 1.2 Análise de clientes atual"),
          "5-do-material-para-a-ferramenta-preenchendo-o-bloco-1-1-e-o-bloco-1-2": ("../entregas/e1.html#s-checklist", "E1 · checklist de qualidade"),
      }},
-    {"fonte": "benchmarking-competitivo.md", "selo": "Leitura · Etapa 2", "curto": "Benchmarking competitivo",
+    {"fonte": "benchmarking-competitivo.md", "id": "leitura-benchmarking", "selo": "Leitura · Etapa 2", "curto": "Benchmarking competitivo",
      "etapa": "Etapa 2 · E1", "entrega": ("../entregas/e1.html", "E1 · Análise de mercado e SWOT de Marketing"),
      "pontes": {
          "5-2-do-benchmarking-para-a-swot-de-marketing": ("../entregas/e1.html#s-benchmarking", "E1 · 1.3 Do benchmarking para a SWOT"),
          "6-preenchendo-o-bloco-1-3-da-ferramenta": ("../entregas/e1.html#s-benchmarking", "E1 · 1.3 Benchmarking competitivo"),
          "7-exercicio-de-sintese-diferencial-fraqueza-oportunidade": ("../entregas/e1.html#s-benchmarking", "E1 · 1.3 Síntese"),
      }},
-    {"fonte": "swot-de-marketing-e-tows.md", "selo": "Leitura · Etapa 2", "curto": "SWOT de Marketing e TOWS",
+    {"fonte": "swot-de-marketing-e-tows.md", "id": "leitura-swot", "selo": "Leitura · Etapa 2", "curto": "SWOT de Marketing e TOWS",
      "etapa": "Etapa 2 · E1", "entrega": ("../entregas/e1.html", "E1 · Análise de mercado e SWOT de Marketing"),
      "pontes": {
          "7-checklist-de-qualidade-antes-de-entregar": ("../entregas/e1.html#s-checklist", "E1 · checklist de qualidade"),
-         "9-template-blocos-1-4-1-5-e-1-6-com-orientacoes-de-preenchimento": ("../entregas/e1.html#s-swot", "E1 · 1.4 a 1.6 SWOT, TOWS e síntese"),
+         "8-template-blocos-1-4-1-5-e-1-6-com-orientacoes-de-preenchimento": ("../entregas/e1.html#s-swot", "E1 · 1.4 a 1.6 SWOT, TOWS e síntese"),
      }},
-    {"fonte": "segmentacao-e-persona.md", "selo": "Leitura · Etapa 3", "curto": "Segmentação e persona",
+    {"fonte": "segmentacao-e-persona.md", "id": "leitura-segmentacao", "selo": "Leitura · Etapa 3", "curto": "Segmentação e persona",
      "etapa": "Etapa 3 · E2", "entrega": ("../entregas/e2.html", "E2 · Segmentação, persona e posicionamento"),
      "pontes": {
          "7-preenchendo-o-bloco-2-1-da-ferramenta": ("../entregas/e2.html#s-segmentacao", "E2 · 2.1 Segmentação"),
          "16-preenchendo-o-bloco-2-2-da-ferramenta": ("../entregas/e2.html#s-personas", "E2 · 2.2 Personas"),
      }},
-    {"fonte": "proposta-de-valor-e-posicionamento.md", "selo": "Leitura · Etapa 3", "curto": "Proposta de valor e posicionamento",
+    {"fonte": "proposta-de-valor-e-posicionamento.md", "id": "leitura-vpc", "selo": "Leitura · Etapa 3", "curto": "Proposta de valor e posicionamento",
      "etapa": "Etapa 3 · E2", "entrega": ("../entregas/e2.html", "E2 · Segmentação, persona e posicionamento"),
      "pontes": {
          "2-6-modelo-para-o-bloco-2-3": ("../entregas/e2.html#s-vpc", "E2 · 2.3 Value Proposition Canvas"),
@@ -227,11 +231,35 @@ def render_bloco(nome, titulo, linhas, chk):
             f'<span class="exemplo-ico" aria-hidden="true">+</span></summary><div class="exemplo-corpo">{"".join(corpo)}</div></details>')
 
 
+def render_pausa(titulo, linhas, n, total):
+    chave, pergunta = [x.strip() for x in titulo.split("|", 1)]
+    assert re.fullmatch(r"q\d+", chave), chave
+    pistas = []
+    for b in blocos(linhas):
+        if b[0] == "p":
+            pistas.append("<p>" + inline(re.sub(r"^\*\*Pistas de resposta:\*\*\s*", "", b[1])) + "</p>")
+        elif b[0] in ("ul", "ol"):
+            pistas.append(render_lista(b[0], b[1]))
+    perg = html.escape(texto_puro(pergunta), quote=True)
+    rev = ('<details class="pausa-pistas"><summary><span class="pausa-pistas-ico" aria-hidden="true">+</span>'
+           f'Ver as pistas de resposta</summary><div class="pausa-pistas-corpo">{"".join(pistas)}</div></details>') if pistas else ""
+    return (f'<div class="pausa" id="pausa-{chave}" data-pausa="{chave}">'
+            f'<div class="pausa-cab"><span class="pausa-ico" aria-hidden="true">✎</span><span class="pausa-tipo">Pausa para responder</span>'
+            f'<span class="pausa-num">Questão {n} de {total}</span></div>'
+            f'<p class="pausa-pergunta">{inline(pergunta)}</p>'
+            f'<label class="pausa-campo"><span class="pausa-rot">Sua resposta</span>'
+            f'<textarea data-campo="{chave}" data-rotulo="{perg}" rows="4" placeholder="Escreva com suas palavras, sem copiar o texto."></textarea></label>'
+            f'{rev}<p class="pausa-aviso" hidden>Escreva a sua resposta antes de abrir as pistas. Depois compare: o que você acertou, o que faltou?</p></div>')
+
+
 # ---------------------------------------------------------------- página
 def gerar(cfg):
     fonte = CONT / cfg["fonte"]
     md = fonte.read_text(encoding="utf-8")
-    palavras = len(re.findall(r"\w+", md))
+    # as pistas das pausas ficam recolhidas: não entram no tempo de leitura
+    palavras = len(re.findall(r"\w+", re.sub(r"^[*][*]Pistas de resposta:.*$", "", md, flags=re.M)))
+    total_pausas = len(re.findall(r"^::: ?pausa\s", md, flags=re.M))
+    n_pausa = [0]
     minutos = max(1, math.ceil(palavras / 220))
     linhas = md.splitlines()
 
@@ -322,6 +350,9 @@ def gerar(cfg):
                 itens.append(f'<li><label><input type="checkbox" data-chk="{chk[0]}"><span class="chk-caixa" aria-hidden="true"></span><span>{inline(x)}</span></label></li>')
                 chk[0] += 1
             corpo.append('<ul class="checklist">' + "".join(itens) + "</ul>")
+        elif tipo == "bloco" and b[1] == "pausa":
+            n_pausa[0] += 1
+            corpo.append(render_pausa(b[2], b[3], n_pausa[0], total_pausas))
         elif tipo == "bloco":
             corpo.append(render_bloco(b[1], b[2], b[3], chk))
     fechar_parte()
@@ -330,6 +361,9 @@ def gerar(cfg):
     for nivel, sid, rot in toc:
         classe = "nav-item" + (" sub" if nivel == 2 else "") + (" nav-parte" if nivel == 0 else "")
         nav.append(f'<a class="{classe}" href="#{sid}">{html.escape(rot)}</a>')
+
+    if total_pausas:
+        nav.append(f'<a class="nav-item nav-pausas" href="#pausa-q1">✎ Questões de compreensão <span class="nav-pausas-cont" data-pausas-cont>0 de {total_pausas}</span></a>')
 
     url_e, nome_e = cfg["entrega"]
     ativ = "".join(f'<a class="cta-sec" href="{u}">✎ {html.escape(n)}</a>' for u, n in cfg.get("atividades", []))
@@ -346,7 +380,7 @@ def gerar(cfg):
         titulo=html.escape(texto_puro(titulo)), titulo_h1=inline(titulo), rotulo=inline(rotulo_titulo) or html.escape(cfg["selo"]),
         meta=meta_html, selo=html.escape(cfg["selo"]), curto=html.escape(cfg["curto"]), etapa=html.escape(cfg["etapa"]),
         minutos=minutos, nav="\n  ".join(nav), corpo=corpo_html, url_e=url_e, nome_e=html.escape(nome_e),
-        chave=pathlib.Path(cfg["fonte"]).stem)
+        chave=pathlib.Path(cfg["fonte"]).stem, ferramenta=cfg["id"])
     destino = RAIZ / "leituras" / (pathlib.Path(cfg["fonte"]).stem + ".html")
     destino.parent.mkdir(exist_ok=True)
     destino.write_text(pagina, encoding="utf-8", newline="\n")
@@ -364,9 +398,10 @@ MODELO = """<!DOCTYPE html>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/portal.css">
 <link rel="stylesheet" href="../assets/css/leitura.css">
 </head>
-<body data-chave="{chave}">
+<body data-chave="{chave}" data-ferramenta="{ferramenta}" data-curto="{curto}">
 
 <div id="progress-bar"></div>
 <button id="sidebar-toggle" aria-label="Abrir sumário"><span></span><span></span><span></span></button>
@@ -403,6 +438,8 @@ MODELO = """<!DOCTYPE html>
 </main>
 
 <button id="back-to-top" title="Voltar ao topo" aria-label="Voltar ao topo">&#8593;</button>
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/portal.js"></script>
 <script src="../assets/js/leitura.js"></script>
 </body>
 </html>

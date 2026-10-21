@@ -110,14 +110,6 @@
   .rec-entrega .rec-status.feito { color:#8fe0b6; font-weight:600; }
   .rec-entrega:hover { background:var(--az-deep); transform:translateY(-1px); }
 
-  /* ---------- avaliação ---------- */
-  .avaliacao { background:var(--papel-dim); }
-  .notas { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:1rem; margin-top:1.6rem; }
-  .nota-card { background:#fff; border:1px solid var(--linha); border-radius:18px; padding:1.2rem 1.3rem; }
-  .nota-card b { font-family:var(--display); font-size:2.1rem; color:var(--az); line-height:1; }
-  .nota-card p { margin:0.5rem 0 0; font-size:0.88rem; color:var(--ard); }
-  .aviso-pitch { margin:1.2rem 0 0; font-size:0.9rem; color:var(--ard); }
-
   footer { background:var(--az-deep); color:rgba(255,255,255,0.65); font-size:0.82rem; padding:2rem 0; }
   footer .wrap { display:flex; justify-content:space-between; gap:1rem; flex-wrap:wrap; align-items:center; }
   footer strong { color:#fff; font-family:var(--display); font-weight:600; }
@@ -126,7 +118,6 @@
   @media (max-width:980px) {
     .hero-grid { grid-template-columns:1fr; gap:1.8rem; }
     .etapa-card { grid-template-columns:1fr; }
-    .notas { grid-template-columns:repeat(2, minmax(0,1fr)); }
   }
   @media (max-width:560px) {
     .wrap { padding-left:1rem; padding-right:1rem; }
@@ -192,7 +183,7 @@
             </div>
             <div class="recursos">
               <a class="rec rec-leitura" href="materiais/a-trilha-do-plano.html"><span class="rec-ico">📖</span><span class="rec-txt"><span class="rec-tipo">Apresentação</span><span class="rec-nome">A trilha do plano</span></span></a>
-              <a class="rec rec-leitura" href="leituras/a-logica-do-plano.html"><span class="rec-ico">📖</span><span class="rec-txt"><span class="rec-tipo">Leitura · 15 min</span><span class="rec-nome">A lógica do plano: de onde parte, onde chega, o que conecta</span></span></a>
+              <a class="rec rec-leitura" href="leituras/a-logica-do-plano.html"><span class="rec-ico">📖</span><span class="rec-txt"><span class="rec-tipo">Leitura · 15 min · 5 questões</span><span class="rec-nome">A lógica do plano: de onde parte, onde chega, o que conecta</span></span></a>
               <a class="rec rec-atividade" href="atividades/auditoria.html"><span class="rec-ico">✎</span><span class="rec-txt"><span class="rec-tipo">Atividade</span><span class="rec-nome">Auditoria de coerência: o caso Grão Nascente</span><span class="rec-status" data-ferramenta="auditoria">Não iniciada</span></span></a>
               <a class="rec rec-atividade" href="atividades/roteiro.html"><span class="rec-ico">✎</span><span class="rec-txt"><span class="rec-tipo">Atividade</span><span class="rec-nome">Roteiro de entrevista com a empresa parceira</span><span class="rec-status" data-ferramenta="roteiro">Não iniciada</span></span></a>
               <a class="rec rec-entrega" href="entregas/e0.html"><span class="rec-ico">★</span><span class="rec-txt"><span class="rec-tipo">Entregável E0</span><span class="rec-nome">Empresa parceira e acordo</span><span class="rec-status" data-ferramenta="e0">Não iniciada</span></span></a>
@@ -210,9 +201,9 @@
               <p class="entrega"><strong>Entrega E1:</strong> Bloco 1 completo, fechando com a principal oportunidade e o principal risco.</p>
             </div>
             <div class="recursos">
-              <a class="rec rec-leitura" href="leituras/analise-de-mercado-tam-sam-som-e-tendencias.html"><span class="rec-ico">📖</span><span class="rec-txt"><span class="rec-tipo">Leitura · 32 min</span><span class="rec-nome">Análise de mercado: TAM, SAM, SOM e tendências</span></span></a>
-              <a class="rec rec-leitura" href="leituras/benchmarking-competitivo.html"><span class="rec-ico">📖</span><span class="rec-txt"><span class="rec-tipo">Leitura · 22 min</span><span class="rec-nome">Benchmarking competitivo</span></span></a>
-              <a class="rec rec-leitura" href="leituras/swot-de-marketing-e-tows.html"><span class="rec-ico">📖</span><span class="rec-txt"><span class="rec-tipo">Leitura · 29 min</span><span class="rec-nome">SWOT de Marketing e TOWS</span></span></a>
+              <a class="rec rec-leitura" href="leituras/analise-de-mercado-tam-sam-som-e-tendencias.html"><span class="rec-ico">📖</span><span class="rec-txt"><span class="rec-tipo">Leitura · 32 min · 6 questões</span><span class="rec-nome">Análise de mercado: TAM, SAM, SOM e tendências</span></span></a>
+              <a class="rec rec-leitura" href="leituras/benchmarking-competitivo.html"><span class="rec-ico">📖</span><span class="rec-txt"><span class="rec-tipo">Leitura · 22 min · 5 questões</span><span class="rec-nome">Benchmarking competitivo</span></span></a>
+              <a class="rec rec-leitura" href="leituras/swot-de-marketing-e-tows.html"><span class="rec-ico">📖</span><span class="rec-txt"><span class="rec-tipo">Leitura · 28 min · 5 questões</span><span class="rec-nome">SWOT de Marketing e TOWS</span></span></a>
               <a class="rec rec-entrega" href="entregas/e1.html"><span class="rec-ico">★</span><span class="rec-txt"><span class="rec-tipo">Entregável E1</span><span class="rec-nome">Análise de mercado e SWOT de Marketing</span><span class="rec-status" data-ferramenta="e1">Não iniciada</span></span></a>
             </div>
           </article>
@@ -228,8 +219,8 @@
               <p class="entrega"><strong>Entrega E2:</strong> Bloco 2, com 1 ou 2 personas e a declaração de posicionamento.</p>
             </div>
             <div class="recursos">
-              <a class="rec rec-leitura" href="leituras/segmentacao-e-persona.html"><span class="rec-ico">📖</span><span class="rec-txt"><span class="rec-tipo">Leitura · 36 min</span><span class="rec-nome">Segmentação, persona e comportamento do consumidor</span></span></a>
-              <a class="rec rec-leitura" href="leituras/proposta-de-valor-e-posicionamento.html"><span class="rec-ico">📖</span><span class="rec-txt"><span class="rec-tipo">Leitura · 26 min</span><span class="rec-nome">Proposta de valor e declaração de posicionamento</span></span></a>
+              <a class="rec rec-leitura" href="leituras/segmentacao-e-persona.html"><span class="rec-ico">📖</span><span class="rec-txt"><span class="rec-tipo">Leitura · 37 min · 6 questões</span><span class="rec-nome">Segmentação, persona e comportamento do consumidor</span></span></a>
+              <a class="rec rec-leitura" href="leituras/proposta-de-valor-e-posicionamento.html"><span class="rec-ico">📖</span><span class="rec-txt"><span class="rec-tipo">Leitura · 27 min · 6 questões</span><span class="rec-nome">Proposta de valor e declaração de posicionamento</span></span></a>
               <a class="rec rec-entrega" href="entregas/e2.html"><span class="rec-ico">★</span><span class="rec-txt"><span class="rec-tipo">Entregável E2</span><span class="rec-nome">Segmentação, persona e posicionamento</span><span class="rec-status" data-ferramenta="e2">Não iniciada</span></span></a>
             </div>
           </article>
@@ -303,19 +294,6 @@
     </div>
   </section>
 
-  <section class="bloco avaliacao" id="avaliacao">
-    <div class="wrap">
-      <div class="eyebrow-sec"><i></i>Como a disciplina é avaliada</div>
-      <h2 class="titulo-sec">A nota se constrói entrega após entrega</h2>
-      <div class="notas">
-        <div class="nota-card"><b>40%</b><p>Entregas E1 a E5, com peer review estruturado</p></div>
-        <div class="nota-card"><b>10%</b><p>Qualidade dos peer reviews dados aos outros grupos</p></div>
-        <div class="nota-card"><b>20%</b><p>Entrega E6: o plano completo</p></div>
-        <div class="nota-card"><b>30%</b><p>Pitch final para a empresa parceira e arguição</p></div>
-      </div>
-      <p class="aviso-pitch">No pitch final, perguntas podem ser direcionadas a integrantes específicos do grupo: todos precisam saber defender qualquer parte do plano.</p>
-    </div>
-  </section>
 </main>
 
 <footer>

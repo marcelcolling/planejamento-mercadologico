@@ -27,7 +27,11 @@ var ABA_PAINEL = 'Painel';
 var SAL = 'planejamento-mercadologico'; // alterar o sal invalida todas as palavras-chave já cadastradas
 var COLS_ALUNOS = ['id', 'nome', 'turma', 'aba', 'hash_chave', 'criado_em', 'ultimo_acesso', 'pendente'];
 var COLS_DADOS = ['id', 'ferramenta', 'titulo', 'atualizado_ms', 'json', 'resumo_json'];
-var ORDEM = ['e0', 'roteiro', 'auditoria', 'e1', 'e2', 'e3', 'e4', 'e5', 'e6'];
+// colunas do Painel, uma por entrega/atividade
+var PAINEL = ['e0', 'roteiro', 'auditoria', 'e1', 'e2', 'e3', 'e4', 'e5', 'e6'];
+// ordem na aba de cada grupo: cada leitura (questões de compreensão) aparece antes da entrega da etapa dela
+var ORDEM = ['leitura-logica', 'e0', 'roteiro', 'auditoria', 'leitura-mercado', 'leitura-benchmarking', 'leitura-swot', 'e1',
+             'leitura-segmentacao', 'leitura-vpc', 'e2', 'e3', 'e4', 'e5', 'e6'];
 var LIMITE_CELULA = 49000;
 
 /* ===================== Web app ===================== */
@@ -240,7 +244,7 @@ function montarPainel() {
   if (!sh) sh = ss.insertSheet(ABA_PAINEL, 0);
   sh.clear();
 
-  var cab = ['Grupo', 'Turma', 'E0 · Empresa e acordo', 'Atividade · Roteiro de entrevista', 'Atividade · Auditoria de coerência', 'E1 · Análise de mercado', 'E2 · Posicionamento', 'E3 · Mix e jornada', 'E4 · Objetivos e ações', 'E5 · Comunicação', 'E6 · Governança e síntese', 'Último acesso'];
+  var cab = ['Grupo', 'Turma', 'E0 · Empresa e acordo', 'Atividade · Roteiro de entrevista', 'Atividade · Auditoria de coerência', 'E1 · Análise de mercado', 'E2 · Posicionamento', 'E3 · Mix e jornada', 'E4 · Objetivos e ações', 'E5 · Comunicação', 'E6 · Governança e síntese', 'Leituras · questões de compreensão', 'Último acesso'];
   var alunos = al.linhas.map(function (l) { var a = alunoDe(l); a.ultimo = Number(l[6]) || 0; return a; });
   alunos.sort(function (x, y) { return (x.turma + '|' + x.nome).localeCompare(y.turma + '|' + y.nome, 'pt'); });
 
@@ -260,7 +264,18 @@ function montarPainel() {
       var n = (r.resumo || []).filter(function (x) { return x[2] && x[2] !== '—'; }).length;
       return '✓ ' + quando(r.atualizado, tz) + ' · ' + n + ' resposta' + (n === 1 ? '' : 's');
     }
-    return [texto(a.nome), texto(a.turma || '—')].concat(ORDEM.map(function (f) { return q(por[f]); })).concat([quando(a.ultimo, tz)]);
+    // leituras: quantas têm ao menos uma resposta, total de respostas e a data da última
+    function leituras() {
+      var ls = (dados[a.id] || []).filter(function (r) { return r.ferramenta.indexOf('leitura-') === 0; });
+      var n = 0, resp = 0, ult = 0;
+      ls.forEach(function (r) {
+        var k = (r.resumo || []).filter(function (x) { return x[2] && x[2] !== '—'; }).length;
+        if (k) { n++; resp += k; ult = Math.max(ult, r.atualizado || 0); }
+      });
+      if (!n) return '—';
+      return n + ' leitura' + (n === 1 ? '' : 's') + ' · ' + resp + ' resposta' + (resp === 1 ? '' : 's') + ' · ' + quando(ult, tz);
+    }
+    return [texto(a.nome), texto(a.turma || '—')].concat(PAINEL.map(function (f) { return q(por[f]); })).concat([leituras(), quando(a.ultimo, tz)]);
   });
 
   sh.getRange(1, 1, 1, cab.length).setValues([cab])

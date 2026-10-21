@@ -54,7 +54,8 @@ print("== 1. Integridade das leituras")
 for cfg in LEITURAS:
     md = (RAIZ / "conteudo" / cfg["fonte"]).read_text(encoding="utf-8")
     pag = (RAIZ / "leituras" / (pathlib.Path(cfg["fonte"]).stem + ".html")).read_text(encoding="utf-8")
-    titulos_bloco = " ".join(re.findall(r"^:::\s*\w+\s+(.+)$", md, flags=re.M))
+    # título dos blocos; nas pausas, a chave (q1, q2...) não aparece na página, só a pergunta
+    titulos_bloco = " ".join(re.sub(r"^q\d+\s*\|\s*", "", t) for t in re.findall(r"^:::\s*\w+\s+(.+)$", md, flags=re.M))
     a = tokens(md_texto(md) + " " + titulos_bloco)
     b = tokens(texto_visivel(pag))
     sm = difflib.SequenceMatcher(None, a, b, autojunk=False)

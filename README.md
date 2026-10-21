@@ -22,6 +22,10 @@ Portal da disciplina Planejamento Mercadológico (graduação em Administração
 
 **Não se aplica:** cada entrega, cada seção e cada trecho numerado de uma seção (Persona 2, Objetivo 3, Ação 2...) tem o botão **Não se aplica**, com campo opcional para o motivo. O que não se aplica sai do PDF, do plano completo e da contagem de progresso; as seções e os trechos seguintes são renumerados (na tela, no PDF e na planilha). No plano completo, as entregas que não se aplicam saem e os blocos seguintes são renumerados. O que já estava escrito fica guardado: **Reativar** devolve tudo. Na planilha, o Painel mostra "não se aplica" e a aba do grupo registra o motivo.
 
+**Questões de compreensão nas leituras:** como no portal sobre Porter, cada leitura tem de 5 a 6 caixas **Pausa para responder** ao fim das seções principais (33 no total). O grupo escreve a resposta, que é salva na planilha como as entregas, e só então pode abrir as **pistas de resposta** para comparar. O sumário lateral mostra quantas já foram respondidas.
+
+**Revisão das leituras (out/2026):** os textos foram revisados para tirar repetições (por exemplo, as seções "Como usar este material no trabalho do grupo", que repetiam a abertura, e trechos que antecipavam ou repetiam outra seção) e corrigir o que estava errado ("cinco tipos" de benchmarking com quatro na tabela, a SWOT citando a persona antes de ela existir, os exemplos da SWOT que apareciam todos juntos numa seção só, entre outros). Os originais na pasta acima do repositório não foram alterados.
+
 Além disso, a página **Plano completo** junta todas as entregas do grupo num documento único, pronto para salvar em PDF e enviar à empresa.
 
 **Como os entregáveis ajudam a empresa:** cada um tem o botão **Salvar em PDF para a empresa**, que monta um relatório com capa (empresa, responsável, grupo, integrantes, data) e só o que foi preenchido, sem as orientações de aula nem o checklist interno. O E0 sai com o termo de aceite e as linhas de assinatura; o roteiro sai como roteiro impresso para levar à reunião.
@@ -47,14 +51,16 @@ Por decisão sua, a leitura de segmentação e persona aparece no site com as em
 
 Enquanto a URL não estiver configurada, o portal funciona em "modo local": as respostas ficam só no navegador do grupo.
 
-> **Se alterar o código do Apps Script depois:** use **Implantar › Gerenciar implantações › (lápis) › Versão: Nova versão**. Assim a URL continua a mesma.
+> **Se alterar o código do Apps Script depois:** cole o `Codigo.gs` novo, salve e use **Implantar › Gerenciar implantações › (lápis) › Versão: Nova versão**. Assim a URL continua a mesma.
+>
+> **Atualização de 20/10/2026 (coluna das leituras no Painel):** cole o `Codigo.gs` novo e salve. Como só mudou a montagem do Painel e das abas (feita pelo gatilho de 5 minutos), isso já basta; criar a nova versão é recomendado, mas não muda nada para os grupos. Sem colar, as respostas das leituras são salvas do mesmo jeito e aparecem na aba do grupo; só o Painel fica sem a coluna nova.
 
 ## Acompanhar a turma
 
 | Aba | Conteúdo |
 |---|---|
-| **Painel** | Uma linha por grupo, com uma coluna por entrega (E0 a E6) e pelas duas atividades da etapa inicial: quando salvou e quantas respostas há (ou "não se aplica"). O nome do grupo é um link para a aba dele. |
-| **Uma aba por grupo** | Todas as respostas em formato legível: seção, campo, resposta. |
+| **Painel** | Uma linha por grupo, com uma coluna por entrega (E0 a E6) e pelas duas atividades da etapa inicial: quando salvou e quantas respostas há (ou "não se aplica"). A coluna **Leituras · questões de compreensão** mostra quantas leituras o grupo já respondeu e quantas respostas há. O nome do grupo é um link para a aba dele. |
+| **Uma aba por grupo** | Todas as respostas em formato legível: seção, campo, resposta. As questões de cada leitura aparecem antes da entrega da etapa. |
 | `_alunos`, `_dados` (ocultas) | Base usada pelo portal. Não edite, exceto para redefinir palavra-chave (abaixo). |
 
 - O menu **Portal da disciplina** (aparece ao abrir a planilha) tem **Atualizar abas e painel agora** e **Remover um grupo…** (para cadastros de teste ou duplicados).

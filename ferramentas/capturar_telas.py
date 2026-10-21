@@ -53,6 +53,9 @@ CAPTURAS = [
     ("leitura-vpc-canvas", "/leituras/proposta-de-valor-e-posicionamento.html", "2-4-passo-a-passo-aplicado-o-canvas-da-grao-nascente-para-a-renata", 1366, 1300),
     ("leitura-vpc-tabela", "/leituras/proposta-de-valor-e-posicionamento.html", "4-2-componente-por-componente-como-preencher", 1366, 1300),
     ("m-leitura-vpc", "/leituras/proposta-de-valor-e-posicionamento.html", "4-2-componente-por-componente-como-preencher", 520, 1600),
+    ("leitura-pausa", "/leituras/proposta-de-valor-e-posicionamento.html", "pausa-q1", 1366, 1100),
+    ("m-leitura-pausa", "/leituras/proposta-de-valor-e-posicionamento.html", "pausa-q2", 520, 900),
+    ("leitura-swot-exemplos", "/leituras/swot-de-marketing-e-tows.html", "2-1-reconhecimento-de-marca", 1366, 1200),
     ("trilha-apresentacao", "/materiais/a-trilha-do-plano.html", "trilha", 1366, 1300),
     ("m-home", "/index.html", "", 520, 2000),
     ("m-e1", "/entregas/e1.html", "", 520, 1600),
@@ -162,7 +165,7 @@ def main(saida):
             ws.cmd("Page.navigate", url=base + pagina + "?x=" + marca)
             # espera a página e o portal.js terminarem (barra superior montada)
             for k in range(80):
-                pronto = ws.cmd("Runtime.evaluate", returnByValue=True, expression="JSON.stringify([location.search.indexOf('" + marca + "')>=0, document.readyState, !!(document.querySelector('.vd-topbar') || document.getElementById('sidebar') || document.querySelector('.nav-inner')), document.fonts.status])")
+                pronto = ws.cmd("Runtime.evaluate", returnByValue=True, expression="JSON.stringify([location.search.indexOf('" + marca + "')>=0, document.readyState, !!(document.querySelector('.vd-topbar') || (!document.querySelector('script[src*=portal]') && (document.getElementById('sidebar') || document.querySelector('.nav-inner')))), document.fonts.status])")
                 v = json.loads(pronto.get("result", {}).get("value") or "[false]")
                 if v[0] and v[1] == "complete" and v[2] and v[3] == "loaded":
                     break
@@ -185,9 +188,10 @@ def main(saida):
                 time.sleep(0.9)
             png = ws.cmd("Page.captureScreenshot", format="png")["data"]
             (saida / f"{nome}.png").write_bytes(base64.b64decode(png))
-            print("OK ", nome)
-        erros = ws.cmd("Runtime.evaluate", returnByValue=True, expression="document.documentElement.scrollWidth > innerWidth ? 'rolagem horizontal!' : 'sem rolagem horizontal'")
-        print("última página (520px):", erros["result"]["value"])
+            # no celular, algo mais largo que a tela faz o navegador reduzir o zoom (innerWidth > largura do aparelho)
+            larg = ws.cmd("Runtime.evaluate", returnByValue=True, expression="Math.max(innerWidth, document.documentElement.scrollWidth)")
+            larg = larg.get("result", {}).get("value") or 0
+            print("OK ", nome, "" if larg <= w else f"  AVISO: a página tem {larg}px de largura numa tela de {w}px")
     finally:
         encerrar(edge)
         encerrar(site)

@@ -17,7 +17,9 @@ Quero publicar a leitura sobre **[tema]**, no portal "Planejamento Mercadológic
 2. `git status` e `git log --oneline -5`: tudo limpo e sincronizado.
 3. **Os grupos já estão respondendo.** Não mude chaves (`k`) existentes em `assets/js/especificacoes.js`, nem `assets/js/portal.js` ou `apps-script/Codigo.gs`, a menos que eu peça.
 4. Se o material citar as empresas parceiras reais, anonimize como na leitura de segmentação (Empresas A, B, C e D) em `conteudo/preparar_conteudo.py` e confirme que os nomes estão em `conteudo/nomes_proibidos.txt`. Se citar aulas ou encontros, troque por etapas e entregas em `conteudo/neutralizar.py`: o portal não menciona numeração nem nome de aulas.
-5. Me apresente um plano curto: onde a leitura entra na trilha, que pontes ligam o texto às seções do entregável e se algo do entregável deveria mudar por causa do material (campos novos com chaves novas). Pergunte só o que for decisão minha.
+5. Revise o texto como nas outras leituras (`conteudo/revisar.py`): repetições internas, repetições com as leituras já publicadas e erros, sem alterar o original.
+6. Escreva 5 ou 6 questões de compreensão ("Pausa para responder", em `PAUSAS` no `revisar.py`), ao fim das seções principais, com pistas de resposta tiradas do próprio texto.
+7. Me apresente um plano curto: onde a leitura entra na trilha, que pontes ligam o texto às seções do entregável, as questões propostas e se algo do entregável deveria mudar por causa do material (campos novos com chaves novas). Pergunte só o que for decisão minha.
 
 ## O que fazer
 Siga a receita "Nova leitura" do `CLAUDE.md`: fonte em `conteudo/`, entrada em `LEITURAS` (`ferramentas/gerar_leituras.py`) e em `L` (`especificacoes.js`), leitura na entrega (sai de `leiturasEmBreve`), links `leitura: [...]` nas seções, cartão na home.
@@ -30,4 +32,4 @@ Siga a receita "Nova leitura" do `CLAUDE.md`: fonte em `conteudo/`, entrada em `
 5. Atualize o `CLAUDE.md` e o `README.md`.
 
 ## O que me entregar no fim
-Link da leitura, o que mudou, o resultado de cada verificação e qualquer decisão que tomou por conta própria.
+Link da leitura, o que mudou (inclusive o que a revisão cortou), as questões, o resultado de cada verificação e qualquer decisão que tomou por conta própria. Se o `Codigo.gs` mudou (id novo em `ORDEM`), me diga para colar a versão nova na planilha.

@@ -1,7 +1,10 @@
-/* Comportamentos das páginas de leitura: progresso, sumário, exemplos e lista de verificação. */
+/* Comportamentos das páginas de leitura: progresso, sumário, exemplos, lista de verificação
+   e questões de compreensão ("Pausa para responder", salvas na planilha como as entregas). */
 (function () {
   'use strict';
   var chave = 'pm_leitura_' + (document.body.dataset.chave || location.pathname);
+  // barra do portal (sessão e salvamento): o sumário lateral desce para não ficar embaixo dela
+  if (window.VD) document.body.classList.add('com-topbar');
   var ls = {
     get: function (k, d) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
     set: function (k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
@@ -103,4 +106,55 @@
     });
     atualizar();
   }
+
+  /* ---- questões de compreensão ---- */
+  var pausas = Array.prototype.slice.call(document.querySelectorAll('.pausa'));
+  var MINIMO = 20;  // caracteres escritos antes de liberar as pistas
+  function campoDe(p) { return p.querySelector('textarea[data-campo]'); }
+  function respondida(p) { return campoDe(p).value.trim().length >= MINIMO; }
+  function contar() {
+    var n = pausas.filter(function (p) { return campoDe(p).value.trim(); }).length;
+    document.querySelectorAll('[data-pausas-cont]').forEach(function (el) { el.textContent = n + ' de ' + pausas.length; });
+    pausas.forEach(function (p) { p.classList.toggle('pausa-ok', respondida(p)); });
+  }
+  pausas.forEach(function (p) {
+    var det = p.querySelector('.pausa-pistas'), aviso = p.querySelector('.pausa-aviso');
+    if (det) det.querySelector('summary').addEventListener('click', function (e) {
+      if (det.open || respondida(p)) { aviso.hidden = true; return; }
+      e.preventDefault();
+      aviso.hidden = false;
+      campoDe(p).focus();
+    });
+    campoDe(p).addEventListener('input', function () { if (respondida(p)) aviso.hidden = true; contar(); });
+  });
+  // na impressão, as pistas só aparecem se já estavam abertas (a resposta do grupo sai sempre)
+
+  if (window.VD) {
+    var titulo = 'Leitura · ' + (document.body.dataset.curto || document.title);
+    if (pausas.length) {
+      VD.ferramenta({
+        id: document.body.dataset.ferramenta, titulo: titulo, crumb: titulo, pedirLogin: false,
+        coletar: function () {
+          var c = {};
+          pausas.forEach(function (p) { var t = campoDe(p); if (t.value.trim()) c[t.dataset.campo] = t.value; });
+          return { v: 1, campos: c };
+        },
+        aplicar: function (d) {
+          var c = (d && d.campos) || {};
+          pausas.forEach(function (p) { var t = campoDe(p); t.value = c[t.dataset.campo] || ''; });
+          contar();
+        },
+        resumo: function (d) {
+          var c = (d && d.campos) || {};
+          return pausas.map(function (p) {
+            var t = campoDe(p);
+            return ['Questões de compreensão', p.querySelector('.pausa-num').textContent + ' · ' + t.dataset.rotulo, (c[t.dataset.campo] || '').trim() || '—'];
+          });
+        }
+      });
+    } else {
+      VD.iniciarPagina({ crumb: titulo });
+    }
+  }
+  contar();
 })();

@@ -267,23 +267,6 @@
     border-top:1px solid var(--linha);max-width:38em;
   }
 
-  /* ---------- AVALIAÇÃO ---------- */
-  .avaliacao-bg{background:var(--roxo);}
-  .avaliacao-bg .section-head h2{color:var(--white);}
-  .avaliacao-bg .section-head p{color:rgba(255,255,255,0.72);}
-  .avaliacao-bg .eyebrow{color:var(--amarelo);}
-  .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.1rem;}
-  @media(max-width:760px){.stat-grid{grid-template-columns:repeat(2,1fr);}}
-  .stat-card{
-    background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.14);
-    border-radius:var(--radius);padding:1.5rem 1.3rem;
-  }
-  .stat-num{font-family:'Fraunces',serif;font-weight:700;font-size:2.3rem;color:var(--amarelo);line-height:1;}
-  .stat-label{font-size:0.83rem;color:rgba(255,255,255,0.8);margin-top:0.6rem;line-height:1.4;}
-  .avaliacao-note{
-    margin-top:1.75rem;font-size:0.85rem;color:rgba(255,255,255,0.62);max-width:40em;font-style:italic;font-family:'Fraunces',serif;
-  }
-
   /* ---------- CLOSING ---------- */
   .closing{background:var(--roxo);color:var(--white);padding:5rem 0 3rem;position:relative;overflow:hidden;}
   .closing::after{content:'';position:absolute;left:-70px;top:-70px;width:220px;height:220px;border-radius:50%;border:1px solid rgba(255,255,255,0.1);}
@@ -325,7 +308,6 @@
       <li><a href="#dinamica" data-nav>Dinâmica</a></li>
       <li><a href="#empresa" data-nav>A empresa</a></li>
       <li><a href="#trilha" data-nav>A trilha</a></li>
-      <li><a href="#avaliacao" data-nav>Avaliação</a></li>
     </ul>
   </div>
 </nav>
@@ -616,23 +598,7 @@
   </div>
 </section>
 
-<!-- ============ AVALIAÇÃO ============ -->
-<section class="content avaliacao-bg" id="avaliacao">
-  <div class="wrap">
-    <div class="section-head reveal">
-      <span class="eyebrow">Como o semestre é avaliado</span>
-      <h2>Quatro entregas, um resultado</h2>
-      <p>A nota não vem de um único trabalho final — ela se constrói entrega após entrega, com feedback dos colegas no caminho.</p>
-    </div>
-    <div class="stat-grid reveal">
-      <div class="stat-card"><div class="stat-num">40%</div><div class="stat-label">Entregas E1 a E5, com peer review estruturado</div></div>
-      <div class="stat-card"><div class="stat-num">10%</div><div class="stat-label">Qualidade dos peer reviews dados aos outros grupos</div></div>
-      <div class="stat-card"><div class="stat-num">20%</div><div class="stat-label">Entrega E6 — plano completo na ferramenta</div></div>
-      <div class="stat-card"><div class="stat-num">30%</div><div class="stat-label">Pitch final para a empresa parceira + arguição</div></div>
-    </div>
-    <p class="avaliacao-note reveal">No pitch final, perguntas podem ser direcionadas a integrantes específicos do grupo — todo mundo precisa saber defender qualquer parte do plano.</p>
-  </div>
-</section>
+
 
 <!-- ============ CLOSING ============ -->
 <footer class="closing">
@@ -725,7 +691,7 @@
 
   // ---------- NAV ACTIVE STATE ----------
   const navLinks = document.querySelectorAll('[data-nav]');
-  const sections = ['dinamica','empresa','trilha','avaliacao'].map(id=>document.getElementById(id));
+  const sections = ['dinamica','empresa','trilha'].map(id=>document.getElementById(id));
   if('IntersectionObserver' in window){
     const navIo = new IntersectionObserver(entries=>{
       entries.forEach(e=>{
