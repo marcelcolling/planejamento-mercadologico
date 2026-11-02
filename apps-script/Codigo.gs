@@ -31,7 +31,7 @@ var COLS_DADOS = ['id', 'ferramenta', 'titulo', 'atualizado_ms', 'json', 'resumo
 var PAINEL = ['e0', 'roteiro', 'auditoria', 'e1', 'e2', 'e3', 'e4', 'e5', 'e6'];
 // ordem na aba de cada grupo: cada leitura (questões de compreensão) aparece antes da entrega da etapa dela
 var ORDEM = ['leitura-logica', 'e0', 'roteiro', 'auditoria', 'leitura-mercado', 'leitura-benchmarking', 'leitura-swot', 'e1',
-             'leitura-segmentacao', 'leitura-vpc', 'e2', 'e3', 'e4', 'e5', 'e6'];
+             'leitura-segmentacao', 'leitura-vpc', 'e2', 'leitura-mix', 'e3', 'e4', 'e5', 'e6'];
 var LIMITE_CELULA = 49000;
 
 /* ===================== Web app ===================== */

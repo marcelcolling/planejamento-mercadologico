@@ -243,7 +243,7 @@ const dadosNoServidor = (est, f) => { const r = Object.entries(est.dados).find((
 
     /* ---- leituras: questões de compreensão ---- */
     const LEIT = { 'a-logica-do-plano': 5, 'analise-de-mercado-tam-sam-som-e-tendencias': 6, 'benchmarking-competitivo': 5,
-                   'swot-de-marketing-e-tows': 5, 'segmentacao-e-persona': 6, 'proposta-de-valor-e-posicionamento': 6 };
+                   'swot-de-marketing-e-tows': 5, 'segmentacao-e-persona': 6, 'mix-jornada-e-canais': 6, 'proposta-de-valor-e-posicionamento': 6 };
     let todasOk = true;
     for (const [nome, n] of Object.entries(LEIT)) {
       w = await carregar('/leituras/' + nome + '.html');
@@ -251,7 +251,7 @@ const dadosNoServidor = (est, f) => { const r = Object.entries(est.dados).find((
       todasOk = todasOk && ps.length === n && w.document.querySelectorAll('.pausa textarea[data-campo]').length === n
         && w.document.body.dataset.ferramenta.startsWith('leitura-') && !!q(w, '.vd-topbar');
     }
-    ok(todasOk, 'as seis leituras têm questões de compreensão (5 ou 6 cada) e a barra do portal');
+    ok(todasOk, 'as sete leituras têm questões de compreensão (5 ou 6 cada) e a barra do portal');
     ok(w.getComputedStyle(q(w, '#sidebar')).top === '58px' && w.document.body.classList.contains('com-topbar'), 'leitura: sumário lateral começa abaixo da barra do portal');
     const p1 = q(w, '#pausa-q1'), ta1 = q(w, '#pausa-q1 textarea'), det1 = q(w, '#pausa-q1 details');
     det1.querySelector('summary').click();

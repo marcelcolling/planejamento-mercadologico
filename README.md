@@ -13,7 +13,7 @@ Portal da disciplina Planejamento Mercadológico (graduação em Administração
 | **1 · E0** Ponto de partida | A trilha do plano (apresentação); A lógica do plano | Perfil da empresa, como ela define o próprio negócio, acordo de trabalho e **termo de aceite** para assinatura. Atividades: **Auditoria de coerência** (caso Grão Nascente) e **Roteiro de entrevista**, com registro das respostas da empresa |
 | **2 · E1** Diagnóstico | TAM/SAM/SOM e tendências; Benchmarking; SWOT de Marketing e TOWS | Bloco 1: mercado, tendências, clientes atuais, benchmarking de 3 concorrentes, SWOT com evidência, TOWS e síntese |
 | **3 · E2** Estratégia | Segmentação e persona; **Proposta de valor e declaração de posicionamento** | Bloco 2: segmentos com avaliação MASDA, 1 ou 2 personas com JTBD, Value Proposition Canvas com prioridades e teste do encaixe, alternativas competitivas, pontos de paridade e de diferença, declaração de posicionamento (a frase se monta sozinha) |
-| **4 · E3** Execução | em breve | Bloco 3: 7Ps (hoje × escolha estratégica), jornada com momentos de verdade, canais prioritários, mix de mídia |
+| **4 · E3** Execução | **Mix de marketing, jornada do cliente e canais** | Bloco 3: 7Ps (hoje × escolha estratégica), jornada com momentos de verdade, canais prioritários, mix de mídia |
 | **5 · E4** Medição e ações | em breve | Blocos 4 e 5: objetivos SMART, KPIs com baseline, ICE Score (calcula sozinho), 5W2H, orçamento (soma sozinho) e cronograma. O 5W2H baixa em **planilha CSV** no formato do seu modelo de plano de ação |
 | **6 · E5** Identidade | em breve | Bloco 6: identidade, tom de voz, arquitetura de mensagem, pilares, plano editorial de 10 peças, comunicação integrada |
 | **7 · E6** Controle e entrega | em breve | Bloco 7: painel, rituais, roadmap, síntese final, checklist de coerência e preparação do pitch |
@@ -22,7 +22,7 @@ Portal da disciplina Planejamento Mercadológico (graduação em Administração
 
 **Não se aplica:** cada entrega, cada seção e cada trecho numerado de uma seção (Persona 2, Objetivo 3, Ação 2...) tem o botão **Não se aplica**, com campo opcional para o motivo. O que não se aplica sai do PDF, do plano completo e da contagem de progresso; as seções e os trechos seguintes são renumerados (na tela, no PDF e na planilha). No plano completo, as entregas que não se aplicam saem e os blocos seguintes são renumerados. O que já estava escrito fica guardado: **Reativar** devolve tudo. Na planilha, o Painel mostra "não se aplica" e a aba do grupo registra o motivo.
 
-**Questões de compreensão nas leituras:** como no portal sobre Porter, cada leitura tem de 5 a 6 caixas **Pausa para responder** ao fim das seções principais (33 no total). O grupo escreve a resposta, que é salva na planilha como as entregas, e só então pode abrir as **pistas de resposta** para comparar. O sumário lateral mostra quantas já foram respondidas.
+**Questões de compreensão nas leituras:** como no portal sobre Porter, cada leitura tem de 5 a 6 caixas **Pausa para responder** ao fim das seções principais (39 no total). O grupo escreve a resposta, que é salva na planilha como as entregas, e só então pode abrir as **pistas de resposta** para comparar. O sumário lateral mostra quantas já foram respondidas.
 
 **Revisão das leituras (out/2026):** os textos foram revisados para tirar repetições (por exemplo, as seções "Como usar este material no trabalho do grupo", que repetiam a abertura, e trechos que antecipavam ou repetiam outra seção) e corrigir o que estava errado ("cinco tipos" de benchmarking com quatro na tabela, a SWOT citando a persona antes de ela existir, os exemplos da SWOT que apareciam todos juntos numa seção só, entre outros). Os originais na pasta acima do repositório não foram alterados.
 
@@ -54,6 +54,8 @@ Enquanto a URL não estiver configurada, o portal funciona em "modo local": as r
 > **Se alterar o código do Apps Script depois:** cole o `Codigo.gs` novo, salve e use **Implantar › Gerenciar implantações › (lápis) › Versão: Nova versão**. Assim a URL continua a mesma.
 >
 > **Atualização de 20/10/2026 (coluna das leituras no Painel):** cole o `Codigo.gs` novo e salve. Como só mudou a montagem do Painel e das abas (feita pelo gatilho de 5 minutos), isso já basta; criar a nova versão é recomendado, mas não muda nada para os grupos. Sem colar, as respostas das leituras são salvas do mesmo jeito e aparecem na aba do grupo; só o Painel fica sem a coluna nova.
+>
+> **Atualização de 02/11/2026 (leitura da E3):** cole o `Codigo.gs` novo e salve. Mudou só a ordem das leituras na aba do grupo. Sem colar, as respostas da leitura nova são salvas e contadas no Painel do mesmo jeito, mas aparecem no fim da aba do grupo, e não antes da E3.
 
 ## Acompanhar a turma
 
@@ -69,7 +71,7 @@ Enquanto a URL não estiver configurada, o portal funciona em "modo local": as r
 
 ## Publicar as próximas leituras
 
-Quando tiver os próximos materiais (7Ps, jornada, canais, SMART e KPIs, ICE e 5W2H, orçamento, identidade, conteúdo, governança), abra o Claude Code nesta pasta e use o prompt [`prompts/nova-leitura.md`](prompts/nova-leitura.md). O entregável de cada etapa já está pronto; a leitura só troca o cartão "em breve" da trilha pelo link e ganha as pontes para as seções do entregável.
+Quando tiver os próximos materiais (SMART e KPIs, ICE e 5W2H, orçamento, identidade, conteúdo, governança), abra o Claude Code nesta pasta e use o prompt [`prompts/nova-leitura.md`](prompts/nova-leitura.md). O entregável de cada etapa já está pronto; a leitura só troca o cartão "em breve" da trilha pelo link e ganha as pontes para as seções do entregável.
 
 ## Privacidade
 

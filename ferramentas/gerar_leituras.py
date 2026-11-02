@@ -70,6 +70,15 @@ LEITURAS = [
          "4-8-modelo-para-o-bloco-2-4": ("../entregas/e2.html#s-posicionamento", "E2 · 2.4 Declaração de posicionamento"),
          "5-do-material-para-a-ferramenta-checklist-dos-blocos-2-3-e-2-4": ("../entregas/e2.html#s-checklist", "E2 · checklist antes de entregar"),
      }},
+    {"fonte": "mix-jornada-e-canais.md", "id": "leitura-mix", "selo": "Leitura · Etapa 4", "curto": "Mix, jornada e canais",
+     "etapa": "Etapa 4 · E3", "entrega": ("../entregas/e3.html", "E3 · Mix de marketing e jornada do cliente"),
+     "pontes": {
+         "6-preenchendo-o-entregavel-secao-3-1": ("../entregas/e3.html#s-sete-ps", "E3 · 3.1 Os 7Ps do mix de marketing"),
+         "13-preenchendo-o-entregavel-secao-3-2": ("../entregas/e3.html#s-jornada", "E3 · 3.2 Jornada do cliente e pontos de contato"),
+         "22-1-secao-3-3-canais-prioritarios": ("../entregas/e3.html#s-canais", "E3 · 3.3 Canais prioritários"),
+         "22-2-secao-3-4-mix-de-midia-paga-propria-e-conquistada": ("../entregas/e3.html#s-midia", "E3 · 3.4 Mix de mídia"),
+         "23-a-cadeia-de-coerencia-do-bloco-3": ("../entregas/e3.html#s-checklist", "E3 · checklist de coerência"),
+     }},
 ]
 
 

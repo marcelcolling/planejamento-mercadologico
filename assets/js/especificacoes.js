@@ -33,7 +33,8 @@
     'benchmarking': { url: 'leituras/benchmarking-competitivo.html', nome: 'Benchmarking competitivo' },
     'swot': { url: 'leituras/swot-de-marketing-e-tows.html', nome: 'SWOT de Marketing e TOWS' },
     'segmentacao': { url: 'leituras/segmentacao-e-persona.html', nome: 'Segmentação, persona e comportamento do consumidor' },
-    'vpc': { url: 'leituras/proposta-de-valor-e-posicionamento.html', nome: 'Proposta de valor e declaração de posicionamento' }
+    'vpc': { url: 'leituras/proposta-de-valor-e-posicionamento.html', nome: 'Proposta de valor e declaração de posicionamento' },
+    'mix': { url: 'leituras/mix-jornada-e-canais.html', nome: 'Mix de marketing, jornada do cliente e canais' }
   };
 
   /* ---------------- auxiliares ---------------- */
@@ -603,11 +604,11 @@
     etapa: 'Etapa 4 · Execução', bloco: 'Bloco 3 · Mix de marketing',
     pergunta: 'O que oferecemos e como chegamos ao cliente?',
     resumo: 'Os 7Ps coerentes com o posicionamento, a jornada real do cliente, até quatro canais prioritários e o mix de mídia paga, própria e conquistada.',
-    leituras: [],
-    leiturasEmBreve: ['Os 7Ps do mix de marketing', 'Jornada do cliente e pontos de contato', 'Canais prioritários e mix de mídia'],
+    leituras: ['mix'],
     secoes: [
       { id: 'sete-ps', n: '3.1', titulo: 'Os 7Ps do mix de marketing',
         dica: 'Primeiro descrevam o mix atual; depois, a escolha estratégica — o que deveria existir para servir o segmento-alvo. A declaração de posicionamento precisa ser reconhecível em cada P.',
+        leitura: ['mix', '6-preenchendo-o-entregavel-secao-3-1'],
         itens: [
           { t: 'espelho', de: 'e2', k: 'b2_pos_final', r: 'Declaração de posicionamento (E2)' },
           { t: 'tabela', cols: [
@@ -618,6 +619,7 @@
         ] },
       { id: 'jornada', n: '3.2', titulo: 'Jornada do cliente e pontos de contato',
         dica: 'Mapeiem a jornada real, não a ideal. Em cada etapa: o que o cliente faz e pensa, onde encontra a marca, o momento em que decide avançar ou abandonar, e o que a empresa deve fazer.',
+        leitura: ['mix', '13-preenchendo-o-entregavel-secao-3-2'],
         itens: [
           { t: 'espelho', de: 'e2', k: 'b2_persona1_nome', r: 'Persona 1 (E2)' },
           { t: 'referencia', de: 'roteiro', blocos: [3], r: 'Respostas registradas na entrevista (Bloco 3 do roteiro)' },
@@ -633,6 +635,7 @@
         ] },
       { id: 'canais', n: '3.3', titulo: 'Canais prioritários',
         dica: 'Até quatro canais (nem todo canal precisa ser digital). Estar em todos os canais sem estratégia é pior do que estar em poucos com foco.',
+        leitura: ['mix', '22-1-secao-3-3-canais-prioritarios'],
         itens: [
           { t: 'tabela', cols: [
             { r: 'Canal', w: '14%' }, { r: 'Etapa principal da jornada', tipo: 'opcoes', op: ['Atração', 'Consideração', 'Conversão', 'Retenção/Advocacy'], w: '14%' },
@@ -642,6 +645,7 @@
           { k: 'b3_canais_fora', r: 'Canais que ficam de fora por enquanto, e por quê' }
         ] },
       { id: 'midia', n: '3.4', titulo: 'Mix de mídia: paga, própria e conquistada',
+        leitura: ['mix', '22-2-secao-3-4-mix-de-midia-paga-propria-e-conquistada'],
         itens: [ { t: 'grupo', cols: 3, itens: [
           { t: 'sub', r: 'Paid · o que vamos pagar para veicular' }, { t: 'sub', r: 'Owned · canais que controlamos' }, { t: 'sub', r: 'Earned · o que esperamos conquistar' },
           { k: 'b3_paid_canais', r: 'Canais e formatos', ph: 'Google Ads, Meta Ads, influenciadores pagos...' },
