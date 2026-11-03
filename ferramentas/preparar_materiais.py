@@ -44,6 +44,9 @@ SEM_AULAS = [
     ("Próxima aula: formalizar o acordo com a empresa parceira", "Próximo passo: formalizar o acordo com a empresa parceira"),
     ("Planejamento Mercadológico — Curso de Administração", "Planejamento Mercadológico"),
     ("trazem gente para experimentar uma aula?", "trazem gente para experimentar um treino?"),
+    # a E4 não tem mais seção de objetivos SMART (decisão do professor, nov/2026)
+    ("Objetivos SMART, KPIs, priorização de ações e, no fim, governança para acompanhar de verdade.", "Objetivos de marketing, KPIs, plano de ação priorizado e, no fim, governança para acompanhar de verdade."),
+    ("Objetivos SMART, dashboard de KPIs, priorização com ICE Score, 5W2H das ações prioritárias e orçamento.", "Objetivos de marketing, dashboard de KPIs e plano de ação em 5W2H com priorização pelo ICE; orçamento e cronograma saem do plano."),
 ]
 
 for origem, destino in MATERIAIS:
