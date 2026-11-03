@@ -11,10 +11,14 @@
   var esc = function (s) { return window.VD ? VD.esc(s) : String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
 
   /* ================= utilidades sobre a especificação ================= */
-  function cadaItem(itens, f) {
+  /* ocultarSe: { k, v } tira o item da tela, do PDF e do resumo enquanto o campo k valer v (a resposta fica guardada) */
+  function oculto(it, campos) { return !!(it.ocultarSe && campos && campos[it.ocultarSe.k] === it.ocultarSe.v); }
+  /* Com "campos", pula o que está oculto; sem "campos", percorre tudo (lista de chaves, importação). */
+  function cadaItem(itens, f, campos) {
     (itens || []).forEach(function (it) {
+      if (oculto(it, campos)) return;
       f(it);
-      if (it.t === 'grupo') cadaItem(it.itens, f);
+      if (it.t === 'grupo') cadaItem(it.itens, f, campos);
     });
   }
   function chavesDe(esp) {
@@ -142,7 +146,7 @@
     var out = {};
     esp.secoes.forEach(function (s) {
       cadaItem(s.itens, function (it) {
-        if (it.t !== 'tabela') return;
+        if (it.t !== 'tabela' || it.calculada) return;  // tabela "calculada": quem preenche é CALCULOS, abaixo
         var iCalc = it.cols.map(function (c) { return c.tipo; }).indexOf('calc');
         if (iCalc < 0) return;
         if (it.moeda) {
@@ -176,8 +180,189 @@
         }
       });
     });
+    if (CALCULOS[esp.id]) CALCULOS[esp.id](campos, out);
     return out;
   }
+
+  /* ================= E4: ações, orçamento e cronograma saem dos cartões do plano ================= */
+  var N_ACOES = 8;
+  function chaveNaAcao(n) { return 'na__b_5w2h__acao-' + n; }
+  /* As ações que se aplicam, com os valores já convertidos. Quem está em "Não se aplica" não entra em nada. */
+  function acoesE4(c) {
+    if (c.na__s_5w2h) return [];
+    var l = [];
+    for (var n = 1; n <= N_ACOES; n++) {
+      if (c[chaveNaAcao(n)]) continue;
+      var p = 'b5_a' + n + '_', tri = [0, 0, 0, 0], custos = [], temValor = false;
+      ['c1_', 'c2_'].forEach(function (lin) {
+        var vals = [1, 2, 3, 4].map(function (t) { return c[p + lin + 't' + t]; });
+        var tem = vals.some(function (v) { return !vazio(v); });
+        if (tem) temValor = true;
+        var nums = vals.map(numBR);
+        if (tem || c[p + lin + 'cat']) custos.push({ cat: c[p + lin + 'cat'] || '', tri: nums, tem: tem });
+        if (c[p + lin + 'cat']) nums.forEach(function (x, i) { tri[i] += x; });
+      });
+      l.push({
+        n: n, p: p, what: c[p + 'what'] || '', why: c[p + 'why'] || '', kpi: c[p + 'kpi'] || '', dec: c[p + 'dec'] || '',
+        who: c[p + 'who'] || '', where: c[p + 'where'] || '', ini: c[p + 'ini'] || '', fim: c[p + 'fim'] || '', when: c[p + 'when'] || '',
+        how: c[p + 'how'] || '', premissa: c[p + 'premissa'] || '', horas: c[p + 'horas'] || '', recursos: c[p + 'recursos'] || '',
+        score: Number(c[p + 'imp']) * Number(c[p + 'conf']) * Number(c[p + 'fac']) || 0,
+        custos: custos, tri: tri, total: tri[0] + tri[1] + tri[2] + tri[3], temValor: temValor
+      });
+    }
+    return l;
+  }
+  /* Ações do ciclo na ordem do cronograma: primeiro as que começam antes; no empate, a de maior ICE. */
+  function acoesCiclo(c) {
+    return acoesE4(c).filter(function (a) { return a.dec === 'Ciclo'; }).sort(function (x, y) {
+      if (x.ini !== y.ini) return !x.ini ? 1 : !y.ini ? -1 : (x.ini < y.ini ? -1 : 1);
+      return y.score - x.score || x.n - y.n;
+    });
+  }
+  /* Ano do plano: o informado na 5.2 ou, se estiver vazio, o da primeira data de início do ciclo. */
+  function anoDoPlano(c) {
+    var ano = Number(c.b5_ano_plano);
+    if (ano) return ano;
+    var com = acoesCiclo(c).filter(function (a) { return a.ini; });
+    return com.length ? Number(com[0].ini.slice(0, 4)) : 0;
+  }
+  /* Trimestres (1 a 4) do ano do plano cobertos pela ação; sem data de fim, só o trimestre em que ela começa. */
+  function trimestresAcao(a, c) {
+    var ano = anoDoPlano(c), trim = function (d) { return Math.ceil(Number(d.slice(5, 7)) / 3); };
+    if (!a.ini || !ano) return [];
+    var ai = Number(a.ini.slice(0, 4)), de = ai < ano ? 1 : ai > ano ? 0 : trim(a.ini);
+    if (!de) return [];
+    var ate = de;
+    if (a.fim) {
+      var af = Number(a.fim.slice(0, 4));
+      if (af < ano) return [];
+      ate = af > ano ? 4 : trim(a.fim);
+    }
+    var l = [];
+    for (var q = de; q <= ate; q++) l.push(q);
+    return l;
+  }
+  function pctReserva(c) { return vazio(c.b5_orc_reserva_pct) ? 12 : numBR(c.b5_orc_reserva_pct); }
+  var CALCULOS = {
+    e4: function (campos, out) {
+      var c = Object.assign({}, campos, out), i, q;
+      for (i = 1; i <= N_ACOES; i++) {
+        var p = 'b5_a' + i + '_', a = Number(c[p + 'imp']), b = Number(c[p + 'conf']), d = Number(c[p + 'fac']);
+        out[p + 'score'] = (a > 0 && b > 0 && d > 0) ? String(a * b * d) : '';
+      }
+      /* orçamento: soma o How much das ações do ciclo, por categoria e por trimestre */
+      var cats = PM.CAT_ACAO, mat = cats.map(function () { return [0, 0, 0, 0]; }), tem = cats.map(function () { return false; });
+      acoesE4(c).filter(function (x) { return x.dec === 'Ciclo'; }).forEach(function (x) {
+        x.custos.forEach(function (l) {
+          var ic = cats.indexOf(l.cat);
+          if (ic < 0 || !l.tem) return;
+          tem[ic] = true;
+          l.tri.forEach(function (v, t) { mat[ic][t] += v; });
+        });
+      });
+      var algum = tem.some(Boolean), sub = [0, 0, 0, 0], res = [0, 0, 0, 0], pct = pctReserva(c);
+      var celula = function (pre, vals, mostra) {
+        vals.forEach(function (v, t) { out[pre + '_t' + (t + 1)] = mostra ? moeda(v) : ''; });
+        out[pre + '_total'] = mostra ? moeda(vals[0] + vals[1] + vals[2] + vals[3]) : '';
+      };
+      cats.forEach(function (x, ic) {
+        celula('b5_orc' + (ic + 1), mat[ic], tem[ic]);
+        mat[ic].forEach(function (v, t) { sub[t] += v; });
+      });
+      sub.forEach(function (v, t) { res[t] = Math.round(v * pct / 100); });
+      celula('b5_orc_sub', sub, algum);
+      celula('b5_orc7', res, algum);
+      var tot = sub.map(function (v, t) { return v + res[t]; });
+      celula('b5_orc_tot', tot, algum);
+      var totalAno = tot[0] + tot[1] + tot[2] + tot[3], receita = numBR(c.b5_orc_receita_anual);
+      out.b5_orc_pct_calc = (algum && receita > 0) ? (totalAno / receita * 100).toFixed(1).replace('.', ',') + '%' : '';
+      /* cronograma: frentes novas = ações cujo primeiro trimestre preenchido é aquele */
+      var novas = [0, 0, 0, 0], linhas = 0;
+      for (i = 1; i <= 5; i++) {
+        for (q = 1; q <= 4; q++) {
+          if (!vazio(c['b5_cron' + i + '_q' + q])) { novas[q - 1]++; linhas++; break; }
+        }
+      }
+      novas.forEach(function (v, t) { out['b5_cron_novas_q' + (t + 1)] = linhas ? String(v) : ''; });
+    }
+  };
+  /* Avisos: faixa discreta no topo da seção. Orientam e não impedem o salvamento. */
+  function nomeSub(sec, sub, c) {
+    var n = numeracao(PM.ESPEC.e4, c).sub[sec + '__' + sub];
+    return String(n || sub).replace(/\s*\(.*?\)\s*$/, '');
+  }
+  var AVISOS = {
+    kpis: function (c) {
+      var av = [], lista = [];
+      for (var i = 1; i <= 5; i++) {
+        if (c['b4_kpi' + i + '_nome'] && !c['na__b_kpis__kpi-' + i]) lista.push(i);
+      }
+      if (!lista.length) return av;
+      var campo = function (i, s) { return c['b4_kpi' + i + '_' + s]; };
+      var rot = function (i) { return nomeSub('kpis', 'kpi-' + i, c); };
+      var conta = function (s, v) { return lista.filter(function (i) { return campo(i, s) === v; }).length; };
+      var nomes = function (f) { return lista.filter(f).map(rot).join(', '); };
+      if (lista.length < 3) av.push('O dashboard tem ' + lista.length + ' KPI' + (lista.length === 1 ? '' : 's') + ': o plano pede de 3 a 5.');
+      if (lista.length >= 2 && !conta('tipo', 'Resultado')) av.push('Falta ao menos um KPI de Resultado: é o número que o dono acompanha.');
+      if (lista.length >= 2 && !conta('tipo', 'Processo')) av.push('Falta ao menos um KPI de Processo: é o que mostra à equipe o que fazer.');
+      var semObj = nomes(function (i) { return !campo(i, 'obj'); });
+      if (semObj) av.push('Sem objetivo vinculado: ' + semObj + '. Todo KPI serve a um objetivo.');
+      [1, 2, 3].forEach(function (m) {
+        if (c['b4_obj_mktg' + m] && !conta('obj', 'Objetivo ' + m)) av.push('O Objetivo ' + m + ' (4.1) ainda não tem KPI no dashboard.');
+      });
+      var semFonte = nomes(function (i) { return campo(i, 'base') && !campo(i, 'fonte'); });
+      if (semFonte) av.push('Baseline sem data e fonte: ' + semFonte + '.');
+      if (conta('origem', 'Hipótese') > lista.length / 2) av.push('Mais da metade dos baselines é hipótese: vale pedir dados à empresa ou medir por 4 semanas.');
+      return av;
+    },
+    '5w2h': function (c) {
+      var av = [];
+      acoesE4(c).filter(function (a) { return a.dec === 'Ciclo'; }).forEach(function (a) {
+        var f = [];
+        if (!a.what) f.push('What');
+        if (!a.why) f.push('Why');
+        if (!a.kpi) f.push('KPI que move');
+        if (!a.who) f.push('Who');
+        if (!a.where) f.push('Where');
+        if (!a.ini || !a.fim) f.push('When (início e fim)');
+        if (!a.how) f.push('How');
+        if (!a.temValor && !a.horas && !a.premissa && !a.recursos) f.push('How much');
+        if (f.length) av.push(nomeSub('5w2h', 'acao-' + a.n, c) + ' está no ciclo e ainda falta: ' + f.join(', ') + '.');
+      });
+      return av;
+    },
+    orcamento: function (c) {
+      var av = [], ciclo = acoesE4(c).filter(function (a) { return a.dec === 'Ciclo'; });
+      var rot = function (a) { return nomeSub('5w2h', 'acao-' + a.n, c); };
+      var pct = pctReserva(c);
+      if (pct < 10 || pct > 15) av.push('A reserva está em ' + pct + '%: o recomendado é de 10% a 15%.');
+      ciclo.forEach(function (a) {
+        if (a.custos.some(function (l) { return l.tem && !l.cat; })) av.push(rot(a) + ' tem valor sem categoria: esse valor não entrou na soma.');
+        else if (!a.temValor && !a.horas && !a.premissa) av.push(rot(a) + ' está no ciclo sem valor no How much. Se custa R$ 0, digite 0 e registre as horas.');
+      });
+      var teto = numBR(c.b5_teto_caixa);
+      var pico = Math.max.apply(null, [1, 2, 3, 4].map(function (t) { return numBR(c['b5_orc_tot_t' + t]); }));
+      if (teto > 0 && pico / 3 > teto) av.push('O trimestre mais caro dá ' + moeda(pico / 3) + ' por mês, acima do teto de caixa de ' + moeda(teto) + ' por mês.');
+      var comVerba = ciclo.filter(function (a) { return a.total > 0; });
+      if (comVerba.length >= 2) {
+        var maior = comVerba.slice().sort(function (x, y) { return y.total - x.total; })[0];
+        var ordem = ciclo.slice().sort(function (x, y) { return y.score - x.score; });
+        if (maior.score > 0 && ordem.indexOf(maior) >= ordem.length / 2) {
+          av.push('A maior verba (' + moeda(maior.total) + ') está em ' + rot(maior) + ', uma ação de ICE baixo no ciclo. Se for um teste com gatilho, explique em "De onde vieram os valores".');
+        }
+      }
+      return av;
+    },
+    cronograma: function (c) {
+      var av = [], ciclo = acoesCiclo(c);
+      var alem = [1, 2, 3, 4].filter(function (q) { return Number(c['b5_cron_novas_q' + q]) > 2; });
+      if (alem.length) av.push('Mais de duas frentes novas em ' + alem.map(function (q) { return 'T' + q; }).join(', ') + ': em equipes pequenas, o limite é de duas por trimestre.');
+      var semData = ciclo.filter(function (a) { return !a.ini; }).map(function (a) { return nomeSub('5w2h', 'acao-' + a.n, c); });
+      if (semData.length) av.push('Sem data de início na 5.1: ' + semData.join(', ') + '. O botão não consegue marcar os trimestres dessas ações.');
+      if (ciclo.length > 5) av.push('O ciclo tem ' + ciclo.length + ' ações, e a tabela traz as 5 primeiras. O plano pede de 3 a 5.');
+      return av;
+    }
+  };
 
   /* ================= resumo para a planilha ================= */
   function resumo(esp, campos) {
@@ -189,20 +374,24 @@
       if (naSecao(esp, s, campos)) { L.push([sec, 'Seção não se aplica', campos['na__s_' + s.id + '_motivo'] || '—']); return; }
       var r = itensDaSecao(esp, s, campos, num);
       r.naSubs.forEach(function (x) { L.push([sec, x.r, 'Não se aplica' + (x.motivo ? ': ' + x.motivo : '')]); });
+      // rotularSub: cartões com os mesmos campos ("KPI 2 · Meta"); sem isso, a planilha não diz de qual cartão é a resposta
+      var pre = '';
       cadaItem(r.itens, function (it) {
-        if (it.k && !it.t && !vazio(campos[it.k])) L.push([sec, it.r, valorLegivel(it, campos[it.k])]);
+        if (it.t === 'sub' && s.rotularSub) { pre = it.r.replace(/\s*\(.*?\)\s*$/, '') + ' · '; return; }
+        if (it.solto) pre = '';
+        if (it.k && !it.t && !vazio(campos[it.k])) L.push([sec, pre + it.r, valorLegivel(it, campos[it.k])]);
         if (it.t === 'tabela') {
           it.linhas.forEach(function (l) {
             l.k.forEach(function (k, j) {
               if (vazio(campos[k])) return;
               var c = it.cols[j];
-              var rot = (it.r ? it.r + ' · ' : '') + rotuloLinha(l, campos) + (it.cols.length > 1 ? ' · ' + rotuloColuna(c, campos) : '');
+              var rot = pre + (it.r ? it.r + ' · ' : '') + rotuloLinha(l, campos) + (it.cols.length > 1 ? ' · ' + rotuloColuna(c, campos) : '');
               L.push([sec, rot, valorLegivel(c, campos[k])]);
             });
           });
         }
         if (it.t === 'checklist') it.itens.forEach(function (c) { L.push([sec, c[1], campos[c[0]] ? '✓' : '—']); });
-      });
+      }, campos);
     });
     return L;
   }
@@ -237,7 +426,7 @@
   function relatorioItens(itens, campos, esp) {
     var h = '';
     (itens || []).forEach(function (it) {
-      if (it.relatorio === false) return;
+      if (it.relatorio === false || oculto(it, campos)) return;
       if (!it.t && it.k) {
         if (!vazio(campos[it.k])) h += '<div class="r-campo"><h4>' + esc(it.r) + '</h4><p>' + paragrafos(valorLegivel(it, campos[it.k])) + '</p></div>';
       } else if (it.t === 'grupo') {
@@ -361,7 +550,15 @@
       relatorio: function (c) { var h = rankingHtml(c, true); return h ? '<div class="r-ranking">' + h + '</div>' : ''; }
     },
     csv5w2h: {
-      tela: function () { return '<div class="csv-box"><div><strong>Plano de ação em planilha</strong><p>Baixa as três ações do 5W2H no formato de planilha (Status, Início, Fim, Observações), pronto para a empresa acompanhar a execução no Excel ou no Google Planilhas.</p></div><button type="button" class="btn-sec" data-csv>Baixar plano de ação (CSV)</button></div>'; }
+      tela: function () { return '<div class="csv-box"><div><strong>Plano de ação em planilha</strong><p>Baixa as ações do ciclo em formato de planilha (Status, Início, Fim, Observações), pronto para a empresa acompanhar a execução no Excel ou no Google Planilhas.</p></div><button type="button" class="btn-sec" data-csv>Baixar plano de ação (CSV)</button></div>'; }
+    },
+    avisos: {
+      tela: function (it) { return '<div class="e-avisos no-print" data-esp="avisos" data-avisos="' + esc(it.secao) + '" role="status" hidden></div>'; },
+      atualizar: function (el, c) {
+        var l = AVISOS[el.dataset.avisos] ? AVISOS[el.dataset.avisos](c) : [];
+        el.hidden = !l.length;
+        el.innerHTML = l.length ? '<span class="e-avisos-rot">Para conferir</span><ul>' + l.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' : '';
+      }
     }
   };
   function fraseMontada(c) {
@@ -371,29 +568,42 @@
       ' que ' + p('b2_pos_pq', '[diferencial]') + ', diferente de ' + p('b2_pos_contra', '[alternativa]') + ', pois ' + p('b2_pos_pois', '[evidência]') + '.';
   }
   function rankingHtml(c, soLista) {
-    var l = [];
-    for (var i = 1; i <= 10; i++) {
-      var s = Number(c['b5_ice' + i + '_imp']) * Number(c['b5_ice' + i + '_conf']) * Number(c['b5_ice' + i + '_fac']);
-      if (c['b5_ice' + i + '_acao'] && s > 0) l.push({ a: c['b5_ice' + i + '_acao'], s: s, i: i });
-    }
-    l.sort(function (x, y) { return y.s - x.s || x.i - y.i; });
-    if (!l.length) return soLista ? '' : '<p class="ranking-vazio">Pontuem as ações para ver o ranking.</p>';
-    return '<span class="ranking-rot">As três ações de maior ICE</span><ol>' + l.slice(0, 3).map(function (x) {
-      return '<li><span>' + esc(x.a) + '</span><b>' + x.s + '</b></li>';
+    var todas = acoesE4(c).filter(function (a) { return a.what && a.score > 0; });
+    todas.sort(function (x, y) { return y.score - x.score || x.n - y.n; });
+    if (!todas.length) return soLista ? '' : '<p class="ranking-vazio">Pontuem as ações para ver o ranking.</p>';
+    var h = '<span class="ranking-rot">Ranking das ações pelo ICE</span><ol>' + todas.map(function (a) {
+      var selo = a.dec ? '<em class="selo selo-' + (a.dec === 'Ciclo' ? 'ciclo' : 'banco') + '">' + esc(a.dec) + '</em>' : (soLista ? '' : '<em class="selo">Sem decisão</em>');
+      return '<li><span>' + esc(a.what) + '</span>' + selo + '<b>' + a.score + '</b></li>';
     }).join('') + '</ol>';
+    if (soLista) return h;
+    var ciclo = acoesE4(c).filter(function (a) { return a.dec === 'Ciclo'; }).length;
+    var algumaDecisao = acoesE4(c).some(function (a) { return a.dec; });
+    if (algumaDecisao) {
+      h += '<p class="ranking-nota' + (ciclo < 3 || ciclo > 5 ? ' ranking-aviso' : '') + '">' + ciclo + ' aç' + (ciclo === 1 ? 'ão' : 'ões') + ' no ciclo (o plano pede de 3 a 5).</p>';
+    }
+    if (todas.slice(0, 3).some(function (a) { return a.dec === 'Banco'; }) && !c.b5_corte_just) {
+      h += '<p class="ranking-nota ranking-aviso">Uma das três ações de maior ICE ficou no Banco: registrem o motivo em "Trocas na ordem do ranking".</p>';
+    }
+    return h;
   }
-  function baixarCsv(c) {
-    var cab = ['Nº', 'O que', 'Por quê', 'Onde', 'Quando', 'Quem', 'Como', 'Quanto custará', 'KPI que move', 'Status', 'Início', 'Fim', 'Observações'];
-    var linhas = [cab];
-    [1, 2, 3].forEach(function (n) {
-      var p = 'b5_5w2h' + n + '_';
-      if (!c[p + 'what'] || c['na__b_5w2h__acao-' + n] || c['na__s_5w2h'] || c.na__entrega) return;
-      linhas.push([String(n), c[p + 'what'], c[p + 'why'], c[p + 'where'], c[p + 'when'], c[p + 'who'], c[p + 'how'], c[p + 'howmuch'], c[p + 'kpi'], 'A INICIAR', '', '', '']);
-    });
-    if (linhas.length === 1) { VD.toast('Preencham ao menos o "What" de uma ação antes de baixar.'); return; }
-    var csv = '﻿' + linhas.map(function (l) {
+  /* Só as ações do ciclo, na ordem de início. Texto iniciado por = + - @ vai protegido, para o Excel não executar como fórmula. */
+  function csvTexto(c) {
+    if (c.na__entrega) return null;
+    var cab = ['Nº', 'O que', 'Por quê', 'Quem', 'Onde', 'Início', 'Fim', 'Marcos', 'Como', 'Financeiro (R$ total e por trimestre)', 'Horas e recursos', 'KPI', 'ICE', 'Status', 'Observações'];
+    var acoes = acoesCiclo(c).filter(function (a) { return a.what; });
+    if (!acoes.length) return null;
+    var linhas = [cab].concat(acoes.map(function (a, i) {
+      var porTri = a.tri.map(function (v, t) { return v ? 'T' + (t + 1) + ' ' + moeda(v) : ''; }).filter(Boolean).join('; ');
+      var rec = [a.horas, a.recursos].filter(Boolean).join('; ');
+      return [String(i + 1), a.what, a.why, a.who, a.where, dataBR(a.ini), dataBR(a.fim), a.when, a.how, moeda(a.total) + (porTri ? ' (' + porTri + ')' : ''), rec, a.kpi, a.score ? String(a.score) : '', 'A INICIAR', ''];
+    }));
+    return '﻿' + linhas.map(function (l) {
       return l.map(function (v) { v = String(v || '').replace(/"/g, '""'); return /^[=+\-@]/.test(v) ? '"\'' + v + '"' : '"' + v + '"'; }).join(';');
     }).join('\r\n');
+  }
+  function baixarCsv(c) {
+    var csv = csvTexto(c);
+    if (!csv) { VD.toast('Marquem ao menos uma ação como Ciclo, com o "What" preenchido, antes de baixar.'); return; }
     var a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
     a.download = 'plano-de-acao-5w2h.csv';
@@ -406,7 +616,7 @@
     var tipo = def.tipo || 'texto';
     var base = { 'data-k': k, 'aria-label': rotulo || null };
     if (tipo === 'linha' || tipo === 'moeda') return '<input type="text"' + attrs(Object.assign(base, { placeholder: ph || (tipo === 'moeda' ? 'R$' : null), inputmode: tipo === 'moeda' ? 'decimal' : null })) + '>';
-    if (tipo === 'numero') return '<input type="number"' + attrs(Object.assign(base, { min: def.min, max: def.max, step: 1, placeholder: def.min ? def.min + '–' + def.max : null })) + '>';
+    if (tipo === 'numero') return '<input type="number"' + attrs(Object.assign(base, { min: def.min, max: def.max, step: 1, placeholder: ph || (def.min ? def.min + '–' + def.max : null) })) + '>';
     if (tipo === 'data') return '<input type="date"' + attrs(base) + '>';
     if (tipo === 'calc') return '<input type="text" readonly tabindex="-1" class="calc"' + attrs(base) + '>';
     if (tipo === 'check') return '<label class="chk-cel"><input type="checkbox"' + attrs(base) + '><span aria-hidden="true"></span></label>';
@@ -438,13 +648,19 @@
     });
     return h + '</tbody></table></div>';
   }
+  /* ref: [chave da leitura, âncora, trecho (opcional, para quando a seção aponta para dois pontos da leitura)] */
   function linkLeitura(ref) {
     var l = PM.LEITURAS[ref[0]];
     if (!l) return '';
-    return '<a class="link-leitura" href="' + esc(urlLeitura(ref)) + '" target="_blank" rel="noopener">📖 Na leitura: ' + esc(l.nome) + ' ↗</a>';
+    return '<a class="link-leitura" href="' + esc(urlLeitura(ref)) + '" target="_blank" rel="noopener">📖 Na leitura: ' + esc(ref[2] || l.nome) + ' ↗</a>';
   }
   function htmlItens(itens, esp) {
     return (itens || []).map(function (it) {
+      if (it.ocultarSe) {
+        var semCond = Object.assign({}, it);
+        delete semCond.ocultarSe;
+        return '<div data-ocultar-k="' + esc(it.ocultarSe.k) + '" data-ocultar-v="' + esc(it.ocultarSe.v) + '">' + htmlItens([semCond], esp) + '</div>';
+      }
       if (!it.t) return htmlCampo(it);
       if (it.t === 'grupo') return '<div class="grade grade-' + (it.cols || 2) + '">' + htmlItens(it.itens, esp) + '</div>';
       if (it.t === 'sub') return '<h3 class="sub">' + esc(it.r) + '</h3>';
@@ -457,7 +673,7 @@
       if (it.t === 'checklist') return '<ul class="chk-lista">' + it.itens.map(function (c) {
         return '<li><label><input type="checkbox" data-k="' + esc(c[0]) + '"><span class="chk-caixa" aria-hidden="true"></span><span>' + esc(c[1]) + '</span></label></li>';
       }).join('') + '</ul>';
-      if (it.t === 'especial') return ESPECIAIS[it.nome] && ESPECIAIS[it.nome].tela ? ESPECIAIS[it.nome].tela() : '';
+      if (it.t === 'especial') return ESPECIAIS[it.nome] && ESPECIAIS[it.nome].tela ? ESPECIAIS[it.nome].tela(it) : '';
       return '';
     }).join('');
   }
@@ -531,7 +747,7 @@
         (na ? botaoNA('s:' + s.id, 'na__s_' + s.id) : '') + '</div>' +
         (na ? painelNA('na__s_' + s.id, 'Esta seção foi marcada como não aplicável: sai do PDF e a numeração das seções seguintes se ajusta. O que já estava escrito fica guardado.') : '') +
         '<div class="e-secao-conteudo">' +
-        (s.dica ? '<p class="e-dica">' + esc(s.dica) + '</p>' : '') + (s.leitura ? linkLeitura(s.leitura) : '') +
+        (s.dica ? '<p class="e-dica">' + esc(s.dica) + '</p>' : '') + (s.leitura ? linkLeitura(s.leitura) : '') + (s.leitura2 ? ' ' + linkLeitura(s.leitura2) : '') +
         '<div class="e-secao-corpo">' + htmlCorpoSecao(esp, s) + '</div></div></section>';
     });
     SECAO_ATUAL = null;
@@ -585,6 +801,7 @@
         var e = ESPECIAIS[el.dataset.esp];
         if (e && e.atualizar) e.atualizar(el, c);
       });
+      document.querySelectorAll('[data-ocultar-k]').forEach(function (el) { el.hidden = c[el.dataset.ocultarK] === el.dataset.ocultarV; });
       estadoNA(c);
       progresso(c);
     }
@@ -636,11 +853,11 @@
         var ks = [];
         var itens = naSecao(esp, s, c) ? [] : itensDaSecao(esp, s, c, num).itens;  // o que não se aplica não conta
         cadaItem(itens, function (it) {
-          if (it.k && !it.t) ks.push(it.k);
+          if (it.k && !it.t && it.tipo !== 'calc') ks.push(it.k);
           if (it.t === 'tabela' && !it.banco) it.linhas.forEach(function (l) { l.k.forEach(function (k, j) { if (it.cols[j].tipo !== 'calc' && !l.calc) ks.push(k); }); });
           if (it.t === 'tabela' && it.banco) it.linhas.forEach(function (l) { ks.push(l.k[0]); });
           if (it.t === 'checklist') it.itens.forEach(function (x) { ks.push(x[0]); });
-        });
+        }, c);
         var f = ks.filter(function (k) { return !vazio(c[k]); }).length;
         totalG += ks.length; feitosG += f;
         var a = document.querySelector('.e-nav a[data-sec="' + s.id + '"] .sec-prog');
@@ -713,16 +930,19 @@
         VD.toast('A ' + PM.ESPEC[it.de].codigo + ' ainda não tem respostas' + (VD.sessao() ? '' : '. Entre com o grupo para trazer o que está na planilha') + '.');
         return;
       }
-      var novos = {};
+      var novos = {}, limpar = [];  // substituir: o que ficou vazio na origem também é apagado no destino (ex.: datas que mudaram)
       Object.keys(it.mapa).forEach(function (dest) {
         var src = it.mapa[dest];
         var v = typeof src === 'function' ? src(origem) : origem[src];
         if (!vazio(v)) novos[dest] = String(v);
+        else if (it.substituir) limpar.push(dest);
       });
-      var conflitos = Object.keys(novos).filter(function (k) { var el = porChave(k); return el && el.value && el.value !== novos[k]; });
       if (!Object.keys(novos).length) { VD.toast('Não há nada para trazer: os campos de origem estão vazios.'); return; }
+      var conflitos = Object.keys(novos).filter(function (k) { var el = porChave(k); return el && el.value && el.value !== novos[k]; })
+        .concat(limpar.filter(function (k) { var el = porChave(k); return el && el.value; }));
       if (conflitos.length && !window.confirm(conflitos.length + ' campo(s) já preenchido(s) serão substituídos. Continuar?')) return;
       Object.keys(novos).forEach(function (k) { var el = porChave(k); if (el) escrever(el, novos[k]); });
+      limpar.forEach(function (k) { var el = porChave(k); if (el) escrever(el, ''); });
       atualizarVisual();
       VD.alterado();
       VD.toast('Pronto: ' + Object.keys(novos).length + ' campo(s) preenchido(s).');
@@ -774,8 +994,8 @@
         ks.forEach(function (k) { conj[k] = 1; });
         var novos = {};
         ks.forEach(function (k) { if (!vazio(j[k]) && typeof j[k] !== 'object') novos[k] = j[k] === true ? true : String(j[k]); });
-        if (e.importar) e.importar(j, novos);
         var atual = id === esp.id ? lerTela() : Object.assign({}, ((VD.dados(id) || {}).campos) || {});
+        if (e.importar) e.importar(j, novos, atual);
         var n = 0;
         Object.keys(novos).forEach(function (k) {
           if (!conj[k] || !vazio(atual[k])) return;
@@ -848,4 +1068,6 @@
   PM.chavesDe = chavesDe;
   PM.relatorioCorpo = relatorioCorpo;
   PM.numeracao = numeracao;
+  PM.acoesCiclo = acoesCiclo;
+  PM.trimestresAcao = trimestresAcao;
 })();

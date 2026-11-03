@@ -14,7 +14,7 @@ Portal da disciplina Planejamento Mercadológico (graduação em Administração
 | **2 · E1** Diagnóstico | TAM/SAM/SOM e tendências; Benchmarking; SWOT de Marketing e TOWS | Bloco 1: mercado, tendências, clientes atuais, benchmarking de 3 concorrentes, SWOT com evidência, TOWS e síntese |
 | **3 · E2** Estratégia | Segmentação e persona; **Proposta de valor e declaração de posicionamento** | Bloco 2: segmentos com avaliação MASDA, 1 ou 2 personas com JTBD, Value Proposition Canvas com prioridades e teste do encaixe, alternativas competitivas, pontos de paridade e de diferença, declaração de posicionamento (a frase se monta sozinha) |
 | **4 · E3** Execução | **Mix de marketing, jornada do cliente e canais** | Bloco 3: 7Ps (hoje × escolha estratégica), jornada com momentos de verdade, canais prioritários, mix de mídia |
-| **5 · E4** Medição e ações | em breve | Blocos 4 e 5: objetivos SMART, KPIs com baseline, ICE Score (calcula sozinho), 5W2H, orçamento (soma sozinho) e cronograma. O 5W2H baixa em **planilha CSV** no formato do seu modelo de plano de ação |
+| **5 · E4** Medição e ações | **Objetivos, KPIs e plano de ação** | Blocos 4 e 5: objetivos de marketing, dashboard de KPIs (um cartão por KPI, com baseline, fonte, origem e lógica da meta) e plano de ação em 5W2H, com o ICE no final de cada cartão e a decisão Ciclo ou Banco. O orçamento soma sozinho o How much das ações do ciclo, e o cronograma é pré-preenchido pelas datas. As ações do ciclo baixam em **planilha CSV** |
 | **6 · E5** Identidade | em breve | Bloco 6: identidade, tom de voz, arquitetura de mensagem, pilares, plano editorial de 10 peças, comunicação integrada |
 | **7 · E6** Controle e entrega | em breve | Bloco 7: painel, rituais, roadmap, síntese final, checklist de coerência e preparação do pitch |
 
@@ -22,7 +22,7 @@ Portal da disciplina Planejamento Mercadológico (graduação em Administração
 
 **Não se aplica:** cada entrega, cada seção e cada trecho numerado de uma seção (Persona 2, Objetivo 3, Ação 2...) tem o botão **Não se aplica**, com campo opcional para o motivo. O que não se aplica sai do PDF, do plano completo e da contagem de progresso; as seções e os trechos seguintes são renumerados (na tela, no PDF e na planilha). No plano completo, as entregas que não se aplicam saem e os blocos seguintes são renumerados. O que já estava escrito fica guardado: **Reativar** devolve tudo. Na planilha, o Painel mostra "não se aplica" e a aba do grupo registra o motivo.
 
-**Questões de compreensão nas leituras:** como no portal sobre Porter, cada leitura tem de 5 a 6 caixas **Pausa para responder** ao fim das seções principais (39 no total). O grupo escreve a resposta, que é salva na planilha como as entregas, e só então pode abrir as **pistas de resposta** para comparar. O sumário lateral mostra quantas já foram respondidas.
+**Questões de compreensão nas leituras:** como no portal sobre Porter, cada leitura tem de 5 a 6 caixas **Pausa para responder** ao fim das seções principais (45 no total). O grupo escreve a resposta, que é salva na planilha como as entregas, e só então pode abrir as **pistas de resposta** para comparar. O sumário lateral mostra quantas já foram respondidas.
 
 **Revisão das leituras (out/2026):** os textos foram revisados para tirar repetições (por exemplo, as seções "Como usar este material no trabalho do grupo", que repetiam a abertura, e trechos que antecipavam ou repetiam outra seção) e corrigir o que estava errado ("cinco tipos" de benchmarking com quatro na tabela, a SWOT citando a persona antes de ela existir, os exemplos da SWOT que apareciam todos juntos numa seção só, entre outros). Os originais na pasta acima do repositório não foram alterados.
 
@@ -30,7 +30,7 @@ Além disso, a página **Plano completo** junta todas as entregas do grupo num d
 
 **Como os entregáveis ajudam a empresa:** cada um tem o botão **Salvar em PDF para a empresa**, que monta um relatório com capa (empresa, responsável, grupo, integrantes, data) e só o que foi preenchido, sem as orientações de aula nem o checklist interno. O E0 sai com o termo de aceite e as linhas de assinatura; o roteiro sai como roteiro impresso para levar à reunião.
 
-**Encadeamento:** botões **↻ Trazer** reaproveitam o que o grupo já escreveu (jobs, dores e ganhos da persona no VPC; as 3 ações de maior ICE no 5W2H; os KPIs da E4 no painel da E6; os canais da E3 na comunicação integrada). As respostas do roteiro de entrevista aparecem como referência nas seções de clientes e persona.
+**Encadeamento:** botões **↻ Trazer** reaproveitam o que o grupo já escreveu (jobs, dores e ganhos da persona no VPC; as ações do ciclo e os trimestres no cronograma da E4; os KPIs da E4 no painel da E6; os canais da E3 na comunicação integrada). As respostas do roteiro de entrevista aparecem como referência nas seções de clientes e persona.
 
 **Ferramenta Interativa (arquivo HTML):** os campos do portal usam as mesmas chaves da ferramenta. Quem preencheu a ferramenta e exportou o JSON pode clicar em **Importar JSON da Ferramenta** em qualquer entrega: o portal distribui os campos por todas as entregas, preenchendo só o que estiver vazio.
 
@@ -71,7 +71,7 @@ Enquanto a URL não estiver configurada, o portal funciona em "modo local": as r
 
 ## Publicar as próximas leituras
 
-Quando tiver os próximos materiais (SMART e KPIs, ICE e 5W2H, orçamento, identidade, conteúdo, governança), abra o Claude Code nesta pasta e use o prompt [`prompts/nova-leitura.md`](prompts/nova-leitura.md). O entregável de cada etapa já está pronto; a leitura só troca o cartão "em breve" da trilha pelo link e ganha as pontes para as seções do entregável.
+Quando tiver os próximos materiais (identidade, conteúdo, governança), abra o Claude Code nesta pasta e use o prompt [`prompts/nova-leitura.md`](prompts/nova-leitura.md). O entregável de cada etapa já está pronto; a leitura só troca o cartão "em breve" da trilha pelo link e ganha as pontes para as seções do entregável.
 
 ## Privacidade
 

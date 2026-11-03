@@ -148,29 +148,77 @@ const dadosNoServidor = (est, f) => { const r = Object.entries(est.dados).find((
     /* ---- E4: cálculos e "Trazer" ---- */
     w = await carregar('/entregas/e4.html');
     await sleep(1500);
-    digitar(w, 'b5_ice1_acao', 'E-commerce próprio'); digitar(w, 'b5_ice1_imp', '8'); digitar(w, 'b5_ice1_conf', '6'); digitar(w, 'b5_ice1_fac', '5');
-    digitar(w, 'b5_ice2_acao', 'Parar promoções'); digitar(w, 'b5_ice2_imp', '7'); digitar(w, 'b5_ice2_conf', '8'); digitar(w, 'b5_ice2_fac', '9');
-    digitar(w, 'b5_orc1_t1', '1.500'); digitar(w, 'b5_orc1_t2', 'R$ 2.000,50'); digitar(w, 'b5_orc2_t1', '800');
-    await sleep(300);
-    ok(k(w, 'b5_ice1_score').value === '240' && k(w, 'b5_ice2_score').value === '504', 'ICE Score calculado (8×6×5 = 240; 7×8×9 = 504)');
-    ok(k(w, 'b5_orc1_total').value === 'R$ 3.500,50' && k(w, 'b5_orc_tot_t1').value === 'R$ 2.300,00' && k(w, 'b5_orc_tot_total').value === 'R$ 4.300,50', 'orçamento soma linhas, trimestres e total');
-    ok(q(w, '.ranking li span').textContent === 'Parar promoções', 'ranking mostra a ação de maior ICE primeiro');
-    w.document.querySelectorAll('[data-trazer]')[1].click();
-    await sleep(300);
-    ok(k(w, 'b5_5w2h1_what').value === 'Parar promoções' && k(w, 'b5_5w2h2_what').value === 'E-commerce próprio', '5W2H: "Trazer" usa as ações de maior ICE, em ordem');
+    ok(w.document.querySelectorAll('.e-secao').length === 6 && !q(w, '#s-smart') && !q(w, '#s-okr') && !q(w, '#s-ice') && !q(w, '#s-baseline'), 'E4 com as seções novas: SMART, OKR, ICE e baseline não têm mais seção própria');
+    ok(q(w, '.e-leituras a[href$="objetivos-kpis-e-plano-de-acao.html"]') && !q(w, '.lt-breve'), 'E4 aponta para a leitura nova, sem "em breve"');
     ok(q(w, '.espelho').textContent.includes('Ainda não preenchido na E1') || q(w, '.espelho p').textContent.length > 0, 'espelho do SOM da E1 aparece (ou avisa que falta)');
-    /* ---- "Não se aplica" num sub-bloco: a Ação 3 vira Ação 2 ---- */
+    /* ---- ICE por cartão e ranking ---- */
+    digitar(w, 'b5_a1_what', 'E-commerce próprio'); digitar(w, 'b5_a1_imp', '8'); digitar(w, 'b5_a1_conf', '6'); digitar(w, 'b5_a1_fac', '5');
+    digitar(w, 'b5_a2_what', 'Parar promoções'); digitar(w, 'b5_a2_imp', '7'); digitar(w, 'b5_a2_conf', '8'); digitar(w, 'b5_a2_fac', '9');
+    digitar(w, 'b5_a3_what', 'Feira mensal de degustação'); digitar(w, 'b5_a3_imp', '6'); digitar(w, 'b5_a3_conf', '6'); digitar(w, 'b5_a3_fac', '5');
+    await sleep(300);
+    ok(k(w, 'b5_a1_score').value === '240' && k(w, 'b5_a2_score').value === '504', 'ICE Score calculado no cartão (8×6×5 = 240; 7×8×9 = 504)');
+    ok(q(w, '.ranking li span').textContent === 'Parar promoções' && w.document.querySelectorAll('.ranking li').length === 3, 'ranking mostra todas as ações pontuadas, a de maior ICE primeiro');
+    /* ---- orçamento: soma só o que está no ciclo, por categoria e trimestre, com reserva ---- */
+    digitar(w, 'b5_a1_dec', 'Ciclo'); digitar(w, 'b5_a2_dec', 'Ciclo'); digitar(w, 'b5_a3_who', 'Pessoa do Banco'); digitar(w, 'b5_a3_dec', 'Banco');
+    digitar(w, 'b5_a1_c1_cat', 'Mídia paga'); digitar(w, 'b5_a1_c1_t1', '1.500'); digitar(w, 'b5_a1_c1_t2', 'R$ 2.000,50');
+    digitar(w, 'b5_a2_c1_cat', 'Produção de conteúdo'); digitar(w, 'b5_a2_c1_t1', '800');
+    digitar(w, 'b5_a3_c1_cat', 'Mídia paga'); digitar(w, 'b5_a3_c1_t1', '9.999');
+    digitar(w, 'b5_orc_reserva_pct', '10'); digitar(w, 'b5_orc_receita_anual', '47.305'); digitar(w, 'b5_ano_plano', '2027');
+    await sleep(300);
+    ok(k(w, 'b5_orc1_total').value === 'R$ 3.500,50' && k(w, 'b5_orc2_t1').value === 'R$ 800,00' && k(w, 'b5_orc_sub_t1').value === 'R$ 2.300,00' && k(w, 'b5_orc_sub_total').value === 'R$ 4.300,50', 'orçamento soma por categoria e trimestre; ação no Banco não entra');
+    ok(k(w, 'b5_orc7_t1').value === 'R$ 230,00' && k(w, 'b5_orc7_total').value === 'R$ 430,00' && k(w, 'b5_orc_tot_t1').value === 'R$ 2.530,00' && k(w, 'b5_orc_tot_total').value === 'R$ 4.730,50' && k(w, 'b5_orc_pct_calc').value === '10,0%', 'reserva por trimestre, total e % do faturamento calculados');
+    ok(k(w, 'b5_orc1_t1').readOnly && k(w, 'b5_orc_tot_total').readOnly, 'a tabela do orçamento não aceita digitação');
+    ok(q(w, '#s-5w2h [data-ocultar-k="b5_a3_dec"]').hidden && !q(w, '#s-5w2h [data-ocultar-k="b5_a1_dec"]').hidden && k(w, 'b5_a3_who').value === 'Pessoa do Banco', 'ação no Banco recolhe os campos de execução e guarda o que já foi escrito');
+    ok(q(w, '[data-avisos="5w2h"]').textContent.includes('Ação 1 está no ciclo') && !q(w, '[data-avisos="5w2h"]').hidden, 'aviso: ação no ciclo com campos faltando');
+    digitar(w, 'b5_orc_reserva_pct', '20'); digitar(w, 'b5_teto_caixa', '100');
+    await sleep(300);
+    const avOrc = q(w, '[data-avisos="orcamento"]').textContent;
+    ok(avOrc.includes('reserva está em 20%') && avOrc.includes('acima do teto de caixa'), 'avisos do orçamento: reserva fora de 10 a 15% e teto de caixa');
+    digitar(w, 'b5_orc_reserva_pct', '10'); digitar(w, 'b5_teto_caixa', '');
+    /* ---- cronograma: "Trazer" marca os trimestres pelas datas; frentes novas ---- */
+    digitar(w, 'b5_a1_ini', '2027-01-11'); digitar(w, 'b5_a1_fim', '2027-06-30'); digitar(w, 'b5_a2_ini', '2027-04-01'); digitar(w, 'b5_a2_fim', '2027-04-30');
+    digitar(w, 'b5_cron5_acao', 'Linha antiga'); digitar(w, 'b5_cron5_q4', 'concluida');
+    q(w, '#s-cronograma [data-trazer]').click();
+    await sleep(300);
+    ok(k(w, 'b5_cron1_acao').value === 'E-commerce próprio' && k(w, 'b5_cron1_q1').value === 'planejada' && k(w, 'b5_cron1_q2').value === 'planejada' && !k(w, 'b5_cron1_q3').value && k(w, 'b5_cron2_acao').value === 'Parar promoções' && k(w, 'b5_cron2_q2').value === 'planejada' && !k(w, 'b5_cron2_q1').value, 'cronograma: "Trazer" traz só o ciclo, na ordem de início, e marca os trimestres pelas datas');
+    ok(!k(w, 'b5_cron5_acao').value && !k(w, 'b5_cron5_q4').value, 'cronograma: "Trazer" limpa o que não está mais no ciclo');
+    ok(k(w, 'b5_cron_novas_q1').value === '1' && k(w, 'b5_cron_novas_q2').value === '1' && k(w, 'b5_cron_novas_q3').value === '0', 'linha "Frentes novas" calculada');
+    digitar(w, 'b5_cron3_acao', 'Frente 3'); digitar(w, 'b5_cron3_q1', 'planejada'); digitar(w, 'b5_cron4_acao', 'Frente 4'); digitar(w, 'b5_cron4_q1', 'planejada');
+    await sleep(300);
+    ok(k(w, 'b5_cron_novas_q1').value === '3' && q(w, '[data-avisos="cronograma"]').textContent.includes('Mais de duas frentes novas em T1'), 'aviso quando há mais de duas frentes novas no trimestre');
+    /* ---- CSV: só o ciclo, com proteção contra fórmula ---- */
+    digitar(w, 'b5_a1_how', '=SOMA(A1:A9)'); digitar(w, 'b5_a2_who', '+5511999'); digitar(w, 'b5_a2_where', '-canal'); digitar(w, 'b5_a2_why', '@marca');
+    let blobCsv = null;
+    const criarUrl = w.URL.createObjectURL, clicar = w.HTMLAnchorElement.prototype.click;
+    w.URL.createObjectURL = b => { blobCsv = b; return 'about:blank'; };
+    w.HTMLAnchorElement.prototype.click = function () {};
+    q(w, '[data-csv]').click();
+    await sleep(200);
+    w.URL.createObjectURL = criarUrl; w.HTMLAnchorElement.prototype.click = clicar;
+    const csv = blobCsv ? await blobCsv.text() : '';
+    ok(csv.includes('E-commerce próprio') && csv.includes('Parar promoções') && !csv.includes('Feira mensal'), 'CSV traz só as ações do ciclo');
+    ok(csv.includes(`"'=SOMA(A1:A9)"`) && csv.includes(`"'+5511999"`) && csv.includes(`"'-canal"`) && csv.includes(`"'@marca"`), 'CSV protege valores iniciados por = + - @');
+    ok(csv.includes('11/01/2027') && csv.includes('A INICIAR') && csv.includes('R$ 3.500,50'), 'CSV traz datas, valor financeiro e status');
+    /* ---- "Não se aplica" num sub-bloco: a Ação 3 vira Ação 2, e a Ação 2 sai do orçamento ---- */
     q(w, '[data-na="b:5w2h__acao-2"]').click();
     await sleep(300);
     ok(q(w, '[data-sub-tit="5w2h__acao-3"]').textContent === 'Ação 2' && q(w, '[data-bloco="5w2h__acao-2"] .e-bloco-corpo').hidden, 'sub-bloco "Ação 2" não se aplica: a Ação 3 passa a ser a Ação 2');
-    digitar(w, 'b5_5w2h3_what', 'Feira mensal de degustação');
+    ok(k(w, 'b5_orc_sub_t1').value === 'R$ 1.500,00' && !k(w, 'b5_orc2_t1').value, 'ação que não se aplica sai do orçamento');
+    digitar(w, 'b4_kpi1_nome', 'Clientes recorrentes'); digitar(w, 'b4_kpi1_meta', '+20%');
+    await sleep(200);
+    ok(q(w, '[data-avisos="kpis"]').textContent.includes('o plano pede de 3 a 5') && q(w, '[data-avisos="kpis"]').textContent.includes('Sem objetivo vinculado: KPI 1'), 'avisos do dashboard: número de KPIs e KPI sem objetivo');
     w.dispatchEvent(new w.Event('beforeprint'));
     await sleep(200);
     const rel4 = q(w, '#relatorio').textContent;
     ok(rel4.includes('Ação 2') && !rel4.includes('Ação 3') && rel4.includes('Feira mensal de degustação'), 'PDF renumera os sub-blocos que se aplicam');
-    digitar(w, 'b4_kpi1_nome', 'Clientes recorrentes'); digitar(w, 'b4_kpi1_meta', '+20%');
+    ok(!rel4.includes('Pessoa do Banco') && !rel4.includes('9.999') && rel4.includes('Subtotal') && rel4.includes('R$ 1.500,00') && rel4.includes('Frentes novas'), 'PDF: ação no Banco sai compacta; orçamento e frentes novas calculados aparecem');
+    ok(!rel4.includes('Para conferir') && semXss(w), 'PDF não traz os avisos internos');
     q(w, '[data-vd-salvar]').click();
     await sleep(2500);
+    est = await estado();
+    const e4srv = dadosNoServidor(est, 'e4');
+    ok(e4srv && e4srv.data.campos.b5_a1_score === '240' && e4srv.data.campos.b5_orc_sub_total === 'R$ 3.500,50' && e4srv.data.campos.b5_a3_who === 'Pessoa do Banco', 'E4 salva na planilha, com os cálculos e com o que está recolhido');
+    ok(e4srv.resumo.some(x => x[1] === 'Ação 1 · What · O quê?' && x[2] === 'E-commerce próprio') && e4srv.resumo.some(x => x[1] === 'KPI 1 · KPI' && x[2] === 'Clientes recorrentes') && e4srv.resumo.some(x => x[0].startsWith('5.1') && x[2] === 'Não se aplica') && !e4srv.resumo.some(x => x[2] === 'Pessoa do Banco'), 'resumo da planilha diz de qual cartão é cada resposta');
 
     /* ---- E6: "Trazer" de outra entrega (E4) ---- */
     w = await carregar('/entregas/e6.html');
@@ -183,7 +231,9 @@ const dadosNoServidor = (est, f) => { const r = Object.entries(est.dados).find((
     const json = { version: '1.0', author: 'x', data: {
       meta_setor: 'Alimentos', b1_tam_def: 'NÃO DEVE SOBRESCREVER', b1_sam_def: 'R$ 97 mi',
       b1_swot_forcas: '- Marca conhecida no bairro\n- Clientes fiéis', b2_persona2_dores: 'Falta de tempo', b3_7p_preco: 'Premium',
-      b5_ice3_acao: 'Feira mensal', b5_ice3_score: '999', __checkStates: { b1: 'complete', b3: 'progress' }, campo_estranho: 'x' } };
+      b5_ice3_acao: 'Feira mensal', b5_ice3_imp: '5', b5_ice3_conf: '5', b5_ice3_fac: '4', b5_ice3_tipo: 'tipo que não existe mais', b5_a4_score: '999',
+      b5_5w2h1_what: 'Feira mensal', b5_5w2h1_how: 'Reservar o espaço', b5_5w2h1_howmuch: 'R$ 500', b4_s1_frase: 'Crescer na região', b4_base1_fonte: 'Cadastro de maio',
+      __checkStates: { b1: 'complete', b3: 'progress' }, campo_estranho: 'x' } };
     const arq = new w.File([JSON.stringify(json)], 'plano.json', { type: 'application/json' });
     const dt = new w.DataTransfer(); dt.items.add(arq);
     const inp = q(w, '#arqImportar'); inp.files = dt.files; inp.dispatchEvent(new w.Event('change', { bubbles: true }));
@@ -193,7 +243,9 @@ const dadosNoServidor = (est, f) => { const r = Object.entries(est.dados).find((
     ok(d1.b1_tam_def === 'R$ 967 mi/ano' && d1.b1_sam_def === 'R$ 97 mi', 'importação preenche só campos vazios (não sobrescreve o que o grupo já escreveu)');
     ok(d1.b1_swot_for1 && d1.b1_swot_for1.startsWith('Ficha técnica') && d1.b1_swot_for2 === 'Clientes fiéis', 'SWOT da Ferramenta (um texto por quadrante) é dividida em linhas vazias');
     ok(d2.b2_p2_pain1 === 'Falta de tempo' && d3.b3_7p_preco === 'Premium' && d0.meta_setor === 'Alimentos', 'campos antigos da Persona 2 e dos 7Ps mapeados para a estrutura nova');
-    ok(d4.b5_ice3_acao === 'Feira mensal' && !d4.b5_ice3_score, 'cálculos importados são recalculados, não copiados');
+    ok(d4.b5_a4_what === 'Feira mensal' && d4.b5_a4_score === '100', 'importação: ICE antigo ocupa um cartão livre, e o cálculo é refeito, não copiado');
+    ok(d4.b5_a4_how === 'Reservar o espaço' && d4.b5_a4_premissa === 'R$ 500' && d4.b5_a4_dec === 'Ciclo' && !d4.b5_a4_tipo && d4.b5_a1_what === 'E-commerce próprio', 'importação: 5W2H antigo vai para o cartão da mesma ação, sem mexer nos cartões preenchidos');
+    ok(d4.b4_obj_mktg1 === 'Crescer na região' && d4.b4_kpi1_fonte === 'Cadastro de maio', 'importação: objetivos SMART e fonte do baseline antigos têm destino na estrutura nova');
     await sleep(12000);
     est = await estado();
     ok(dadosNoServidor(est, 'e3') && dadosNoServidor(est, 'e3').data.campos.b3_7p_preco === 'Premium' && dadosNoServidor(est, 'e3').resumo.length > 0, 'entregas importadas sem a página aberta vão para a planilha, com resumo');
@@ -243,7 +295,7 @@ const dadosNoServidor = (est, f) => { const r = Object.entries(est.dados).find((
 
     /* ---- leituras: questões de compreensão ---- */
     const LEIT = { 'a-logica-do-plano': 5, 'analise-de-mercado-tam-sam-som-e-tendencias': 6, 'benchmarking-competitivo': 5,
-                   'swot-de-marketing-e-tows': 5, 'segmentacao-e-persona': 6, 'mix-jornada-e-canais': 6, 'proposta-de-valor-e-posicionamento': 6 };
+                   'swot-de-marketing-e-tows': 5, 'segmentacao-e-persona': 6, 'mix-jornada-e-canais': 6, 'objetivos-kpis-e-plano-de-acao': 6, 'proposta-de-valor-e-posicionamento': 6 };
     let todasOk = true;
     for (const [nome, n] of Object.entries(LEIT)) {
       w = await carregar('/leituras/' + nome + '.html');
@@ -251,7 +303,10 @@ const dadosNoServidor = (est, f) => { const r = Object.entries(est.dados).find((
       todasOk = todasOk && ps.length === n && w.document.querySelectorAll('.pausa textarea[data-campo]').length === n
         && w.document.body.dataset.ferramenta.startsWith('leitura-') && !!q(w, '.vd-topbar');
     }
-    ok(todasOk, 'as sete leituras têm questões de compreensão (5 ou 6 cada) e a barra do portal');
+    ok(todasOk, 'as oito leituras têm questões de compreensão (5 ou 6 cada) e a barra do portal');
+    const lo = await carregar('/leituras/objetivos-kpis-e-plano-de-acao.html');
+    ok(lo.document.querySelectorAll('.parte').length === 5 && q(lo, '#parte-c .parte-eyebrow').textContent.trim() === 'PARTE C' && lo.document.querySelectorAll('.ponte').length === 7, 'leitura da E4: partes A a E e pontes para o entregável');
+    w = await carregar('/leituras/proposta-de-valor-e-posicionamento.html');
     ok(w.getComputedStyle(q(w, '#sidebar')).top === '58px' && w.document.body.classList.contains('com-topbar'), 'leitura: sumário lateral começa abaixo da barra do portal');
     const p1 = q(w, '#pausa-q1'), ta1 = q(w, '#pausa-q1 textarea'), det1 = q(w, '#pausa-q1 details');
     det1.querySelector('summary').click();
@@ -286,6 +341,7 @@ const dadosNoServidor = (est, f) => { const r = Object.entries(est.dados).find((
     ok(q(w, '[data-ferramenta="e5"]').textContent === 'Não se aplica', 'home mostra a entrega que não se aplica');
     ok(!/\b(Aulas?|Encontros?)\s+\d/.test(w.document.body.innerText) && q(w, 'a[href="leituras/proposta-de-valor-e-posicionamento.html"]'), 'home sem menção a aulas e com a leitura de proposta de valor');
     ok(!q(w, '#avaliacao') && !/Avalia[çc][ãa]o/i.test(w.document.body.textContent) && w.document.body.textContent.includes("6 questões"), 'home sem a seção de avaliação e com o número de questões das leituras');
+    ok(q(w, 'a.rec-leitura[href="leituras/objetivos-kpis-e-plano-de-acao.html"]') && !/SMART/.test(w.document.body.textContent), 'home com a leitura da E4 e sem citar SMART');
     w.VD.sair();
     await sleep(300);
     ok(!w.VD.sessao(), 'sair encerra a sessão');

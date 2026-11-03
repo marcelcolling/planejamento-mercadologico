@@ -43,8 +43,15 @@ CAPTURAS = [
     ("e2-persona", "/entregas/e2.html", "s-personas", 1366, 1500),
     ("e2-pos", "/entregas/e2.html", "s-posicionamento", 1366, 1300),
     ("e3-7ps", "/entregas/e3.html", "s-sete-ps", 1366, 1300),
-    ("e4-ice", "/entregas/e4.html", "s-ice", 1366, 1300),
+    ("e4-objetivos", "/entregas/e4.html", "s-alinhamento", 1366, 1300),
+    ("e4-kpis", "/entregas/e4.html", "s-kpis", 1366, 1300),
+    ("e4-acoes", "/entregas/e4.html", "s-5w2h", 1366, 1700),
     ("e4-orc", "/entregas/e4.html", "s-orcamento", 1366, 1200),
+    ("e4-cron", "/entregas/e4.html", "s-cronograma", 1366, 1100),
+    ("leitura-objetivos", "/leituras/objetivos-kpis-e-plano-de-acao.html", "", 1366, 1100),
+    ("leitura-objetivos-parte", "/leituras/objetivos-kpis-e-plano-de-acao.html", "parte-c", 1366, 1300),
+    ("leitura-objetivos-orc", "/leituras/objetivos-kpis-e-plano-de-acao.html", "10-1-orcamento-secao-5-2-do-entregavel", 1366, 1500),
+    ("m-leitura-objetivos", "/leituras/objetivos-kpis-e-plano-de-acao.html", "5-preenchendo-a-secao-4-2-exemplo-ilustrativo", 520, 1800),
     ("e5-editorial", "/entregas/e5.html", "s-editorial", 1366, 1300),
     ("e6", "/entregas/e6.html", "s-painel", 1366, 1300),
     ("plano", "/plano.html", "", 1366, 1300),
@@ -64,7 +71,9 @@ CAPTURAS = [
     ("m-home", "/index.html", "", 520, 2000),
     ("m-e1", "/entregas/e1.html", "", 520, 1600),
     ("m-e1-bench", "/entregas/e1.html", "s-benchmarking", 520, 2000),
-    ("m-e4-ice", "/entregas/e4.html", "s-ice", 520, 1800),
+    ("m-e4-kpis", "/entregas/e4.html", "s-kpis", 520, 1800),
+    ("m-e4-acoes", "/entregas/e4.html", "s-5w2h", 520, 2200),
+    ("m-e4-orc", "/entregas/e4.html", "s-orcamento", 520, 1800),
 ]
 
 

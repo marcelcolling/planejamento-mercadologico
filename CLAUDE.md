@@ -13,7 +13,7 @@ O núcleo (sessão, salvamento, planilha, testes) veio dos portais "Vieses e Dec
 | GitHub | https://github.com/marcelcolling/planejamento-mercadologico (público) |
 | Site (GitHub Pages) | https://marcelcolling.github.io/planejamento-mercadologico/ (publica sozinho a cada `git push`, cerca de 1 min) |
 | Planilha de respostas | "PLANEJAMENTO MERCADOLÓGICO", id `1JTyA6T_uhDcLE4yB2dv4WWbcWWJbV38nRTIMLITLF8M` (dá para ler pelo conector do Google Drive) |
-| URL do Apps Script | em `assets/js/config.js` (implantação de 20/10/2026, testada contra a planilha real, com "não se aplica" no Painel). Em 20/10/2026 o `Codigo.gs` ganhou a coluna das leituras no Painel e a ordem das leituras na aba do grupo: o professor precisa colar a versão nova no editor (o `doPost` não mudou). Em 02/11/2026 `ORDEM` ganhou `leitura-mix`: idem (sem colar, a leitura só aparece no fim da aba do grupo) |
+| URL do Apps Script | em `assets/js/config.js` (implantação de 20/10/2026, testada contra a planilha real, com "não se aplica" no Painel). Em 20/10/2026 o `Codigo.gs` ganhou a coluna das leituras no Painel e a ordem das leituras na aba do grupo: o professor precisa colar a versão nova no editor (o `doPost` não mudou). Em 02/11/2026 `ORDEM` ganhou `leitura-mix` e em 03/11/2026, `leitura-objetivos`: idem (sem colar, a leitura só aparece no fim da aba do grupo) |
 
 ## Decisões do professor (não reverter sem perguntar)
 
@@ -54,11 +54,22 @@ ferramentas/               gerar_leituras, conferir_integridade, preparar_materi
 
 - Igual aos outros portais: `VD.entrar` (nome + palavra-chave), `VD.ferramenta({ id, titulo, coletar, aplicar, resumo })`, `localStorage` na hora e Apps Script alguns segundos depois, conflito por timestamp, `[data-vd-salvar]` = "Salvar respostas".
 - **Prefixos próprios no navegador:** `pm_sessao_v1`, `pm_dados_v1::`, `pm_leitura_` (os portais do professor dividem o domínio `marcelcolling.github.io`). Há teste para isso.
-- **Ids das ferramentas (estáveis):** `e0`, `roteiro`, `auditoria`, `e1`, `e2`, `e3`, `e4`, `e5`, `e6`, e as leituras `leitura-logica`, `leitura-mercado`, `leitura-benchmarking`, `leitura-swot`, `leitura-segmentacao`, `leitura-vpc`, `leitura-mix` (campo `id` em `LEITURAS`, `gerar_leituras.py`). Chaves das leituras em `PM.LEITURAS`: `trilha`, `logica`, `mercado`, `benchmarking`, `swot`, `segmentacao`, `vpc`, `mix`. Formato salvo: `{ v: 1, campos: { chave: texto | true } }`, só com os campos preenchidos. Campos calculados (`*_score`, `b5_orc*_total`, `b5_orc_tot_*`) são recalculados em `coletar`.
-- **Chaves (`k`) em `especificacoes.js` não podem mudar** depois que os grupos começarem. Para acrescentar, chave nova; para tirar, apague o item (a resposta antiga continua guardada no JSON).
+- **Ids das ferramentas (estáveis):** `e0`, `roteiro`, `auditoria`, `e1`, `e2`, `e3`, `e4`, `e5`, `e6`, e as leituras `leitura-logica`, `leitura-mercado`, `leitura-benchmarking`, `leitura-swot`, `leitura-segmentacao`, `leitura-vpc`, `leitura-mix`, `leitura-objetivos` (campo `id` em `LEITURAS`, `gerar_leituras.py`). Chaves das leituras em `PM.LEITURAS`: `trilha`, `logica`, `mercado`, `benchmarking`, `swot`, `segmentacao`, `vpc`, `mix`, `objetivos`. Formato salvo: `{ v: 1, campos: { chave: texto | true } }`, só com os campos preenchidos. Campos calculados (`b5_aN_score`, toda a tabela do orçamento `b5_orc*`, `b5_orc_pct_calc`, `b5_cron_novas_q*`) são recalculados em `coletar`.
+- **Chaves (`k`) em `especificacoes.js` não podem mudar** depois que os grupos começarem. Para acrescentar, chave nova. **Cuidado ao tirar um item:** `coletar` só lê o que está na tela, então a resposta de uma chave removida continua no JSON só até o grupo salvar a entrega de novo. Antes de tirar um campo já respondido, migre a resposta (foi possível refazer a E4 em 03/11/2026 porque nenhum grupo a tinha aberto).
 - `VD.gravarOutra(id, titulo, data, resumo)` (acréscimo deste portal) grava e envia uma entrega sem a página dela aberta. Usado pela importação do JSON da Ferramenta, que preenche só campos vazios. Os ganchos `importar(j, out)` da especificação mapeiam campos antigos (SWOT em texto único → linhas; Persona 2; `__checkStates` → situação dos blocos na E6).
 - `resumo` gera `[seção, campo, resposta]` só com o que foi preenchido (checklist sempre, com ✓ ou —). Colunas com `rotuloDe` usam o nome digitado (ex.: o nome do concorrente).
 - Todo texto do grupo que entra em `innerHTML` passa por `esc`; valores em campos vão por `.value`.
+
+## E4: uma informação em um só lugar (reformulada em 03/11/2026)
+
+- Cinco seções: `alinhamento` (4.1), `kpis` (4.2), `5w2h` (5.1), `orcamento` (5.2), `cronograma` (5.3), mais o checklist. Não existem mais as seções `smart`, `baseline`, `okr` e `ice`.
+- **Só os cartões são digitados.** `b5_aN_*` (N de 1 a 8) tem o 5W2H, as linhas de custo (`c1_`, `c2_`), o ICE e a decisão (`dec`: Ciclo ou Banco). O orçamento e os trimestres saem daí: `CALCULOS.e4` e `acoesE4` em `entrega.js`. Tabela com `calculada: true` é preenchida só por `CALCULOS`.
+- Ação marcada como "Não se aplica" não entra em ranking, orçamento, CSV nem cronograma.
+- `ocultarSe: { k, v }`, em qualquer item, tira o item da tela, do PDF e do resumo enquanto o campo valer v, sem apagar a resposta (execução das ações no Banco).
+- `AVISOS` (`especial: avisos`) orienta no topo da seção e nunca impede o salvamento. `rotularSub: true` prefixa o resumo da planilha com o cartão ("Ação 2 · Who"); as outras entregas não usam, para não mudar as abas já geradas.
+- `trazer` com `substituir: true` também apaga no destino o que ficou vazio na origem (pede confirmação, como o resto).
+- O `importar` da E4 leva o JSON antigo da Ferramenta (`b5_ice*`, `b5_5w2h*`, `b4_s*_frase`, `b4_base*`) para cartões livres.
+- O exemplo do Estúdio Alinha é o mesmo da leitura da E3 e foi conferido com simulação mês a mês. O ponto de partida: 100 contatos por mês × 25% × 40% = 10 entradas, que repõem as 10 saídas (11,1% de 90). **Se mudar um número, confira a seção 2.4, a tabela da seção 5, a seção 9 e o orçamento da 10.1** (a reserva da leitura é arredondada ao real, como a tela), além das seções da E3 listadas nas pendências.
 
 ## "Não se aplica"
 
@@ -105,14 +116,17 @@ O professor cola o `Codigo.gs` novo no editor, salva e vai em **Implantar › Ge
 ## Como validar antes de publicar
 
 1. `python ferramentas/gerar_leituras.py` e `python ferramentas/conferir_integridade.py` → tudo OK.
-2. `.\ferramentas\testes\rodar_testes.ps1` → `FAIL/ERRO: 0` (69 verificações: prefixos, login, rascunho anônimo, salvamento, resumo, relatório, termo, roteiro, referências, "Trazer", cálculos, importação do JSON, "não se aplica" em seção, sub-bloco e entrega com renumeração na tela, no PDF, na planilha e no plano completo, outro computador, conflito, questões das sete leituras com salvamento, pistas e resumo, `Codigo.gs` válido, home sem aulas e sem avaliação). Leva uns 5 minutos; o limite do executor é de 8.
+2. `.\ferramentas\testes\rodar_testes.ps1` → `FAIL/ERRO: 0` (92 verificações: prefixos, login, rascunho anônimo, salvamento, resumo, relatório, termo, roteiro, referências, "Trazer", cálculos da E4 (ICE, orçamento, cronograma, avisos, CSV), importação do JSON, "não se aplica" em seção, sub-bloco e entrega com renumeração na tela, no PDF, na planilha e no plano completo, outro computador, conflito, questões das oito leituras com salvamento, pistas e resumo, `Codigo.gs` válido, home sem aulas e sem avaliação). Leva uns 5 minutos; o limite do executor é de 8.
 3. `python ferramentas/capturar_telas.py <pasta>` e olhar as capturas (1366px e 520px).
 4. Se mexeu no back-end ou na URL: teste contra o Apps Script real com um grupo "Teste (apagar)" e leia a planilha pelo conector do Drive; depois peça ao professor para removê-lo (**Portal da disciplina › Remover um grupo…**).
 5. `git add -A; git commit; git push` e confira o site (cache: `?x=aleatório`).
 
 ## Pendências conhecidas
 
-- Leituras das etapas 5 a 7 ainda não existem (cartões "em breve"); os entregáveis E4 a E6 já estão prontos.
+- Leituras das etapas 6 e 7 ainda não existem (cartões "em breve"); os entregáveis E5 e E6 já estão prontos.
+- A leitura da E4 (`objetivos-kpis-e-plano-de-acao`, nov/2026) veio de um arquivo único do professor (na pasta dos originais), já anonimizado. As partes usam letras (A a E): `gerar_leituras.py` e `conferir_integridade.py` aceitam romanos ou letra. As correções do caso estão comentadas em `revisar.py`.
+- `materiais/a-trilha-do-plano.html` (cópia do original) ainda cita "Objetivos SMART" (nos textos da etapa 5 e do panorama): o professor decide se troca, em `preparar_materiais.py`.
+- A ponte entre os rótulos da E3 ([F], [R], [O], [H]) e os três da E4 está na seção 1 da leitura da E4.
 - A leitura da E3 (`mix-jornada-e-canais`, nov/2026) veio de um arquivo único do professor, com os três temas em Partes. A E3 não mudou: só ganhou os links para a leitura; nenhuma chave nova. A revisão (`revisar.py`, com cada troca comentada) corrigiu o caso fictício Estúdio Alinha, que é o exemplo de preenchimento da leitura inteira: se mexer num número ou fato dele, confira as seções 3, 6, 13, 16, 19, 20 e 22. "Ferramenta" virou "entregável" em `preparar_conteudo.py`. Os dados de mercado foram conferidos nas fontes em 02/11/2026, menos os da ABMRA, que são resultados preliminares divulgados pela imprensa.
 - `proposta-de-valor-e-posicionamento.fonte.md` foi escrito pelo Claude (out/2026), com referências conferidas na web. Os campos da E2 foram ampliados para segui-lo: `b2_vpc_top`, `b2_vpc_teste`, `b2_pos_alternativas`, `b2_pos_paridade`, `b2_pos_diferenca`, `e2_chk9`, `e2_chk10`.
 - Peer review estruturado (10% da nota) não está no portal: hoje é feito em sala.

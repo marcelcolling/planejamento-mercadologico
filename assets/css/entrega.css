@@ -146,6 +146,15 @@ h3.sub { font-family: var(--display); font-weight: 600; font-size: 1.12rem; colo
 .ranking li { display: flex; justify-content: space-between; gap: 1rem; padding: 0.15rem 0; }
 .ranking li b { font-family: var(--display); color: var(--az); }
 .ranking-vazio { margin: 0; font-size: 0.86rem; color: var(--muted); }
+.ranking li span { flex: 1; min-width: 0; }
+.selo { flex-shrink: 0; align-self: flex-start; margin-top: 0.15rem; font-style: normal; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; border-radius: 100px; padding: 0.08rem 0.55rem; background: var(--papel-dim); color: var(--ard); }
+.selo-ciclo { background: var(--az); color: #fff; }
+.ranking-nota { margin: 0.5rem 0 0; font-size: 0.84rem; color: var(--ard); }
+.ranking-aviso { color: var(--am-ink); font-weight: 600; }
+.e-avisos { background: var(--am-tint); border-left: 4px solid var(--am); border-radius: 0 12px 12px 0; padding: 0.7rem 1rem; margin: 0 0 1.1rem; font-size: 0.87rem; color: var(--tx); }
+.e-avisos-rot { display: block; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--am-ink); margin-bottom: 0.2rem; }
+.e-avisos ul { margin: 0; padding-left: 1.1rem; }
+.e-avisos li { margin: 0.1rem 0; }
 .contador { font-size: 0.95rem; background: var(--papel-dim); border-radius: 12px; padding: 0.7rem 1rem; margin-bottom: 1rem; }
 .contador strong { font-family: var(--display); font-size: 1.3rem; color: var(--az); }
 .contador span { color: var(--muted); font-size: 0.85rem; }
@@ -265,6 +274,7 @@ h3.sub { font-family: var(--display); font-weight: 600; font-size: 1.12rem; colo
 .r-tab tr.r-total th, .r-tab tr.r-total td { background: #fbf1d8; font-weight: 700; }
 .r-ranking { background: #fbf1d8; border-radius: 8px; padding: 0.5rem 0.8rem; margin-bottom: 0.9rem; }
 .r-ranking ol { margin: 0.2rem 0 0; } .r-ranking li { display: flex; justify-content: space-between; gap: 1rem; }
+.r-ranking li span { flex: 1; }
 .r-ranking .ranking-rot { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--am-ink); }
 .r-termo { break-inside: avoid; border: 1px solid #c9ced8; border-radius: 8px; padding: 0.8rem 1rem; margin-top: 0.6rem; }
 .r-termo p { margin: 0 0 0.55rem; text-align: justify; }

@@ -24,6 +24,7 @@
  */
 (function () {
   'use strict';
+  var PM = window.PM = window.PM || {};
 
   /* ---------------- leituras (caminhos a partir da raiz do portal) ---------------- */
   var L = {
@@ -34,7 +35,8 @@
     'swot': { url: 'leituras/swot-de-marketing-e-tows.html', nome: 'SWOT de Marketing e TOWS' },
     'segmentacao': { url: 'leituras/segmentacao-e-persona.html', nome: 'Segmentação, persona e comportamento do consumidor' },
     'vpc': { url: 'leituras/proposta-de-valor-e-posicionamento.html', nome: 'Proposta de valor e declaração de posicionamento' },
-    'mix': { url: 'leituras/mix-jornada-e-canais.html', nome: 'Mix de marketing, jornada do cliente e canais' }
+    'mix': { url: 'leituras/mix-jornada-e-canais.html', nome: 'Mix de marketing, jornada do cliente e canais' },
+    'objetivos': { url: 'leituras/objetivos-kpis-e-plano-de-acao.html', nome: 'Objetivos, KPIs e plano de ação' }
   };
 
   /* ---------------- auxiliares ---------------- */
@@ -272,7 +274,7 @@
     '<div class="caso-card"><span class="caso-rot">Bloco 2 — Posicionamento declarado</span><p>"Para consumidores urbanos exigentes que querem redescobrir o café como experiência sensorial, o Grão Nascente é o torrefador artesanal que rastreia cada lote até a fazenda de origem — ao contrário dos grandes torrefadores industriais, que padronizam o sabor em nome da escala."</p></div>' +
     '<div class="caso-card"><span class="caso-rot">Bloco 3 — Mix (resumo dos 4Ps)</span><p><strong>Produto:</strong> cada pacote traz o nome da fazenda, a altitude de cultivo e a nota de degustação do lote; torra em pequenos lotes, toda semana.</p><p><strong>Preço:</strong> o preço de tabela é 40% mais alto que o café industrial de prateleira — mas a marca roda promoções de "compre 2 pague 1" quase todo mês, para girar o estoque antes que os grãos percam frescor.</p><p><strong>Praça:</strong> distribuição concentrada em supermercados de bairro de classe média-baixa, ao lado das marcas industriais mais baratas da categoria; presença online limitada a um link de pedido pelo WhatsApp da própria torrefação.</p><p><strong>Promoção:</strong> o Instagram da marca publica majoritariamente peças com preço em destaque e frases como "café bom e barato pra sua semana" — poucas menções à fazenda de origem ou à história de cada lote.</p></div>' +
     '<div class="caso-card"><span class="caso-rot">Bloco 3.2 — Jornada do cliente (resumo)</span><p>O mapeamento da empresa assume que o cliente descobre a marca comparando preços no corredor do supermercado, decide pela embalagem mais chamativa entre as opções de valor parecido, e se torna recorrente por hábito de compra no mesmo mercado.</p></div>' +
-    '<div class="caso-card"><span class="caso-rot">Bloco 5.3 — Orçamento de marketing (resumo)</span><p>Do orçamento mensal de marketing, 80% é destinado a cupons de desconto e encartes de supermercado; os 20% restantes cobrem a produção de conteúdo para redes sociais.</p></div>' +
+    '<div class="caso-card"><span class="caso-rot">Bloco 5.2 — Orçamento de marketing (resumo)</span><p>Do orçamento mensal de marketing, 80% é destinado a cupons de desconto e encartes de supermercado; os 20% restantes cobrem a produção de conteúdo para redes sociais.</p></div>' +
     '</div>' +
     '<p class="caso-fio">🧭 Pensem no posicionamento como um fio que deveria atravessar cada um desses blocos. A tarefa não é apontar o que "está errado" de forma isolada — é verificar, par a par, se um bloco reconhece o que o outro decidiu.</p></div>';
   var PARES = ['Persona × Praça (onde ela compra)', 'Persona × Preço (o que ela valoriza pagar)', 'Posicionamento × Promoção (o que se comunica)',
@@ -344,7 +346,7 @@
     leituras: ['mercado', 'benchmarking', 'swot'],
     secoes: [
       { id: 'mercado', n: '1.1', titulo: 'Análise de mercado: TAM, SAM, SOM e tendências',
-        dica: 'Declare a premissa de cada camada, não só o resultado. O SOM, e não o TAM, é o número que vai orientar os objetivos SMART da E4.',
+        dica: 'Declare a premissa de cada camada, não só o resultado. O SOM, e não o TAM, é o número que vai orientar os objetivos da E4.',
         leitura: ['mercado', '1-6-modelo-para-aplicar-na-empresa-parceira'],
         itens: [
           { t: 'sub', r: 'Tamanho do mercado' },
@@ -671,126 +673,222 @@
    * E4 · Objetivos, KPIs e plano de ações (Blocos 4 e 5)
    * ===================================================================== */
   var CATEGORIAS_ORC = ['Mídia paga (Google, Meta, TikTok, OOH, impressos, TV/rádio)', 'Produção de conteúdo (texto, vídeo, foto, design)', 'Ferramentas e tecnologia (CRM, automação, analytics)',
-    'Eventos, feiras e patrocínios', 'Relações públicas / assessoria de imprensa', 'Incentivos e promoções (descontos, brindes, cashback)', 'Reserva / contingência (recomendado: 10–15%)'];
-  function smart(n) {
-    var p = 'b4_s' + n + '_';
+    'Eventos, feiras e patrocínios', 'Relações públicas / assessoria de imprensa', 'Incentivos e promoções (descontos, brindes, cashback)', 'Reserva / contingência (recomendado: de 10% a 15%)'];
+  /* Categorias das linhas de custo de cada ação: as seis primeiras de CATEGORIAS_ORC, na mesma ordem (a Reserva não é de uma ação). */
+  var CAT_ACAO = ['Mídia paga', 'Produção de conteúdo', 'Ferramentas e tecnologia', 'Eventos, feiras e patrocínios', 'Relações públicas / assessoria', 'Incentivos e promoções'];
+  var TIPO_ACAO = ['Correção', 'Estrutura', 'Aceleração', 'Teste'];
+  function cartaoKpi(n) {
+    var p = 'b4_kpi' + n + '_';
     return [
-      { t: 'sub', r: 'Objetivo ' + n + (n === 3 ? ' (opcional)' : '') },
+      { t: 'sub', r: 'KPI ' + n + (n >= 4 ? ' (opcional)' : '') },
       { t: 'grupo', cols: 3, itens: [
-        { k: p + 's', r: 'S · Específico', ph: 'O que exatamente queremos alcançar?' },
-        { k: p + 'm', r: 'M · Mensurável', ph: 'Qual o número concreto do sucesso?' },
-        { k: p + 'a', r: 'A · Alcançável', ph: 'Temos recursos? É realista para esta empresa?' },
-        { k: p + 'r', r: 'R · Relevante', ph: 'Por que importa para o objetivo de negócio?' },
-        { k: p + 't', r: 'T · Temporal', ph: 'Qual é o prazo?' },
-        { k: p + 'frase', r: 'O objetivo em uma frase', ph: 'Ex.: Crescer 20% em receita até dezembro com CAC abaixo de R$ 250.' }
+        { k: p + 'nome', r: 'KPI', tipo: 'linha', ph: 'Ex.: clientes ativos pagantes' },
+        { k: p + 'obj', r: 'Objetivo que ele mede', tipo: 'opcoes', op: ['North Star', 'Objetivo 1', 'Objetivo 2', 'Objetivo 3'] },
+        { k: p + 'tipo', r: 'Tipo', tipo: 'opcoes', op: ['Processo', 'Resultado'] }
+      ] },
+      { t: 'grupo', cols: 2, itens: [
+        { k: p + 'formula', r: 'Fórmula / como medir', ph: 'De um jeito que um estranho calcularia o mesmo número.' },
+        { k: p + 'ferr', r: 'Ferramenta ou fonte da medição', tipo: 'linha', ph: 'Ex.: planilha de contatos, cadastro, WhatsApp' }
+      ] },
+      { t: 'grupo', cols: 3, itens: [
+        { k: p + 'base', r: 'Baseline (hoje)', tipo: 'linha' },
+        { k: p + 'fonte', r: 'Data e fonte do baseline', tipo: 'linha', ph: 'Ex.: 31/10, cadastro' },
+        { k: p + 'origem', r: 'Origem do número', tipo: 'opcoes', op: ['Dado da empresa', 'Levantado pelo grupo', 'Hipótese'] }
+      ] },
+      { t: 'grupo', cols: 3, itens: [
+        { k: p + 'meta', r: 'Meta', tipo: 'linha' },
+        { k: p + 'prazo', r: 'Prazo', tipo: 'linha', ph: 'dd/mm/aaaa' },
+        { k: p + 'resp', r: 'Responsável (pessoa ou função)', tipo: 'linha', ph: '"A equipe" não responde por nada.' }
+      ] },
+      { t: 'grupo', cols: 2, itens: [
+        { k: p + 'logtipo', r: 'Lógica da meta', tipo: 'opcoes', op: ['Funil reverso', 'Melhoria sobre o histórico', 'Benchmark ajustado', 'Limite de capacidade'] },
+        { k: p + 'logica', r: 'Por que esta meta é realista', ph: 'A conta com o funil, o histórico, a capacidade ou o SOM.' }
       ] }
     ];
+  }
+  function cartaoAcao(n) {
+    var p = 'b5_a' + n + '_', banco = { k: p + 'dec', v: 'Banco' };
+    var moedaT = function (t) { return { r: 'T' + t + ' (R$)', tipo: 'moeda', w: '13%' }; };
+    return [
+      { t: 'sub', r: 'Ação ' + n + (n >= 6 ? ' (opcional)' : '') },
+      { t: 'grupo', cols: 2, itens: [
+        { k: p + 'what', r: 'What · O quê?', d: 'Verbo + objeto + escopo; diz o que muda. Não: "melhorar a comunicação".', ph: 'Ex.: responder em até 15 min no WhatsApp, com 6 mensagens rápidas e agendamento na primeira conversa.' },
+        { k: p + 'why', r: 'Why · Por quê?', d: 'Liga a ação a um KPI e ao objetivo, com evidência de origem conhecida.', ph: 'Para mover [KPI] (Objetivo [n]), conforme [evidência].' }
+      ] },
+      { t: 'grupo', cols: 2, itens: [
+        { k: p + 'kpi', r: 'KPI que esta ação move', tipo: 'linha', ph: 'O nome usado no dashboard (4.2)' },
+        { k: p + 'tipo', r: 'Tipo', tipo: 'opcoes', op: TIPO_ACAO }
+      ] },
+      { t: 'grupo', cols: 2, ocultarSe: banco, itens: [
+        { k: p + 'who', r: 'Who · Quem?', tipo: 'linha', d: 'Uma pessoa ou função; apoio à parte. Não: "a equipe".', ph: 'Ex.: recepcionista (executa); coordenação (confere)' },
+        { k: p + 'where', r: 'Where · Onde?', tipo: 'linha', d: 'Canal, local ou sistema nomeado. Não: "online".', ph: 'Ex.: WhatsApp Business; planilha de contatos' }
+      ] },
+      { t: 'grupo', cols: 3, ocultarSe: banco, itens: [
+        { k: p + 'ini', r: 'When · Início', tipo: 'data' },
+        { k: p + 'fim', r: 'When · Fim', tipo: 'data' },
+        { k: p + 'when', r: 'When · Marcos', tipo: 'linha', ph: 'Ex.: piloto de 4 semanas; meta até 31/03' }
+      ] },
+      { k: p + 'how', r: 'How · Como?', ocultarSe: banco, d: 'De 3 a 7 passos numerados, cada um verificável. Não: "da melhor forma possível".', ph: '1) Cadastrar as mensagens. 2) Definir a escala. 3) Medir toda segunda...' },
+      { t: 'tabela', r: 'How much · Financeiro: valor por trimestre', ocultarSe: banco, cols: [
+        { r: 'Categoria', tipo: 'opcoes', op: CAT_ACAO, w: '30%' }, moedaT(1), moedaT(2), moedaT(3), moedaT(4)],
+        linhas: [
+          { r: 'Linha 1', k: [p + 'c1_cat', p + 'c1_t1', p + 'c1_t2', p + 'c1_t3', p + 'c1_t4'] },
+          { r: 'Linha 2 (opcional)', k: [p + 'c2_cat', p + 'c2_t1', p + 'c2_t2', p + 'c2_t3', p + 'c2_t4'] }
+        ] },
+      { t: 'grupo', cols: 3, ocultarSe: banco, itens: [
+        { k: p + 'premissa', r: 'Premissa e fonte do valor', tipo: 'linha', ph: 'Cotação, preço público ou histórico, com data' },
+        { k: p + 'horas', r: 'Humano: horas por semana, por função', tipo: 'linha', ph: 'Ex.: recepção 5 h; coordenação 1 h' },
+        { k: p + 'recursos', r: 'Material e tecnológico', tipo: 'linha', ph: 'O que já existe e o que será comprado' }
+      ] },
+      { t: 'grupo', cols: 3, itens: [
+        { k: p + 'imp', r: 'Impacto (1 a 10)', tipo: 'numero', min: 1, max: 10, d: 'Quanto da distância até a meta do KPI ela fecha.' },
+        { k: p + 'conf', r: 'Confiança (1 a 10)', tipo: 'numero', min: 1, max: 10, d: 'Sem teste ou dado próprio, no máximo 5.' },
+        { k: p + 'fac', r: 'Facilidade (1 a 10)', tipo: 'numero', min: 1, max: 10, d: 'Quanto menor o esforço total, maior a nota.' }
+      ] },
+      { t: 'grupo', cols: 2, itens: [
+        { k: p + 'score', r: 'Score ICE (Impacto × Confiança × Facilidade)', tipo: 'calc' },
+        { k: p + 'dec', r: 'Decisão', tipo: 'opcoes', op: ['Ciclo', 'Banco'] }
+      ] }
+    ];
+  }
+  /* "Trazer" do cronograma: as ações do ciclo (PM.acoesCiclo, em entrega.js), com os trimestres marcados pelas datas. */
+  function mapaCronograma() {
+    var m = {};
+    seq(5).forEach(function (i) {
+      m['b5_cron' + i + '_acao'] = function (c) { var a = PM.acoesCiclo(c)[i - 1]; return a ? a.what : ''; };
+      [1, 2, 3, 4].forEach(function (q) {
+        m['b5_cron' + i + '_q' + q] = function (c) {
+          var a = PM.acoesCiclo(c)[i - 1];
+          return a && PM.trimestresAcao(a, c).indexOf(q) >= 0 ? 'planejada' : '';
+        };
+      });
+    });
+    return m;
   }
   var E4 = {
     id: 'e4', codigo: 'E4', titulo: 'Objetivos, KPIs e plano de ações',
     etapa: 'Etapa 5 · Medição e ações', bloco: 'Blocos 4 e 5 · Objetivos, KPIs e plano de ações',
     pergunta: 'Onde queremos chegar, como vamos medir, o que faremos e quanto custa?',
-    resumo: 'Objetivos SMART ligados ao objetivo de negócio, o painel de KPIs com baseline e meta, a priorização das ações pelo ICE Score, o 5W2H das três prioritárias, o orçamento por trimestre e o cronograma.',
-    leituras: [],
-    leiturasEmBreve: ['Objetivos SMART e KPIs de marketing', 'Priorização de ações: ICE Score e 5W2H', 'Orçamento, responsabilidades e cronograma'],
+    resumo: 'Os objetivos de marketing, o painel de KPIs com baseline, meta e lógica, e o plano de ação em 5W2H com priorização pelo ICE Score. O orçamento por trimestre e o cronograma saem do plano.',
+    leituras: ['objetivos'],
     secoes: [
-      { id: 'alinhamento', n: '4.1', titulo: 'Alinhamento estratégico',
-        dica: 'Os objetivos de marketing precisam contribuir diretamente para o objetivo de negócio da empresa. Lembrem do SOM calculado na E1: ele é a régua do que é alcançável.',
+      { id: 'alinhamento', n: '4.1', titulo: 'Objetivos de marketing',
+        dica: 'Escrevam o que queremos em palavras, sem número: os números moram no dashboard (4.2). O SOM da E1 é a régua da ambição.',
+        leitura: ['objetivos', '2-objetivo-de-negocio-north-star-e-objetivos-de-marketing'],
         itens: [
           { t: 'espelho', de: 'e1', k: 'b1_som_def', r: 'SOM estimado (E1)' },
-          { k: 'b4_obj_negocio', r: 'Objetivo de negócio que o plano serve', ph: 'Ex.: crescer 30% em receita até dezembro.' },
+          { k: 'b4_obj_negocio', r: 'Objetivo de negócio que o plano serve', ph: 'Ex.: aumentar os clientes ativos de 90 para 114 até dezembro.' },
           { k: 'b4_north_star', r: 'North Star Metric: o indicador que unifica', ph: 'Ex.: número de clientes ativos pagantes.' },
-          { k: 'b4_obj_mktg1', r: 'Objetivo de marketing 1' }, { k: 'b4_obj_mktg2', r: 'Objetivo de marketing 2' }, { k: 'b4_obj_mktg3', r: 'Objetivo de marketing 3 (opcional)' }
-        ] },
-      { id: 'smart', n: '4.2', titulo: 'Objetivos SMART',
-        dica: '"Crescer" não é objetivo. Um objetivo mal definido é uma intenção. Formalizem os objetivos de marketing da seção 4.1.',
-        itens: smart(1).concat(smart(2)).concat(smart(3)) },
-      { id: 'kpis', n: '4.3', titulo: 'Dashboard de KPIs',
-        dica: 'De 3 a 5 KPIs, um por objetivo SMART, mais a North Star se fizer sentido. KPI não é métrica: KPI tem meta, prazo e responsável.',
-        itens: [
-          { t: 'tabela', r: 'O que medir', cols: [
-            { r: 'KPI / indicador', w: '18%' }, { r: 'Tipo', tipo: 'opcoes', op: ['Processo', 'Resultado'], w: '11%' },
-            { r: 'O que mede' }, { r: 'Fórmula / como medir' }, { r: 'Ferramenta', w: '14%' }],
-            linhas: seq(5).map(function (i) { var p = 'b4_kpi' + i; return { r: String(i), k: [p + '_nome', p + '_tipo', p + '_mede', p + '_formula', p + '_ferr'] }; }) },
-          { t: 'tabela', r: 'Onde estamos e onde queremos chegar', cols: [
-            { r: 'Baseline atual' }, { r: 'Meta' }, { r: 'Prazo', w: '15%' }, { r: 'Responsável', w: '17%' }],
-            linhas: seq(5).map(function (i) { var p = 'b4_kpi' + i; return { r: 'KPI ' + i, rotuloDe: p + '_nome', k: [p + '_base', p + '_meta', p + '_prazo', p + '_resp'] }; }) }
-        ] },
-      { id: 'baseline', n: '4.4', titulo: 'Baseline e lógica das metas',
-        dica: 'Definir o ponto de partida é mais difícil — e mais importante — do que definir a meta. Para os três KPIs mais críticos, de onde vem o número de hoje e por que a meta é realista?',
-        itens: [
-          { t: 'trazer', r: '↻ Trazer os três primeiros KPIs do dashboard', de: 'e4', mapa: {
-            b4_base1_kpi: 'b4_kpi1_nome', b4_base1_val: 'b4_kpi1_base', b4_base2_kpi: 'b4_kpi2_nome', b4_base2_val: 'b4_kpi2_base', b4_base3_kpi: 'b4_kpi3_nome', b4_base3_val: 'b4_kpi3_base' } },
-          { t: 'tabela', cols: [
-            { r: 'KPI', w: '16%' }, { r: 'Baseline atual', w: '14%' }, { r: 'Fonte do baseline' }, { r: 'Benchmark de mercado (se houver)' }, { r: 'Lógica da meta' }],
-            linhas: seq(3).map(function (i) { var p = 'b4_base' + i; return { r: String(i), k: [p + '_kpi', p + '_val', p + '_fonte', p + '_bench', p + '_logica'] }; }) }
-        ] },
-      { id: 'okr', n: '4.5', titulo: 'OKR simplificado (opcional)',
-        dica: 'Uma forma alternativa de resumir os objetivos SMART: o Objective é qualitativo; os Key Results, mensuráveis e vinculados a ele.',
-        itens: [
           { t: 'grupo', cols: 2, itens: [
-            { k: 'b4_okr_obj', r: 'Objective', ph: 'Ex.: tornar a marca a referência do bairro para...' },
-            { k: 'b4_okr_prazo', r: 'Prazo', tipo: 'linha' }
+            { k: 'b4_obj_mktg1', r: 'Objetivo de marketing 1 (uma frase, sem número)' }, { k: 'b4_obj1_alavanca', r: 'Alavanca do objetivo 1', tipo: 'opcoes', op: ['Trazer', 'Converter', 'Manter'] },
+            { k: 'b4_obj_mktg2', r: 'Objetivo de marketing 2 (uma frase, sem número)' }, { k: 'b4_obj2_alavanca', r: 'Alavanca do objetivo 2', tipo: 'opcoes', op: ['Trazer', 'Converter', 'Manter'] },
+            { k: 'b4_obj_mktg3', r: 'Objetivo de marketing 3 (opcional; uma frase, sem número)' }, { k: 'b4_obj3_alavanca', r: 'Alavanca do objetivo 3', tipo: 'opcoes', op: ['Trazer', 'Converter', 'Manter'] }
           ] },
-          { t: 'tabela', cols: [{ r: 'Descrição' }, { r: 'Meta', w: '20%' }, { r: 'Prazo', w: '18%' }],
-            linhas: seq(3).map(function (i) { var p = 'b4_okr_kr' + i; return { r: 'KR' + i, k: [p, p + '_meta', p + '_prazo'] }; }) }
+          { k: 'b4_conta_fecha', r: 'A conta fecha? Por que esta meta cabe no SOM e na capacidade da empresa', ph: 'Meta de clientes ÷ SOM; simulação com funil e retenção.' },
+          { t: 'nota', html: '<p>Cada objetivo precisa de ao menos um KPI no dashboard, e cada KPI serve a um objetivo.</p>' }
         ] },
-      { id: 'ice', n: '5.1', titulo: 'Priorização de ações: ICE Score',
-        dica: 'ICE = Impacto × Confiança × Facilidade, de 1 a 10 cada. Confiança 10 significa certeza absoluta — vocês têm? As ações de maior score vão para o 5W2H.',
+      { id: 'kpis', n: '4.2', titulo: 'Dashboard de KPIs', rotularSub: true,
+        dica: 'De 3 a 5 KPIs, ao menos um por objetivo, mais a North Star. Cada KPI reúne no mesmo lugar o que medir, de onde partimos e para onde vamos.',
+        leitura: ['objetivos', '3-um-kpi-uma-linha-tudo-junto', 'Um KPI, uma linha, tudo junto'],
+        leitura2: ['objetivos', '4-baseline-e-logica-da-meta', 'Baseline e lógica da meta'],
+        itens: [ { t: 'especial', nome: 'avisos', secao: 'kpis' } ]
+          .concat(cartaoKpi(1)).concat(cartaoKpi(2)).concat(cartaoKpi(3)).concat(cartaoKpi(4)).concat(cartaoKpi(5)) },
+      { id: '5w2h', n: '5.1', titulo: 'Plano de ação (5W2H) e priorização', rotularSub: true,
+        dica: 'Escrevam de 6 a 8 ações. Todas têm O quê, Por quê e ICE; as que entrarem no ciclo (3 a 5) têm os sete campos. O orçamento e o cronograma saem daqui. Ao marcar Banco, os campos de execução se recolhem, e o que já foi escrito fica guardado.',
+        leitura: ['objetivos', '7-o-5w2h-campo-a-campo', 'O 5W2H campo a campo'],
+        leitura2: ['objetivos', '8-priorizacao-o-ice-no-final-do-plano', 'Priorização: o ICE'],
+        itens: [ { t: 'especial', nome: 'avisos', secao: '5w2h' } ]
+          .concat(seq(8).reduce(function (a, n) { return a.concat(cartaoAcao(n)); }, []))
+          .concat([
+            { t: 'especial', nome: 'ranking', solto: true },
+            { k: 'b5_ice_criterios', solto: true, r: 'Como o grupo pontuou', ph: 'O que significa um Impacto 8 ou uma Confiança 6 para este grupo? Em que evidência cada Confiança se apoia?' },
+            { k: 'b5_corte_just', solto: true, r: 'Trocas na ordem do ranking e ações deixadas no Banco, com o motivo', ph: 'Dependência, capacidade, objetivos ou coerência: qual verificação explica cada troca?' },
+            { t: 'especial', nome: 'csv5w2h', solto: true }
+          ]) },
+      { id: 'orcamento', n: '5.2', titulo: 'Orçamento por trimestre (calculado a partir do plano)',
+        dica: 'Esta tabela soma o How much financeiro das ações marcadas como Ciclo. Não digitem valores aqui: corrijam no cartão da ação.',
+        leitura: ['objetivos', '10-1-orcamento-secao-5-2-do-entregavel'],
         itens: [
-          { t: 'tabela', largo: true, cols: [
-            { r: 'Ação / iniciativa', w: '22%' }, { r: 'Objetivo vinculado' }, { r: 'Tipo', w: '11%' },
-            { r: 'Impacto', tipo: 'numero', min: 1, max: 10, w: '8%' }, { r: 'Confiança', tipo: 'numero', min: 1, max: 10, w: '8%' },
-            { r: 'Facilidade', tipo: 'numero', min: 1, max: 10, w: '8%' }, { r: 'Score ICE', tipo: 'calc', w: '8%' }],
-            linhas: seq(10).map(function (i) { var p = 'b5_ice' + i; return { r: String(i), k: [p + '_acao', p + '_obj', p + '_tipo', p + '_imp', p + '_conf', p + '_fac', p + '_score'] }; }) },
-          { t: 'especial', nome: 'ranking' },
-          { k: 'b5_ice_criterios', r: 'Como o grupo pontuou', ph: 'O que significa um Impacto 8 ou uma Confiança 6 para este grupo? Em que evidência a confiança se apoia?' }
-        ] },
-      { id: '5w2h', n: '5.2', titulo: '5W2H das três ações prioritárias',
-        dica: 'Cada "How Much" vira uma linha do orçamento, e cada ação precisa mover um KPI do dashboard.',
-        itens: [ { t: 'trazer', r: '↻ Trazer as três ações de maior ICE', de: 'e4', mapa: { b5_5w2h1_what: topIce(0), b5_5w2h2_what: topIce(1), b5_5w2h3_what: topIce(2) } } ]
-          .concat([1, 2, 3].reduce(function (a, n) {
-            var p = 'b5_5w2h' + n + '_';
-            return a.concat([{ t: 'sub', r: 'Ação ' + n }, { t: 'grupo', cols: 2, itens: [
-              { k: p + 'what', r: 'What · O quê?' }, { k: p + 'why', r: 'Why · Por quê?' },
-              { k: p + 'who', r: 'Who · Quem?', tipo: 'linha' }, { k: p + 'when', r: 'When · Quando?', tipo: 'linha' },
-              { k: p + 'where', r: 'Where · Onde?', tipo: 'linha' }, { k: p + 'howmuch', r: 'How much · Quanto?', tipo: 'linha', ph: 'R$' },
-              { k: p + 'how', r: 'How · Como?' }, { k: p + 'kpi', r: 'KPI que esta ação move' }
-            ] }]);
-          }, []))
-          .concat([{ t: 'especial', nome: 'csv5w2h', solto: true }]) },
-      { id: 'orcamento', n: '5.3', titulo: 'Orçamento de marketing por trimestre',
-        dica: 'Estimem por categoria; se não souberem o valor exato, usem faixas. O total deve ser compatível com o percentual do faturamento informado.',
-        itens: [
-          { t: 'tabela', moeda: true, cols: [
-            { r: 'T1 (R$)', tipo: 'moeda' }, { r: 'T2 (R$)', tipo: 'moeda' }, { r: 'T3 (R$)', tipo: 'moeda' }, { r: 'T4 (R$)', tipo: 'moeda' }, { r: 'Total anual', tipo: 'calc' }],
-            linhas: CATEGORIAS_ORC.map(function (c, i) { var p = 'b5_orc' + (i + 1); return { r: c, k: [p + '_t1', p + '_t2', p + '_t3', p + '_t4', p + '_total'] }; })
-              .concat([{ r: 'Total do período', total: true, k: ['b5_orc_tot_t1', 'b5_orc_tot_t2', 'b5_orc_tot_t3', 'b5_orc_tot_t4', 'b5_orc_tot_total'], calc: true }]) },
+          { t: 'especial', nome: 'avisos', secao: 'orcamento' },
           { t: 'grupo', cols: 2, itens: [
-            { k: 'b5_orc_pct_fat', r: '% do faturamento alocado em marketing', tipo: 'linha', ph: 'Ex.: 8%' },
+            { k: 'b5_orc_reserva_pct', r: 'Reserva (% do subtotal)', tipo: 'numero', min: 0, max: 100, ph: '12', d: 'Em branco, o cálculo usa 12%. O recomendado é de 10% a 15%.' },
+            { k: 'b5_ano_plano', r: 'Ano de referência do plano', tipo: 'numero', min: 2026, max: 2040, ph: '2027', d: 'O cronograma (5.3) marca os trimestres deste ano.' },
+            { k: 'b5_orc_receita_anual', r: 'Receita anual de referência (R$)', tipo: 'moeda', d: 'Negócio sem receita: deixem em branco e usem o método "Recursos disponíveis".' },
+            { k: 'b5_teto_caixa', r: 'Teto de caixa por mês informado pelo dono (R$)', tipo: 'moeda', d: 'Até quanto a empresa aceita gastar por mês com marketing.' }
+          ] },
+          { t: 'tabela', calculada: true, cols: [
+            { r: 'T1 (R$)', tipo: 'calc' }, { r: 'T2 (R$)', tipo: 'calc' }, { r: 'T3 (R$)', tipo: 'calc' }, { r: 'T4 (R$)', tipo: 'calc' }, { r: 'Total anual', tipo: 'calc' }],
+            linhas: CATEGORIAS_ORC.slice(0, 6).map(function (c, i) { var p = 'b5_orc' + (i + 1); return { r: c, calc: true, k: [p + '_t1', p + '_t2', p + '_t3', p + '_t4', p + '_total'] }; })
+              .concat([
+                { r: 'Subtotal (sem reserva)', calc: true, total: true, k: ['b5_orc_sub_t1', 'b5_orc_sub_t2', 'b5_orc_sub_t3', 'b5_orc_sub_t4', 'b5_orc_sub_total'] },
+                { r: CATEGORIAS_ORC[6], calc: true, k: ['b5_orc7_t1', 'b5_orc7_t2', 'b5_orc7_t3', 'b5_orc7_t4', 'b5_orc7_total'] },
+                { r: 'Total do período', calc: true, total: true, k: ['b5_orc_tot_t1', 'b5_orc_tot_t2', 'b5_orc_tot_t3', 'b5_orc_tot_t4', 'b5_orc_tot_total'] }
+              ]) },
+          { t: 'grupo', cols: 2, itens: [
+            { k: 'b5_orc_pct_calc', r: '% do faturamento alocado em marketing', tipo: 'calc' },
             { k: 'b5_orc_metodo', r: 'Método de orçamento', tipo: 'opcoes', op: ['% da receita', 'Objetivos e tarefas', 'Recursos disponíveis', 'Paridade competitiva'] }
           ] },
-          { k: 'b5_orc_justif', r: 'De onde vieram os valores', ph: 'Cotações, benchmarks de mercado, valores praticados pela empresa hoje.' }
+          { k: 'b5_orc_justif', r: 'De onde vieram os valores', ph: 'Cotações com nome e data, preço público, histórico da empresa, faixa estimada. Horas ficam fora do caixa.' }
         ] },
-      { id: 'cronograma', n: '5.4', titulo: 'Cronograma trimestral',
+      { id: 'cronograma', n: '5.3', titulo: 'Cronograma trimestral',
+        dica: 'Partimos das datas de início e fim de cada ação do ciclo. Ajustem o status e respeitem o limite de duas frentes novas por trimestre.',
+        leitura: ['objetivos', '10-3-cronograma-secao-5-3-do-entregavel'],
         itens: [
-          { t: 'trazer', r: '↻ Trazer as ações do 5W2H', de: 'e4', mapa: { b5_cron1_acao: 'b5_5w2h1_what', b5_cron2_acao: 'b5_5w2h2_what', b5_cron3_acao: 'b5_5w2h3_what' } },
+          { t: 'especial', nome: 'avisos', secao: 'cronograma' },
+          { t: 'trazer', r: '↻ Trazer as ações do ciclo e os trimestres', de: 'e4', substituir: true, mapa: mapaCronograma() },
           { t: 'tabela', cols: [
             { r: 'Ação / iniciativa', tipo: 'linha', w: '32%' },
-            { r: 'T1 · jan–mar', tipo: 'opcoes', op: STATUS_CRON }, { r: 'T2 · abr–jun', tipo: 'opcoes', op: STATUS_CRON },
-            { r: 'T3 · jul–set', tipo: 'opcoes', op: STATUS_CRON }, { r: 'T4 · out–dez', tipo: 'opcoes', op: STATUS_CRON }],
-            linhas: seq(5).map(function (i) { var p = 'b5_cron' + i; return { r: String(i), k: [p + '_acao', p + '_q1', p + '_q2', p + '_q3', p + '_q4'] }; }) }
+            { r: 'T1 · jan a mar', tipo: 'opcoes', op: STATUS_CRON }, { r: 'T2 · abr a jun', tipo: 'opcoes', op: STATUS_CRON },
+            { r: 'T3 · jul a set', tipo: 'opcoes', op: STATUS_CRON }, { r: 'T4 · out a dez', tipo: 'opcoes', op: STATUS_CRON }],
+            linhas: seq(5).map(function (i) { var p = 'b5_cron' + i; return { r: String(i), k: [p + '_acao', p + '_q1', p + '_q2', p + '_q3', p + '_q4'] }; }) },
+          { t: 'tabela', calculada: true, cols: [
+            { r: 'T1', tipo: 'calc' }, { r: 'T2', tipo: 'calc' }, { r: 'T3', tipo: 'calc' }, { r: 'T4', tipo: 'calc' }],
+            linhas: [{ r: 'Frentes novas no trimestre', calc: true, k: ['b5_cron_novas_q1', 'b5_cron_novas_q2', 'b5_cron_novas_q3', 'b5_cron_novas_q4'] }] }
         ] },
       { id: 'checklist', n: '✓', titulo: 'Checklist de coerência antes de entregar',
         itens: [ { t: 'checklist', itens: [
-          ['e4_chk1', 'Cada objetivo SMART é mensurável com os KPIs definidos.'],
-          ['e4_chk2', 'Cada KPI tem baseline com fonte, meta, prazo e responsável.'],
-          ['e4_chk3', 'Os scores do ICE foram pontuados com honestidade, sobretudo a Confiança.'],
-          ['e4_chk4', 'As ações prioritárias do ICE Score aparecem no 5W2H.'],
-          ['e4_chk5', 'Cada linha do 5W2H tem um custo correspondente no orçamento.'],
-          ['e4_chk6', 'Os KPIs aparecem nas ações, e o orçamento é consistente com o ICE Score.']
+          ['e4_chk7', 'Todo objetivo tem ao menos um KPI, e todo KPI serve a um objetivo.'],
+          ['e4_chk8', 'Cada KPI tem fórmula, baseline com data, fonte e origem, meta com lógica, prazo e responsável.'],
+          ['e4_chk9', 'Toda ação do ciclo tem os sete campos, e o Why cita um KPI do dashboard.'],
+          ['e4_chk10', 'O ICE foi pontuado com honestidade, sobretudo a Confiança (sem teste ou dado próprio, no máximo 5).'],
+          ['e4_chk11', 'O orçamento é a soma do How much, o dinheiro segue o ICE e o total cabe no teto de caixa, com reserva de 10% a 15%.'],
+          ['e4_chk12', 'O cronograma é viável: no máximo duas frentes novas por trimestre, dependências respeitadas, horas dentro da disponibilidade.'],
+          ['e4_chk13', 'Os números têm rótulo de origem (dado da empresa, levantado pelo grupo ou hipótese).']
         ] } ] }
-    ]
+    ],
+    /* O arquivo da Ferramenta Interativa tinha ICE em 10 linhas, 5W2H em 3 cartões, objetivos SMART e uma tabela de baseline.
+     * Cada ação antiga ocupa um cartão livre (sem "What"), na ordem do arquivo; só campos vazios são preenchidos. */
+    importar: function (j, out, atual) {
+      var livres = seq(8).filter(function (n) { return !atual['b5_a' + n + '_what']; });
+      var txt = function (v) { return v === undefined || v === null || v === '' ? '' : String(v); };
+      var usados = {};
+      seq(10).forEach(function (i) {
+        var q = 'b5_ice' + i + '_', a = txt(j[q + 'acao']);
+        if (!a || !livres.length) return;
+        var n = livres.shift(), p = 'b5_a' + n + '_';
+        usados[a] = n;
+        out[p + 'what'] = a;
+        if (txt(j[q + 'obj'])) out[p + 'kpi'] = txt(j[q + 'obj']);
+        if (TIPO_ACAO.indexOf(j[q + 'tipo']) >= 0) out[p + 'tipo'] = j[q + 'tipo'];
+        ['imp', 'conf', 'fac'].forEach(function (x) { if (txt(j[q + x])) out[p + x] = txt(j[q + x]); });
+      });
+      seq(3).forEach(function (i) {
+        var q = 'b5_5w2h' + i + '_', a = txt(j[q + 'what']);
+        if (!a) return;
+        var n = usados[a] || livres.shift();
+        if (!n) return;
+        var p = 'b5_a' + n + '_';
+        out[p + 'what'] = a;
+        out[p + 'dec'] = 'Ciclo';
+        ['why', 'who', 'where', 'when', 'how', 'kpi'].forEach(function (x) { if (txt(j[q + x])) out[p + x] = txt(j[q + x]); });
+        if (txt(j[q + 'howmuch'])) out[p + 'premissa'] = txt(j[q + 'howmuch']);
+      });
+      seq(3).forEach(function (i) {
+        if (txt(j['b4_s' + i + '_frase']) && !txt(j['b4_obj_mktg' + i])) out['b4_obj_mktg' + i] = txt(j['b4_s' + i + '_frase']);
+        if (txt(j['b4_base' + i + '_fonte'])) out['b4_kpi' + i + '_fonte'] = txt(j['b4_base' + i + '_fonte']);
+        if (txt(j['b4_base' + i + '_logica'])) out['b4_kpi' + i + '_logica'] = txt(j['b4_base' + i + '_logica']);
+      });
+    }
   };
 
   /* =====================================================================
@@ -874,7 +972,7 @@
    * E6 · Governança, síntese e pitch (Bloco 7 + síntese final)
    * ===================================================================== */
   var PITCH = [['Contexto e objetivo do plano', '2 min'], ['Análise de mercado e SWOT de marketing: o que descobrimos', '4 min'], ['Segmento, persona e posicionamento proposto', '4 min'],
-    ['Mix de marketing: o que sugerimos ajustar', '5 min'], ['Objetivos, KPIs e as três ações prioritárias', '5 min'], ['Identidade de comunicação e plano editorial', '3 min'], ['Governança: como implementar e medir', '2 min']];
+    ['Mix de marketing: o que sugerimos ajustar', '5 min'], ['Objetivos, KPIs e as ações prioritárias', '5 min'], ['Identidade de comunicação e plano editorial', '3 min'], ['Governança: como implementar e medir', '2 min']];
   var E6 = {
     id: 'e6', codigo: 'E6', titulo: 'Governança, síntese e pitch',
     etapa: 'Etapa 7 · Controle e entrega', bloco: 'Bloco 7 · Governança + síntese final',
@@ -884,7 +982,7 @@
     leiturasEmBreve: ['Governança simplificada, síntese e preparação do pitch'],
     secoes: [
       { id: 'painel', n: '7.1', titulo: 'Painel de acompanhamento',
-        dica: 'Os mesmos 3 a 5 KPIs da E4 (4.3). É o painel que os rituais abaixo vão usar para comparar meta e realizado.',
+        dica: 'Os mesmos 3 a 5 KPIs da E4 (4.2). É o painel que os rituais abaixo vão usar para comparar meta e realizado.',
         itens: [
           { t: 'trazer', r: '↻ Trazer KPIs e metas da E4', de: 'e4', mapa: {
             b7_dash1_kpi: 'b4_kpi1_nome', b7_dash1_meta: 'b4_kpi1_meta', b7_dash2_kpi: 'b4_kpi2_nome', b7_dash2_meta: 'b4_kpi2_meta',
@@ -922,12 +1020,12 @@
             ['e6_coer1', 'A persona escolhida aparece na jornada do cliente?'],
             ['e6_coer2', 'A declaração de posicionamento aparece em cada P do mix?'],
             ['e6_coer3', 'Os canais de comunicação são coerentes com onde a persona está?'],
-            ['e6_coer4', 'Os objetivos SMART são mensuráveis com os KPIs definidos?'],
-            ['e6_coer5', 'As ações prioritárias do ICE Score aparecem no 5W2H?'],
-            ['e6_coer6', 'Cada linha do 5W2H tem um custo correspondente no orçamento?'],
+            ['e6_coer4', 'Todo objetivo tem ao menos um KPI no dashboard, e todo KPI serve a um objetivo?'],
+            ['e6_coer5', 'As ações de maior ICE estão no ciclo? Se não, a troca foi explicada?'],
+            ['e6_coer6', 'Toda ação do ciclo tem o custo no How much, e o total do orçamento cabe no teto de caixa?'],
             ['e6_coer7', 'O tom de voz da comunicação é coerente com o arquétipo de marca?'],
             ['e6_coer8', 'O plano editorial usa os pilares de conteúdo definidos?'],
-            ['e6_coer9', 'O painel de KPIs tem metas derivadas dos objetivos SMART?'],
+            ['e6_coer9', 'O painel de acompanhamento usa os mesmos KPIs e metas do dashboard da E4?'],
             ['e6_coer10', 'O roadmap tem responsáveis identificados para cada fase?']
           ] },
           { t: 'tabela', r: 'Situação de cada bloco', relatorio: false, cols: [{ r: 'Situação', tipo: 'opcoes', op: STATUS_BLOCO, w: '40%' }],
@@ -951,20 +1049,10 @@
   function juntar(pares) {
     return pares.filter(function (p) { return p[1]; }).map(function (p) { return p[0] + ': ' + p[1]; }).join('\n');
   }
-  function topIce(pos) {
-    return function (c) {
-      var l = [];
-      for (var i = 1; i <= 10; i++) {
-        var s = Number(c['b5_ice' + i + '_imp']) * Number(c['b5_ice' + i + '_conf']) * Number(c['b5_ice' + i + '_fac']);
-        if (c['b5_ice' + i + '_acao'] && s > 0) l.push({ a: c['b5_ice' + i + '_acao'], s: s, i: i });
-      }
-      l.sort(function (x, y) { return y.s - x.s || x.i - y.i; });
-      return l[pos] ? l[pos].a : '';
-    };
-  }
 
   window.PM = window.PM || {};
   window.PM.LEITURAS = L;
+  window.PM.CAT_ACAO = CAT_ACAO;
   window.PM.ORDEM = ['e0', 'roteiro', 'auditoria', 'e1', 'e2', 'e3', 'e4', 'e5', 'e6'];
   window.PM.ENTREGAS = ['e0', 'e1', 'e2', 'e3', 'e4', 'e5', 'e6'];
   window.PM.ESPEC = { e0: E0, roteiro: ROTEIRO, auditoria: AUDITORIA, e1: E1, e2: E2, e3: E3, e4: E4, e5: E5, e6: E6 };

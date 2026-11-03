@@ -79,6 +79,17 @@ LEITURAS = [
          "22-2-secao-3-4-mix-de-midia-paga-propria-e-conquistada": ("../entregas/e3.html#s-midia", "E3 · 3.4 Mix de mídia"),
          "23-a-cadeia-de-coerencia-do-bloco-3": ("../entregas/e3.html#s-checklist", "E3 · checklist de coerência"),
      }},
+    {"fonte": "objetivos-kpis-e-plano-de-acao.md", "id": "leitura-objetivos", "selo": "Leitura · Etapa 5", "curto": "Objetivos, KPIs e plano de ação",
+     "etapa": "Etapa 5 · E4", "entrega": ("../entregas/e4.html", "E4 · Objetivos, KPIs e plano de ações"),
+     "pontes": {
+         "2-4-preenchendo-a-secao-4-1-exemplo-ilustrativo-estudio-alinha": ("../entregas/e4.html#s-alinhamento", "E4 · 4.1 Objetivos de marketing"),
+         "5-preenchendo-a-secao-4-2-exemplo-ilustrativo": ("../entregas/e4.html#s-kpis", "E4 · 4.2 Dashboard de KPIs"),
+         "7-o-5w2h-campo-a-campo": ("../entregas/e4.html#s-5w2h", "E4 · 5.1 Plano de ação (5W2H) e priorização"),
+         "8-3-pontuar-e-cortar": ("../entregas/e4.html#s-5w2h", "E4 · 5.1 Notas do ICE e decisão, no final de cada cartão"),
+         "10-1-orcamento-secao-5-2-do-entregavel": ("../entregas/e4.html#s-orcamento", "E4 · 5.2 Orçamento por trimestre"),
+         "10-3-cronograma-secao-5-3-do-entregavel": ("../entregas/e4.html#s-cronograma", "E4 · 5.3 Cronograma trimestral"),
+         "11-checklist-final-com-a-verificacao-pratica": ("../entregas/e4.html#s-checklist", "E4 · checklist antes de entregar"),
+     }},
 ]
 
 
@@ -306,14 +317,15 @@ def gerar(cfg):
                 rotulo_titulo, titulo = (m.group(1), m.group(2)) if m else ("", txt)
                 continue
             antes_do_corpo = False
-            m_parte = re.match(r"^PARTE\s+([IVX]+)\s*[·:—-]\s*(.+)$", txt, re.I)
+            # partes em romanos (PARTE III) ou em letra (PARTE A, na leitura da E4)
+            m_parte = re.match(r"^PARTE\s+([IVX]+|[A-E])\s*[·:—-]\s*(.+)$", txt, re.I)
             if nivel == 1 and m_parte:
                 fechar_parte()
                 pid = slug("parte-" + m_parte.group(1), usados)
                 nome = m_parte.group(2)
                 toc.append((0, pid, f"Parte {m_parte.group(1)} · {texto_puro(nome).capitalize() if nome.isupper() else texto_puro(nome)}"))
                 corpo.append(f'<div class="parte" id="{pid}"><header class="parte-cab"><span class="parte-letra">{m_parte.group(1)}</span>'
-                             f'<div><span class="parte-eyebrow">{inline(b[2].split(m_parte.group(1))[0].strip())} {m_parte.group(1)}</span>'
+                             f'<div><span class="parte-eyebrow">{inline(b[2].split()[0])} {m_parte.group(1)}</span>'
                              f'<h2 class="parte-titulo">{inline(nome)}</h2></div></header>')
                 estado["parte"] = True
                 continue

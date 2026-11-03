@@ -44,7 +44,7 @@ def texto_visivel(pagina):
 def md_texto(md):
     t = desescapar(md).replace("&nbsp;", " ")
     t = re.sub(r"^\s*\d+\.\s", " ", t, flags=re.M)          # números de lista numerada viram estilo
-    t = re.sub(r"^#\s+PARTE\s+[IVX]+\s*[·:—-]", " ", t, flags=re.M)  # "PARTE I ·" vira o cabeçalho da parte
+    t = re.sub(r"^#\s+PARTE\s+(?:[IVX]+|[A-E])\s*[·:—-]", " ", t, flags=re.M)  # "PARTE I ·" vira o cabeçalho da parte
     t = re.sub(r"^:::.*$", " ", t, flags=re.M)               # marcadores de bloco (o título do bloco é conferido abaixo)
     t = re.sub(r"[-*] \[[ xX]\]", " ", t)
     return t
@@ -100,7 +100,7 @@ for p in paginas:
         elif anc and anc[1:] and anc[1:] not in ids.get(alvo, set()) and anc not in ("#ajuda",):
             erros.append(f"{p.relative_to(RAIZ)} → {url}{anc} (âncora não existe)")
 leit = dict(re.findall(r"'([\w-]+)': \{ url: '([^']+)'", esp))
-for ref, anc in re.findall(r"leitura: \['([\w-]+)', '([\w-]+)'\]", esp):
+for ref, anc in re.findall(r"leitura\d?: \['([\w-]+)', '([\w-]+)'", esp):
     alvo = (RAIZ / leit[ref]).resolve()
     if anc not in ids.get(alvo, set()):
         erros.append(f"especificacoes.js → {leit[ref]}#{anc} (âncora não existe)")
