@@ -55,6 +55,7 @@ CAPTURAS = [
     ("e5-editorial", "/entregas/e5.html", "s-editorial", 1366, 1300),
     ("e6", "/entregas/e6.html", "s-painel", 1366, 1300),
     ("plano", "/plano.html", "", 1366, 1300),
+    ("relatorio-final", "/relatorio-final.html", "", 1366, 1300),
     ("leitura-mercado", "/leituras/analise-de-mercado-tam-sam-som-e-tendencias.html", "", 1366, 1100),
     ("leitura-vpc", "/leituras/proposta-de-valor-e-posicionamento.html", "", 1366, 1100),
     ("leitura-vpc-canvas", "/leituras/proposta-de-valor-e-posicionamento.html", "2-4-passo-a-passo-aplicado-o-canvas-da-grao-nascente-para-a-renata", 1366, 1300),

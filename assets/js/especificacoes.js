@@ -21,6 +21,14 @@
  *   referencia { t:'referencia', de:'roteiro', blocos: [...], r } (respostas registradas na entrevista)
  *   checklist  { t:'checklist', itens: [[k, texto]] } (autoavaliação; não vai para o relatório)
  *   especial   { t:'especial', nome } (componentes com lógica própria em entrega.js)
+ *
+ * Só para o Relatório Final (relatorio-final.html; não mudam a tela, o salvamento, a planilha, o PDF de cada entrega
+ * nem o plano completo; ver o bloco "Relatório Final" em entrega.js). relatorio: false, que já existia, vale para os dois.
+ *   rr (campo ou subtítulo) e tituloRel (seção): rótulo no relatório;  relFinal: false (item ou seção): fica fora dele;
+ *   planoFinal: false (seção): idem (acordo e termo, que ficam no PDF da E0);  tituloFinal (entrega): título da parte;
+ *   em tabelas: dRel (mostra a dica de cada linha), relCartoes (uma linha por cartão), colapsar: false
+ *   (não junta colunas de valor repetido) e, na coluna, relSob: j (vira detalhe dentro da coluna j) e igualRel
+ *   (texto no lugar de uma resposta igual à da coluna ao lado).
  */
 (function () {
   'use strict';
@@ -54,13 +62,13 @@
    * E0 · Empresa parceira e acordo
    * ===================================================================== */
   var E0 = {
-    id: 'e0', codigo: 'E0', titulo: 'Empresa parceira e acordo',
+    id: 'e0', codigo: 'E0', titulo: 'Empresa parceira e acordo', tituloFinal: 'A empresa parceira',
     etapa: 'Etapa 1 · Ponto de partida', bloco: 'Perfil da empresa e termo de aceite',
     pergunta: 'Com quem vamos trabalhar e o que combinamos?',
     resumo: 'Registra quem é a empresa parceira, como ela se enxerga e o que foi combinado com ela. Gera o termo de aceite para assinatura.',
     leituras: ['trilha', 'logica'],
     secoes: [
-      { id: 'id', n: '0.1', titulo: 'Identificação do plano',
+      { id: 'id', n: '0.1', titulo: 'Identificação do plano', relFinal: false,  // no Relatório Final, estes dados estão na capa
         dica: 'Estas informações aparecem na capa de todos os PDFs do plano.',
         itens: [
           { t: 'grupo', cols: 2, itens: [
@@ -101,7 +109,7 @@
           { k: 'e0_expectativa', r: 'O que a empresa espera receber ao final' },
           { k: 'e0_restricoes', r: 'Limites a respeitar', ph: 'Orçamento disponível, tamanho da equipe, temas sensíveis, decisões que não estão em jogo.' }
         ] },
-      { id: 'acordo', n: '0.5', titulo: 'Acordo de trabalho',
+      { id: 'acordo', n: '0.5', titulo: 'Acordo de trabalho', planoFinal: false,
         dica: 'O plano é uma proposta acadêmica, não uma consultoria paga. Não prometam prazo de resultado nem uso comercial imediato.',
         itens: [
           { k: 'e0_reunioes', r: 'Reuniões previstas com a empresa (ao menos duas presenciais)', ph: 'Datas ou períodos combinados.' },
@@ -114,7 +122,7 @@
           { k: 'e0_conflito', r: 'Algum integrante tem vínculo com a empresa?', ph: 'Se sim, descreva. O professor avalia se há conflito de interesse.' },
           { k: 'e0_combinados', r: 'Outros combinados' }
         ] },
-      { id: 'termo', n: '0.6', titulo: 'Termo de aceite',
+      { id: 'termo', n: '0.6', titulo: 'Termo de aceite', planoFinal: false,
         dica: 'O texto abaixo é montado com as informações desta entrega e sai no PDF com espaço para as assinaturas. Imprima, colha a assinatura do responsável e guarde uma cópia.',
         itens: [ { t: 'especial', nome: 'termo' } ] },
       { id: 'checklist', n: '✓', titulo: 'Antes de entregar',
@@ -354,7 +362,7 @@
             { r: 'Fórmula usada', ph: 'Ex.: clientes potenciais × receita média anual' },
             { r: 'Valor estimado', ph: 'Valor e unidade' },
             { r: 'Fonte(s): pesquisa e ano', ph: 'Não apenas "IBGE": a pesquisa e o ano.' },
-            { r: 'Premissa assumida', ph: 'O que foi assumido e por quê.' }],
+            { r: 'Premissa assumida', ph: 'O que foi assumido e por quê.' }], dRel: true,
             linhas: [camadaMercado('TAM', 'Mercado total endereçável'), camadaMercado('SAM', 'Mercado disponível: o recorte da estratégia real'), camadaMercado('SOM', 'Mercado obtível no horizonte definido')] },
           { t: 'grupo', cols: 2, itens: [
             { k: 'b1_mercado_rota', r: 'Rota de cálculo', tipo: 'opcoes', op: ['Bottom-up', 'Top-down', 'As duas rotas, comparadas'] },
@@ -364,8 +372,8 @@
           { t: 'sub', r: 'Tendências de mercado (de 2 a 4)' },
           { t: 'nota', html: '<p>Uma tendência registrável tem três elementos: <strong>o sinal observado, com fonte e data</strong>; <strong>a conexão específica com a empresa parceira</strong>; e <strong>a implicação prática</strong> — o que muda, ou o que vale testar. Antes de registrar, passe pelo filtro: faz sentido para o público da empresa? Combina com o posicionamento que começa a aparecer? A empresa tem condição real de testar em pequena escala?</p>' },
           { t: 'tabela', leitura: ['mercado', '3-6-tendencia-fato-generico-como-escrever-a-implicacao-estrategica'], cols: [
-            { r: 'Sinal observado', w: '20%' }, { r: 'Fonte e data', w: '13%' },
-            { r: 'Camada', tipo: 'opcoes', op: ['Macrotendência', 'Mercado e consumo', 'Microtendência'], w: '12%' },
+            { r: 'Sinal observado', w: '20%' }, { r: 'Fonte e data', w: '13%', relSob: 0 },
+            { r: 'Camada', tipo: 'opcoes', op: ['Macrotendência', 'Mercado e consumo', 'Microtendência'], w: '12%', relSob: 0 },
             { r: 'Conexão com a empresa' }, { r: 'Implicação prática' },
             { r: 'Decisão', tipo: 'opcoes', op: ['Agir agora', 'Testar em pequena escala', 'Monitorar', 'Registrar como alerta'], w: '13%' }],
             linhas: seq(4).map(function (i) { var p = 'b1_tend' + i; return { r: 'Tendência ' + i, k: [p + '_nome', p + '_fonte', p + '_camada', p + '_conexao', p + '_impl', p + '_decisao'] }; }) }
@@ -390,25 +398,25 @@
         dica: 'Três concorrentes diretos, com papéis diferentes. Anote o dado observável separado da interpretação do grupo, e registre a fonte de cada observação.',
         leitura: ['benchmarking', '6-preenchendo-o-bloco-1-3-da-ferramenta'],
         itens: [
-          { t: 'sub', r: 'Os três concorrentes escolhidos' },
+          { t: 'sub', r: 'Os três concorrentes escolhidos', rr: 'Concorrentes analisados' },
           { t: 'tabela', cols: [
             { r: 'Nome', tipo: 'linha', w: '18%' },
-            { r: 'Papel na análise', tipo: 'opcoes', op: ['Porte semelhante', 'O que a empresa mais teme ou admira', 'Faz algo visivelmente diferente'], w: '22%' },
-            { r: 'Direto ou indireto', tipo: 'opcoes', op: ['Direto', 'Indireto'], w: '14%' },
+            { r: 'Papel na análise', tipo: 'opcoes', op: ['Porte semelhante', 'O que a empresa mais teme ou admira', 'Faz algo visivelmente diferente'], w: '22%', relSob: 0 },
+            { r: 'Direto ou indireto', tipo: 'opcoes', op: ['Direto', 'Indireto'], w: '14%', relSob: 0 },
             { r: 'Por que foi escolhido' }],
             linhas: ['a', 'b', 'c'].map(function (x) { return { r: 'Concorrente ' + x.toUpperCase(), k: ['b1_conc_nome_' + x, 'b1_conc_papel_' + x, 'b1_conc_tipo_' + x, 'b1_conc_porque_' + x] }; }) },
-          { t: 'sub', r: 'Checklist de 10 pontos, comparado' },
+          { t: 'sub', r: 'Checklist de 10 pontos, comparado', rr: 'Comparação ponto a ponto' },
           { t: 'tabela', largo: true, cols: [
             { r: 'Empresa parceira' },
             { r: 'Concorrente A', rotuloDe: 'b1_conc_nome_a' }, { r: 'Concorrente B', rotuloDe: 'b1_conc_nome_b' }, { r: 'Concorrente C', rotuloDe: 'b1_conc_nome_c' },
             { r: 'Notas', w: '14%' }],
             linhas: BENCH.map(function (b) { var p = 'b1_conc_' + b[0]; return { r: b[1], d: b[2], k: [p + '_sua', p + '_a', p + '_b', p + '_c', p + '_notas'] }; }) },
-          { t: 'sub', r: 'Síntese: diferencial × fraqueza × oportunidade' },
+          { t: 'sub', r: 'Síntese: diferencial × fraqueza × oportunidade', rr: 'Síntese do benchmarking' },
           { k: 'b1_conc_sint_dif', r: 'Principal diferencial dos concorrentes', d: 'O que, entre os três, a empresa parceira deveria genuinamente aprender ou imitar?' },
           { k: 'b1_conc_sint_frac', r: 'Principal fraqueza comum', d: 'Existe algum ponto fraco que se repete nos três (ou em pelo menos dois) concorrentes?' },
           { k: 'b1_conc_sint_oport', r: 'Oportunidade de posicionamento', d: 'Dado o que foi observado, que espaço relevante para o segmento da empresa parceira parece estar livre?' },
           { t: 'sub', r: 'Do benchmarking para a SWOT' },
-          { t: 'tabela', leitura: ['benchmarking', '5-2-do-benchmarking-para-a-swot-de-marketing'], cols: [
+          { t: 'tabela', relFinal: false, leitura: ['benchmarking', '5-2-do-benchmarking-para-a-swot-de-marketing'], cols: [  // no Relatório Final, o resultado já está na SWOT
             { r: 'Concorrente', tipo: 'linha', w: '15%' }, { r: 'O que foi observado' },
             { r: 'Aponta para', tipo: 'opcoes', op: ['Ameaça', 'Oportunidade'], w: '13%' }, { r: 'Frase pronta para a SWOT de marketing' }],
             linhas: seq(3).map(function (i) { var p = 'b1_trad' + i; return { r: String(i), k: [p + '_conc', p + '_obs', p + '_tipo', p + '_frase'] }; }) }
@@ -426,7 +434,7 @@
         dica: 'Cada cruzamento nomeia qual força ou fraqueza está sendo cruzada com qual oportunidade ou ameaça e termina em um verbo de ação: lançar, redirecionar, suspender, comunicar, testar.',
         leitura: ['swot', '5-tows-dos-quadrantes-as-hipoteses-de-acao'],
         itens: [ { t: 'tabela', cols: [
-          { r: 'Força ou fraqueza usada', w: '24%' }, { r: 'Oportunidade ou ameaça usada', w: '24%' }, { r: 'Frase de ação' }],
+          { r: 'Força ou fraqueza usada', w: '24%' }, { r: 'Oportunidade ou ameaça usada', w: '24%' }, { r: 'Frase de ação' }], dRel: true,
           linhas: [['so', 'SO', 'Forças + oportunidades: aproveitar'], ['st', 'ST', 'Forças + ameaças: neutralizar'], ['wo', 'WO', 'Fraquezas + oportunidades: desenvolver'], ['wt', 'WT', 'Fraquezas + ameaças: evitar']]
             .map(function (c) { return { r: c[1], d: c[2], k: ['b1_tows_' + c[0] + '_int', 'b1_tows_' + c[0] + '_ext', 'b1_tows_' + c[0]] }; }) } ] },
       { id: 'sintese', n: '1.6', titulo: 'Síntese da análise situacional',
@@ -553,8 +561,8 @@
             { k: 'b2_vpc_gainc', r: 'Criadores de ganho', ph: 'Como a oferta gera ganhos.' }
           ] },
           { k: 'b2_vpc_top', r: 'O que mais importa para a persona', ph: 'A tarefa mais importante, a dor mais intensa e o ganho mais relevante: é aí que o encaixe precisa acontecer.' },
-          { k: 'b2_vpc_fit', r: 'Fit: onde há maior alinhamento entre cliente e empresa?', ph: 'Onde o encaixe é forte, onde há lacunas e que decisão cada lacuna pede (para o mix, a comunicação ou a oferta).' },
-          { k: 'b2_vpc_teste', r: 'Como o fit pode ser testado com a empresa parceira', ph: 'Com quem conversar, o que observar, que evidência confirmaria ou derrubaria o encaixe.' }
+          { k: 'b2_vpc_fit', r: 'Fit: onde há maior alinhamento entre cliente e empresa?', rr: 'Onde o encaixe é mais forte', ph: 'Onde o encaixe é forte, onde há lacunas e que decisão cada lacuna pede (para o mix, a comunicação ou a oferta).' },
+          { k: 'b2_vpc_teste', r: 'Como o fit pode ser testado com a empresa parceira', rr: 'Como testar o encaixe', ph: 'Com quem conversar, o que observar, que evidência confirmaria ou derrubaria o encaixe.' }
         ] },
       { id: 'posicionamento', n: '2.4', titulo: 'Declaração de posicionamento',
         dica: 'Comecem pelas alternativas que o cliente teria sem a empresa parceira; depois preencham os componentes e vejam a frase se montar. Escrevam três versões e escolham a mais precisa: se um concorrente pudesse assinar a mesma frase, ela ainda não é posicionamento.',
@@ -614,7 +622,7 @@
         itens: [
           { t: 'espelho', de: 'e2', k: 'b2_pos_final', r: 'Declaração de posicionamento (E2)' },
           { t: 'tabela', cols: [
-            { r: 'Como é hoje' }, { r: 'Escolha estratégica: o que deveria ser' },
+            { r: 'Como é hoje' }, { r: 'Escolha estratégica: o que deveria ser', igualRel: 'Mantém como está hoje' },
             { r: 'Coerente com o posicionamento?', tipo: 'opcoes', op: COERENCIA, w: '14%' }],
             linhas: SETE_P.map(function (p) { var k = 'b3_7p_' + p[0]; return { r: p[1], k: [k + '_hoje', k, k + '_coer'] }; }) },
           { k: 'b3_7p_ajustes', r: 'Os 2 ou 3 Ps que mais precisam de ajuste, e por quê' }
@@ -625,7 +633,7 @@
         itens: [
           { t: 'espelho', de: 'e2', k: 'b2_persona1_nome', r: 'Persona 1 (E2)' },
           { t: 'referencia', de: 'roteiro', blocos: [3], r: 'Respostas registradas na entrevista (Bloco 3 do roteiro)' },
-          { t: 'tabela', cols: [
+          { t: 'tabela', relCartoes: true, cols: [
             { r: 'O que o cliente faz / pensa' }, { r: 'Pontos de contato (online e offline)' },
             { r: 'Momento de verdade: onde avança ou abandona' }, { r: 'O que a empresa deve fazer' }],
             linhas: ['Descoberta', 'Consideração', 'Avaliação', 'Compra', 'Pós-compra', 'Recomendação'].map(function (e, i) {
@@ -640,8 +648,8 @@
         leitura: ['mix', '22-1-secao-3-3-canais-prioritarios'],
         itens: [
           { t: 'tabela', cols: [
-            { r: 'Canal', w: '14%' }, { r: 'Etapa principal da jornada', tipo: 'opcoes', op: ['Atração', 'Consideração', 'Conversão', 'Retenção/Advocacy'], w: '14%' },
-            { r: 'Tipo', tipo: 'opcoes', op: ['Digital', 'Presencial', 'Ambos'], w: '11%' },
+            { r: 'Canal', w: '14%' }, { r: 'Etapa principal da jornada', tipo: 'opcoes', op: ['Atração', 'Consideração', 'Conversão', 'Retenção/Advocacy'], w: '14%', relSob: 0 },
+            { r: 'Tipo', tipo: 'opcoes', op: ['Digital', 'Presencial', 'Ambos'], w: '11%', relSob: 0 },
             { r: 'Papel / objetivo no plano' }, { r: 'Por que este canal: onde a persona está' }, { r: 'Como se integra com os outros' }],
             linhas: seq(4).map(function (i) { var p = 'b3_canal' + i; return { r: 'Canal ' + i, k: [p + '_nome', p + '_etapa', p + '_tipo', p + '_papel', p + '_porque', p + '_integra'] }; }) },
           { k: 'b3_canais_fora', r: 'Canais que ficam de fora por enquanto, e por quê' }
@@ -793,7 +801,7 @@
         leitura2: ['objetivos', '4-baseline-e-logica-da-meta', 'Baseline e lógica da meta'],
         itens: [ { t: 'especial', nome: 'avisos', secao: 'kpis' } ]
           .concat(cartaoKpi(1)).concat(cartaoKpi(2)).concat(cartaoKpi(3)).concat(cartaoKpi(4)).concat(cartaoKpi(5)) },
-      { id: '5w2h', n: '5.1', titulo: 'Plano de ação (5W2H) e priorização', rotularSub: true,
+      { id: '5w2h', n: '5.1', titulo: 'Plano de ação (5W2H) e priorização', tituloRel: 'Plano de ação', rotularSub: true,
         dica: 'Escrevam de 6 a 8 ações. Todas têm O quê, Por quê e ICE; as que entrarem no ciclo (3 a 5) têm os sete campos. O orçamento e o cronograma saem daqui. Ao marcar Banco, os campos de execução se recolhem, e o que já foi escrito fica guardado.',
         leitura: ['objetivos', '7-o-5w2h-campo-a-campo', 'O 5W2H campo a campo'],
         leitura2: ['objetivos', '8-priorizacao-o-ice-no-final-do-plano', 'Priorização: o ICE'],
@@ -805,7 +813,7 @@
             { k: 'b5_corte_just', solto: true, r: 'Trocas na ordem do ranking e ações deixadas no Banco, com o motivo', ph: 'Dependência, capacidade, objetivos ou coerência: qual verificação explica cada troca?' },
             { t: 'especial', nome: 'csv5w2h', solto: true }
           ]) },
-      { id: 'orcamento', n: '5.2', titulo: 'Orçamento por trimestre (calculado a partir do plano)',
+      { id: 'orcamento', n: '5.2', titulo: 'Orçamento por trimestre (calculado a partir do plano)', tituloRel: 'Orçamento por trimestre',
         dica: 'Esta tabela soma o How much financeiro das ações marcadas como Ciclo. Não digitem valores aqui: corrijam no cartão da ação.',
         leitura: ['objetivos', '10-1-orcamento-secao-5-2-do-entregavel'],
         itens: [
@@ -836,12 +844,12 @@
         itens: [
           { t: 'especial', nome: 'avisos', secao: 'cronograma' },
           { t: 'trazer', r: '↻ Trazer as ações do ciclo e os trimestres', de: 'e4', substituir: true, mapa: mapaCronograma() },
-          { t: 'tabela', cols: [
+          { t: 'tabela', colapsar: false, cols: [
             { r: 'Ação / iniciativa', tipo: 'linha', w: '32%' },
             { r: 'T1 · jan a mar', tipo: 'opcoes', op: STATUS_CRON }, { r: 'T2 · abr a jun', tipo: 'opcoes', op: STATUS_CRON },
             { r: 'T3 · jul a set', tipo: 'opcoes', op: STATUS_CRON }, { r: 'T4 · out a dez', tipo: 'opcoes', op: STATUS_CRON }],
             linhas: seq(5).map(function (i) { var p = 'b5_cron' + i; return { r: String(i), k: [p + '_acao', p + '_q1', p + '_q2', p + '_q3', p + '_q4'] }; }) },
-          { t: 'tabela', calculada: true, cols: [
+          { t: 'tabela', calculada: true, relFinal: false, cols: [  // conferência interna (limite de frentes novas): fica fora do Relatório Final
             { r: 'T1', tipo: 'calc' }, { r: 'T2', tipo: 'calc' }, { r: 'T3', tipo: 'calc' }, { r: 'T4', tipo: 'calc' }],
             linhas: [{ r: 'Frentes novas no trimestre', calc: true, k: ['b5_cron_novas_q1', 'b5_cron_novas_q2', 'b5_cron_novas_q3', 'b5_cron_novas_q4'] }] }
         ] },
@@ -942,8 +950,8 @@
       { id: 'editorial', n: '6.5', titulo: 'Plano editorial: dez conteúdos',
         dica: 'Conteúdo sem estratégia é ruído; estratégia de conteúdo sem calendário é promessa. Cada peça usa um pilar e se liga a um KPI.',
         itens: [ { t: 'tabela', largo: true, cols: [
-          { r: 'Conteúdo / tema', w: '20%' }, { r: 'Pilar', tipo: 'opcoes', op: ['Educação', 'Inspiração', 'Prova Social', 'Produto', 'Cultura', 'Outro'], w: '11%' },
-          { r: 'Formato' }, { r: 'Canal(is)' }, { r: 'Data', tipo: 'data', w: '13%' }, { r: 'Frequência' }, { r: 'Responsável' }, { r: 'KPI vinculado' }],
+          { r: 'Conteúdo / tema', w: '20%' }, { r: 'Pilar', tipo: 'opcoes', op: ['Educação', 'Inspiração', 'Prova Social', 'Produto', 'Cultura', 'Outro'], w: '11%', relSob: 0 },
+          { r: 'Formato', relSob: 0 }, { r: 'Canal(is)' }, { r: 'Data', tipo: 'data', w: '13%' }, { r: 'Frequência' }, { r: 'Responsável' }, { r: 'KPI vinculado' }],
           linhas: seq(10).map(function (i) { var p = 'b6_ed' + i; return { r: String(i), k: [p + '_titulo', p + '_pilar', p + '_formato', p + '_canal', p + '_data', p + '_freq', p + '_resp', p + '_kpi'] }; }) } ] },
       { id: 'integrada', n: '6.6', titulo: 'Comunicação integrada por canal',
         dica: 'A mesma essência em vozes diferentes: para cada canal prioritário do Bloco 3, o papel, o conteúdo e como o tom de voz se manifesta ali.',
@@ -952,7 +960,7 @@
             b6_ci1_canal: 'b3_canal1_nome', b6_ci2_canal: 'b3_canal2_nome', b6_ci3_canal: 'b3_canal3_nome', b6_ci4_canal: 'b3_canal4_nome',
             b6_ci1_papel: 'b3_canal1_papel', b6_ci2_papel: 'b3_canal2_papel', b6_ci3_papel: 'b3_canal3_papel', b6_ci4_papel: 'b3_canal4_papel' } },
           { t: 'tabela', cols: [
-            { r: 'Canal', w: '15%' }, { r: 'Etapa do funil', tipo: 'opcoes', op: ['Atração', 'Consideração', 'Conversão', 'Retenção', 'Advocacy'], w: '13%' },
+            { r: 'Canal', w: '15%' }, { r: 'Etapa do funil', tipo: 'opcoes', op: ['Atração', 'Consideração', 'Conversão', 'Retenção', 'Advocacy'], w: '13%', relSob: 0 },
             { r: 'Papel / objetivo neste canal' }, { r: 'Tipo de conteúdo / ação' }, { r: 'Tom específico neste canal' }],
             linhas: seq(4).map(function (i) { var p = 'b6_ci' + i; return { r: String(i), k: [p + '_canal', p + '_funil', p + '_papel', p + '_conteudo', p + '_tom'] }; }) }
         ] },
@@ -994,7 +1002,7 @@
       { id: 'rituais', n: '7.2', titulo: 'Rituais de gestão',
         dica: 'Um plano sem rituais de revisão morre na gaveta. Quem, quando e o quê — de forma realista para uma PME, sem estrutura corporativa.',
         itens: [ { t: 'tabela', cols: [
-          { r: 'Ritual', w: '18%', ph: '' }, { r: 'Frequência', w: '11%' }, { r: 'Pauta' }, { r: 'Decisão esperada' }, { r: 'Responsável', w: '14%' }],
+          { r: 'Ritual', w: '18%', ph: '' }, { r: 'Frequência', w: '11%', relSob: 0 }, { r: 'Pauta' }, { r: 'Decisão esperada' }, { r: 'Responsável', w: '14%', relSob: 0 }],
           linhas: [['Revisão semanal de KPIs', 'Semanal', 'KPIs de processo, desvios...', 'Ajuste de campanha...'],
             ['Revisão mensal de resultados', 'Mensal', 'KPIs de resultado, orçamento...', 'Realocação de orçamento...'],
             ['Revisão trimestral do plano', 'Trimestral', 'Validade dos objetivos...', 'Continuidade ou ajuste estratégico...']]
@@ -1002,7 +1010,7 @@
       { id: 'roadmap', n: '7.3', titulo: 'Roadmap de implementação',
         dica: 'As ações da E4 organizadas em três fases, cada uma com KPIs e responsável.',
         itens: [ { t: 'tabela', largo: true, cols: [
-          { r: 'Ação 1' }, { r: 'Ação 2' }, { r: 'Ação 3' }, { r: 'Ação 4' }, { r: 'KPIs a acompanhar' }, { r: 'Responsável', w: '12%' }],
+          { r: 'Ação 1' }, { r: 'Ação 2' }, { r: 'Ação 3' }, { r: 'Ação 4' }, { r: 'KPIs a acompanhar' }, { r: 'Responsável', w: '12%' }], dRel: true,
           linhas: [['Fase 1 · Fundação', 'Mês 1: quick wins e estrutura mínima'], ['Fase 2 · Crescimento', 'Meses 2 a 4'], ['Fase 3 · Escala', 'Meses 5 a 12']]
             .map(function (f, i) { var p = 'b7_fase' + (i + 1); return { r: f[0], d: f[1], k: [p + '_a1', p + '_a2', p + '_a3', p + '_a4', p + '_kpis', p + '_resp'] }; }) } ] },
       { id: 'sintese', n: '✦', titulo: 'Síntese final do plano',

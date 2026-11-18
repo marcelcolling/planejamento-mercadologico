@@ -475,6 +475,418 @@
     });
     return h;
   }
+
+  /* ================= Relatório Final (documento enxuto para a empresa, página relatorio-final.html) =================
+   * Convive com o relatório de cada entrega (acima), que não muda: o botão "Gerar Relatório Final" da home abre
+   * a página que usa este motor. Ele também só lê as respostas: nada aqui muda o que é salvo, o resumo da planilha ou a tela.
+   * O PDF só lê as respostas: nada aqui muda o que é salvo, o resumo da planilha ou a tela.
+   * Regras para um documento enxuto, que a empresa consiga ler:
+   *  - só entra o que foi preenchido: seções, sub-blocos, colunas e entregas sem resposta saem, e a numeração
+   *    das seções segue o que aparece no documento;
+   *  - instruções do formulário não entram: o rótulo perde "(opcional)", "(1 a 10)"... e it.rr dá um rótulo próprio
+   *    para o PDF (em campos, subtítulos e seções: tituloRel); a dica de cada linha de tabela (l.d) só entra com dRel;
+   *  - respostas curtas viram pares "rótulo: valor" numa grade; as longas, parágrafos;
+   *  - coluna com o mesmo valor em todas as linhas (3 ou mais) vira uma nota abaixo da tabela (colapsar: false desliga);
+   *  - relSob: j põe a coluna como detalhe dentro da coluna j; relCartoes: true mostra cada linha como um cartão;
+   *  - etapas intermediárias cujo resultado já aparece em outro lugar saem (relatorio: false) ou são condensadas em
+   *    RELATORIO_SECAO (SWOT, segmentos, personas, canvas, posicionamento, objetivos, KPIs, ações e orçamento);
+   *  - no plano completo, as seções com plano: false (acordo acadêmico e termo) ficam de fora.
+   * As atividades (roteiro e auditoria) mantêm o formato de antes: o roteiro sai impresso para a reunião. */
+  /* fica fora do Relatório Final: o que já ficava fora do PDF da entrega (relatorio: false) e o que só ele tira (relFinal: false) */
+  function fora(x) { return x.relatorio === false || x.relFinal === false; }
+  function limparRotulo(t) {
+    return String(t || '').replace(/\s*\((?=[^)]*(opcional|aplicável|frase|número|\d+ a \d+))[^)]*\)/gi, '').trim();
+  }
+  function rotuloRel(it) { return it.rr || limparRotulo(it.r); }
+  function curto(v) { v = String(v == null ? '' : v); return v.length <= 70 && v.indexOf('\n') < 0; }
+  function igual(a, b) { var n = function (s) { return String(s == null ? '' : s).replace(/\s+/g, ' ').trim(); }; return n(a) === n(b); }
+  function campoHtml(rot, v) {
+    return '<div class="r-campo">' + (rot ? '<h4>' + esc(rot) + '</h4>' : '') + '<p>' + paragrafos(v) + '</p></div>';
+  }
+  function paresHtml(pares) {
+    pares = pares.filter(function (p) { return !vazio(p[1]); });
+    if (!pares.length) return '';
+    return '<dl class="r-pares">' + pares.map(function (p) { return '<div><dt>' + esc(p[0]) + '</dt><dd>' + paragrafos(p[1]) + '</dd></div>'; }).join('') + '</dl>';
+  }
+  /* Lista de [rótulo, valor]: as curtas em pares, as longas em parágrafos (em duas colunas, se grade). */
+  function listaCampos(pares, grade) {
+    pares = pares.filter(function (p) { return !vazio(p[1]); });
+    var curtos = pares.filter(function (p) { return curto(p[1]); }), longos = pares.filter(function (p) { return !curto(p[1]); });
+    var l = longos.map(function (p) { return campoHtml(p[0], p[1]); }).join('');
+    return paresHtml(curtos) + (grade && longos.length > 1 ? '<div class="r-grade">' + l + '</div>' : l);
+  }
+  function destaqueHtml(rot, v) {
+    return vazio(v) ? '' : '<div class="r-destaque"><span>' + esc(rot) + '</span><p>' + paragrafos(v) + '</p></div>';
+  }
+  function notaHtml(t) { return '<p class="r-nota">' + t + '</p>'; }
+  /* "Rótulo: " sem dobrar a pontuação quando o rótulo já termina em "?" ou ":" */
+  function doisPontos(r) { r = String(r).trim(); return /[?:]$/.test(r) ? r + ' ' : r + ': '; }
+  function subHtml(t) { return '<h4 class="r-sub">' + esc(t) + '</h4>'; }
+  /* Célula: o valor e, em letra menor, os detalhes ([rótulo, valor] ou texto). */
+  function celulaHtml(v, extras) {
+    extras = (extras || []).filter(function (e) { return Array.isArray(e) ? !vazio(e[1]) : !vazio(e); })
+      .map(function (e) { return Array.isArray(e) ? (e[0] ? esc(doisPontos(e[0])) : '') + paragrafos(e[1]) : paragrafos(e); });
+    return (vazio(v) ? '' : paragrafos(v)) + (extras.length ? '<small>' + extras.join(' · ') + '</small>' : '');
+  }
+  /* Tabela simples a partir de linhas já prontas: { r: rótulo, c: [html de cada coluna] }. Colunas vazias saem. */
+  function tabelaSimples(cabec, linhas, op) {
+    op = op || {};
+    var usadas = cabec.map(function (x, j) { return linhas.some(function (l) { return !!String(l.c[j] || '').replace(/<[^>]+>|\s/g, ''); }); });
+    if (!linhas.length || !usadas.some(Boolean)) return '';
+    var cab = cabec.filter(function (x, j) { return usadas[j]; });
+    var h = '<table class="r-tab' + (cab.length > 3 ? ' r-tab-larga' : '') + '"><thead><tr>' + (op.semRotulo ? '' : '<th>' + esc(op.canto || '') + '</th>') +
+      cab.map(function (x) { return '<th>' + esc(x) + '</th>'; }).join('') + '</tr></thead><tbody>';
+    linhas.forEach(function (l) {
+      var txt = l.c.reduce(function (n, x) { return n + String(x || '').length; }, 0);
+      h += '<tr class="' + ((l.total ? 'r-total ' : '') + (txt < 900 ? 'r-inteira' : '')).trim() + '">' + (op.semRotulo ? '' : '<th scope="row">' + l.r + '</th>') +
+        l.c.filter(function (x, j) { return usadas[j]; }).map(function (x) { return '<td>' + (x || '') + '</td>'; }).join('') + '</tr>';
+    });
+    return h + '</tbody></table>';
+  }
+  function rfTabela(it, campos, ctx) {
+    if (fora(it)) return '';
+    var compacto = ctx && ctx.compacto;
+    var cols = it.cols.map(function (c, j) { return { c: c, j: j }; }).filter(function (x) { return !fora(x.c); });
+    var linhas = it.linhas.filter(function (l) {
+      if (it.banco) return campos[l.k[0]] || !vazio(campos[l.k[2]]);
+      return cols.some(function (x) { return !vazio(campos[l.k[x.j]]) && x.c.tipo !== 'calc'; }) || (l.calc && cols.some(function (x) { return !vazio(campos[l.k[x.j]]); }));
+    });
+    if (!linhas.length) return '';
+    // linhas numeradas (1, 2, 3...): no relatório, a numeração segue só as linhas preenchidas
+    var numerada = !it.banco && it.linhas.every(function (l) { return /^\d+$/.test(l.r); });
+    var h;
+    if (!compacto) {
+      cols = cols.filter(function (x) { return linhas.some(function (l) { return !vazio(campos[l.k[x.j]]); }) || it.banco; });
+      var unica = it.cols.length === 1;
+      h = (it.r ? '<h4 class="r-sub">' + esc(it.r) + '</h4>' : '') + '<table class="r-tab' + (cols.length > 4 ? ' r-tab-larga' : '') + '"><thead><tr><th></th>';
+      if (!unica) cols.forEach(function (x) { h += '<th>' + esc(rotuloColuna(x.c, campos)) + '</th>'; });
+      else h += '<th>' + esc(it.cols[0].r) + '</th>';
+      h += '</tr></thead><tbody>';
+      linhas.forEach(function (l, i) {
+        h += '<tr class="r-inteira' + (l.total ? ' r-total' : '') + '"><th scope="row">' + esc(numerada ? String(i + 1) : rotuloLinha(l, campos)) + (l.d && !it.banco ? '<small>' + esc(l.d) + '</small>' : '') + '</th>';
+        cols.forEach(function (x) { h += '<td>' + paragrafos(valorLegivel(x.c, campos[l.k[x.j]])) + '</td>'; });
+        h += '</tr>';
+      });
+      return h + '</tbody></table>';
+    }
+    var val = function (l, x) { return valorLegivel(x.c, campos[l.k[x.j]]); };
+    var rotCol = function (x) { return limparRotulo(rotuloColuna(x.c, campos)); };
+    var det = function (x) { return cols.filter(function (y) { return y.c.relSob === x.j; }); };
+    var tem = function (l, x) { return !vazio(campos[l.k[x.j]]) || det(x).some(function (y) { return !vazio(campos[l.k[y.j]]); }); };
+    var celula = function (l, x) { return celulaHtml(val(l, x), det(x).map(function (y) { return [rotCol(y), val(l, y)]; })); };
+    var princ = cols.filter(function (x) { return x.c.relSob == null && linhas.some(function (l) { return tem(l, x); }); });
+    // coluna com o mesmo valor curto em todas as linhas: sai da tabela e vira uma nota
+    var notas = [];
+    if (it.colapsar !== false && linhas.length >= 3 && princ.length > 1) {
+      var fica = princ.filter(function (x) {
+        if (det(x).length) return true;
+        var vs = linhas.map(function (l) { return val(l, x); });
+        return vs.some(function (v) { return !v || v !== vs[0]; }) || vs[0].length > 40;
+      });
+      if (fica.length) {
+        princ.filter(function (x) { return fica.indexOf(x) < 0; }).forEach(function (x) { notas.push(esc(doisPontos(rotCol(x))) + esc(val(linhas[0], x)) + ', em todas as linhas.'); });
+        princ = fica;
+      }
+    }
+    var titulo = it.r ? subHtml(limparRotulo(it.r)) : '';
+    var rotLinha = function (l, i) { return esc(numerada ? String(i + 1) : rotuloLinha(l, campos)) + (l.d && it.dRel ? '<small>' + esc(l.d) + '</small>' : ''); };
+    var nota = notas.length ? notaHtml(notas.join(' ')) : '';
+    if (it.relCartoes) {
+      return titulo + linhas.map(function (l, i) {
+        return '<div class="r-cartao"><h4>' + rotLinha(l, i) + '</h4><div class="r-cartao-grade">' + princ.filter(function (x) { return tem(l, x); }).map(function (x) {
+          return '<div><span class="r-rot">' + esc(rotCol(x)) + '</span><p>' + celula(l, x) + '</p></div>';
+        }).join('') + '</div></div>';
+      }).join('') + nota;
+    }
+    if (it.cols.length === 1) {
+      return titulo + linhas.map(function (l, i) { return '<div class="r-campo"><h4>' + rotLinha(l, i) + '</h4><p>' + celula(l, princ[0]) + '</p></div>'; }).join('') + nota;
+    }
+    h = titulo + '<table class="r-tab' + (princ.length > 3 ? ' r-tab-larga' : '') + (numerada ? ' r-tab-num' : '') + '"><thead><tr><th></th>' +
+      princ.map(function (x) { return '<th>' + esc(rotCol(x)) + '</th>'; }).join('') + '</tr></thead><tbody>';
+    linhas.forEach(function (l, i) {
+      var txt = cols.reduce(function (n, x) { return n + String(campos[l.k[x.j]] || '').length; }, 0);
+      h += '<tr class="' + ((l.total ? 'r-total ' : '') + (txt < 900 ? 'r-inteira' : '')).trim() + '"><th scope="row">' + rotLinha(l, i) + '</th>' +
+        princ.map(function (x, n) {
+          // texto longo igual ao da coluna ao lado (ex.: "como é hoje" = "o que deveria ser"): não se repete
+          var ant = princ[n - 1], v = val(l, x);
+          if (ant && v.length >= 20 && !det(x).length && igual(v, val(l, ant))) return '<td><em class="r-igual">' + esc(x.c.igualRel || 'Igual a ' + rotCol(ant).toLowerCase()) + '</em></td>';
+          return '<td>' + celula(l, x) + '</td>';
+        }).join('') + '</tr>';
+    });
+    return h + '</tbody></table>' + nota;
+  }
+  function grupoRel(it, campos, ctx) {
+    var resto = it.itens.filter(function (x) { return x.t !== 'sub'; }), subs = it.itens.filter(function (x) { return x.t === 'sub'; });
+    if (subs.length && subs.length === it.cols) {
+      // colunas com subtítulo (ex.: lado do cliente × lado da empresa; Paid/Owned/Earned): mantém a ordem por coluna
+      var colunas = subs.map(function (sb, ci) {
+        var conteudo = rfItens(resto.filter(function (x, i) { return i % it.cols === ci; }), campos, ctx);
+        return conteudo ? '<div><h4 class="r-sub">' + esc(ctx.compacto ? (sb.rr || limparRotulo(sb.r)) : sb.r) + '</h4>' + conteudo + '</div>' : '';
+      }).filter(Boolean);
+      if (!colunas.length) return '';
+      if (ctx.compacto && colunas.length === 1) return colunas[0].replace(/^<div>|<\/div>$/g, '');
+      return '<div class="r-colunas r-cols-' + (ctx.compacto ? colunas.length : it.cols) + '">' + colunas.join('') + '</div>';
+    }
+    if (ctx.compacto) {
+      return listaCampos(resto.filter(function (x) { return !x.t && x.k && !fora(x) && !oculto(x, campos); })
+        .map(function (x) { return [rotuloRel(x), valorLegivel(x, campos[x.k])]; }), true);
+    }
+    var dentro = rfItens(resto, campos, ctx);
+    return dentro ? '<div class="r-grade">' + dentro + '</div>' : '';
+  }
+  function rfItens(itens, campos, ctx) {
+    var h = '', pares = [], compacto = ctx.compacto;
+    var soltar = function () { if (pares.length) { h += paresHtml(pares); pares = []; } };
+    (itens || []).forEach(function (it) {
+      if (fora(it) || oculto(it, campos)) return;
+      if (!it.t && it.k) {
+        if (vazio(campos[it.k])) return;
+        var v = valorLegivel(it, campos[it.k]);
+        if (compacto && curto(v)) { pares.push([rotuloRel(it), v]); return; }
+        soltar();
+        h += campoHtml(compacto ? rotuloRel(it) : it.r, v);
+        return;
+      }
+      soltar();
+      if (it.t === 'grupo') h += grupoRel(it, campos, ctx);
+      else if (it.t === 'tabela') h += rfTabela(it, campos, ctx);
+      else if (it.t === 'sub') {
+        var orig = compacto && ctx.s ? (ctx.s.itens || []).filter(function (x) { return x.t === 'sub' && x.r === it.r && x.rr; })[0] : null;
+        h += '<!--sub:' + esc(compacto ? (orig ? orig.rr : limparRotulo(it.r)) : it.r) + '-->';
+      } else if (it.t === 'especial' && ESPECIAIS[it.nome] && ESPECIAIS[it.nome].relatorio) h += ESPECIAIS[it.nome].relatorio(campos, ctx.esp, ctx);
+    });
+    soltar();
+    // subtítulos só aparecem se houver conteúdo depois deles
+    return h.replace(/<!--sub:(.*?)-->((?:(?!<!--sub:)[\s\S])*)/g, function (m, t, resto) {
+      return resto.replace(/\s/g, '') ? '<h3 class="r-subtitulo">' + t + '</h3>' + resto : '';
+    });
+  }
+  /* Nome exibido de um sub-bloco ("Ação 2", "Persona 1"), já renumerado pelo "Não se aplica". */
+  function nomeSubRel(ctx, sec, sub) { return limparRotulo(ctx.num.sub[sec + '__' + sub] || sub); }
+  function itemDe(ctx, k) {
+    var achado = null;
+    cadaItem(ctx.itens, function (it) { if (!achado && it.k === k) achado = it; });
+    return achado;
+  }
+  function camposPorChave(ctx, c, ks) {
+    return listaCampos(ks.map(function (k) { var it = itemDe(ctx, k); return it ? [rotuloRel(it), valorLegivel(it, c[k])] : null; }).filter(Boolean));
+  }
+
+  /* Seções condensadas: cada função recebe as respostas e devolve o HTML (vazio, se não houver nada). */
+  var RELATORIO_SECAO = {
+    /* SWOT: os quatro quadrantes numa grade, cada item com a evidência e a categoria em letra menor */
+    'e1/swot': function (c) {
+      var Q = [['for', 'Forças'], ['fra', 'Fraquezas'], ['opo', 'Oportunidades'], ['ame', 'Ameaças']];
+      var caixas = Q.map(function (q) {
+        var ks = [1, 2, 3, 4, 5].map(function (i) { return 'b1_swot_' + q[0] + i; }).filter(function (k) { return !vazio(c[k]) || !vazio(c[k + '_evid']); });
+        if (!ks.length) return '';
+        return '<div class="r-swot-q r-swot-' + q[0] + '"><h4>' + q[1] + '</h4><ul>' + ks.map(function (k) {
+          return '<li>' + celulaHtml(c[k], [['Evidência', c[k + '_evid']], c[k + '_cat']]) + '</li>';
+        }).join('') + '</ul></div>';
+      }).join('');
+      return caixas ? '<div class="r-swot">' + caixas + '</div>' : '';
+    },
+    /* Segmentos e avaliação MASDA numa tabela só; o segmento escolhido em destaque */
+    'e2/segmentacao': function (c, ctx) {
+      var M = [['m', 'Mensurável'], ['a', 'Acessível'], ['s', 'Substancial'], ['d', 'Diferenciável'], ['ac', 'Acionável']];
+      var linhas = [1, 2, 3, 4].map(function (i) {
+        var p = 'b2_seg' + i + '_';
+        if (!['nome', 'caract', 'nec', 'pot', 'masda'].concat(M.map(function (m) { return m[0]; })).some(function (k) { return !vazio(c[p + k]); })) return null;
+        var ok = M.filter(function (m) { return c[p + m[0]]; }).map(function (m) { return m[1]; });
+        var masda = ok.length === 5 ? 'Atende aos cinco critérios' : ok.length ? 'Atende: ' + ok.join(', ') : '';
+        return { r: esc(c[p + 'nome'] || 'Segmento ' + i), c: [celulaHtml(c[p + 'caract']), celulaHtml(c[p + 'nec']), celulaHtml(c[p + 'pot']), celulaHtml(masda, [['Critério mais frágil', c[p + 'masda']]])] };
+      }).filter(Boolean);
+      return rfItens(ctx.itens.filter(function (it) { return it.t === 'grupo'; }), c, ctx) +
+        (linhas.length ? subHtml('Segmentos avaliados') + tabelaSimples(['Características principais', 'Necessidade central', 'Potencial estimado', 'Avaliação MASDA'], linhas, { canto: 'Segmento' }) : '') +
+        destaqueHtml('Segmento prioritário', c.b2_segmento_prio) + camposPorChave(ctx, c, ['b2_segmento_justif', 'b2_segmento_fonte']);
+    },
+    /* Persona: ficha compacta (dados numa linha, jobs e ganhos lado a lado, dores em lista) */
+    'e2/personas': function (c, ctx) {
+      var h = '';
+      [1, 2].forEach(function (n) {
+        if (c['na__b_personas__persona-' + n]) return;
+        var P = 'b2_persona' + n + '_', p = 'b2_p' + n + '_', v = function (k) { return vazio(c[k]) ? '' : String(c[k]).trim(); };
+        var idade = v(P + 'idade');
+        if (/^\d+$/.test(idade)) idade += ' anos';
+        var dados = [idade, v(P + 'cargo'), v(P + 'local')].filter(Boolean);
+        var lado = function (titulo, l) {
+          l = l.filter(function (x) { return v(x[1]); });
+          if (!l.length) return '';
+          return subHtml(titulo) + (l.length > 1 ? '<div class="r-colunas r-cols-' + l.length + '">' : '') +
+            l.map(function (x) { return campoHtml(x[0], v(x[1])); }).join('') + (l.length > 1 ? '</div>' : '');
+        };
+        var dores = [1, 2, 3, 4, 5].filter(function (i) { return v(p + 'pain' + i); });
+        var corpo = (dados.length ? '<p class="r-persona-dados">' + dados.map(esc).join(' · ') + '</p>' : '') +
+          (v(p + 'resumo') ? '<p class="r-persona-frase">' + paragrafos(v(p + 'resumo')) + '</p>' : '') +
+          (v(P + 'citacao') ? '<blockquote class="r-citacao">' + paragrafos(v(P + 'citacao')) + '</blockquote>' : '') +
+          listaCampos([['Contexto', v(P + 'empresa')], ['Em que etapa entra em contato com a categoria', v(p + 'estagio')]]) +
+          lado('Tarefas (jobs)', [['Funcional', p + 'job_func'], ['Emocional', p + 'job_emoc'], ['Social', p + 'job_soc']]) +
+          (dores.length ? subHtml('Dores') + '<ul class="r-lista">' + dores.map(function (i) {
+            var int = v(p + 'pain' + i + '_int');
+            return '<li>' + paragrafos(v(p + 'pain' + i)) + (int ? ' <small>(intensidade ' + esc(int) + ' de 5)</small>' : '') + '</li>';
+          }).join('') + '</ul>' : '') +
+          lado('Ganhos', [['Requeridos', p + 'gain_req'], ['Esperados', p + 'gain_exp'], ['Desejados', p + 'gain_des']]) +
+          listaCampos([['Objeções prováveis', v(n === 1 ? p + 'ctx_obj' : P + 'objecao')], ['Gatilho de decisão', v(p + 'gatilho')],
+            ['Onde é encontrável', v(p + 'ctx_info')], ['Como decide e quem influencia', v(p + 'ctx_dec')]], true) +
+          ((v(p + 'fonte_tipo') || v(p + 'fonte')) ? notaHtml('Fonte: ' + [v(p + 'fonte_tipo'), v(p + 'fonte')].filter(Boolean).map(paragrafos).join(' · ')) : '');
+        var nome = v(P + 'nome');
+        if (!corpo && !nome) return;
+        h += '<div class="r-persona"><h3 class="r-subtitulo">' + esc(nomeSubRel(ctx, 'personas', 'persona-' + n) + (nome ? ' · ' + nome : '')) + '</h3>' + corpo + '</div>';
+      });
+      return h + camposPorChave(ctx, c, ['b2_personas_porque']);
+    },
+    /* Canvas: o lado do cliente copiado da Persona 1 (botão "Trazer") não se repete; uma nota aponta para a persona */
+    'e2/vpc': function (c, ctx) {
+      var tz = ctx.itens.filter(function (it) { return it.t === 'trazer'; })[0], copia = Object.assign({}, c), iguais = [];
+      var sPers = ctx.esp.secoes.filter(function (s) { return s.id === 'personas'; })[0];
+      var nomes = { b2_vpc_jobs: 'as tarefas', b2_vpc_pains: 'as dores', b2_vpc_gains: 'os ganhos' };
+      if (tz && sPers && !naSecao(ctx.esp, sPers, c) && !c['na__b_personas__persona-1']) {
+        Object.keys(tz.mapa).forEach(function (k) {
+          var f = tz.mapa[k], o = typeof f === 'function' ? f(c) : c[f];
+          if (!vazio(c[k]) && !vazio(o) && igual(o, c[k])) { delete copia[k]; iguais.push(nomes[k] || k); }
+        });
+      }
+      var h = rfItens(ctx.itens, copia, ctx);
+      if (!iguais.length || !h) return h;
+      var quem = c.b2_persona1_nome ? c.b2_persona1_nome + ' (' + nomeSubRel(ctx, 'personas', 'persona-1') + ')' : 'a ' + nomeSubRel(ctx, 'personas', 'persona-1');
+      var lista = iguais.length > 1 ? iguais.slice(0, -1).join(', ') + ' e ' + iguais[iguais.length - 1] : iguais[0];
+      return notaHtml('Lado do cliente: ' + esc(lista) + ' são os de ' + esc(quem) + ', descritos na seção anterior.') + h;
+    },
+    /* Posicionamento: a declaração escolhida em destaque; componentes e versões de rascunho só entram se ela faltar */
+    'e2/posicionamento': function (c, ctx) {
+      var h = rfItens(ctx.itens.filter(function (it) { return it.k === 'b2_pos_alternativas' || it.t === 'grupo'; }), c, ctx);
+      var vers = ['b2_pos_v1', 'b2_pos_v2', 'b2_pos_v3'].filter(function (k) { return !vazio(c[k]); });
+      var comp = ['b2_pos_para', 'b2_pos_que', 'b2_pos_oq', 'b2_pos_pq', 'b2_pos_contra', 'b2_pos_pois'];
+      if (!vazio(c.b2_pos_final)) h += destaqueHtml('Declaração de posicionamento', c.b2_pos_final);
+      else if (vers.length === 1) h += destaqueHtml('Declaração de posicionamento (em estudo)', c[vers[0]]);
+      else if (vers.length) h += subHtml('Versões da declaração em estudo') + vers.map(function (k, i) { return campoHtml('Versão ' + (i + 1), c[k]); }).join('');
+      else if (comp.every(function (k) { return !vazio(c[k]); })) h += destaqueHtml('Declaração de posicionamento', fraseMontada(c));
+      else h += rfItens(ctx.itens.filter(function (it) { return it.t === 'tabela'; }), c, ctx);
+      return h + camposPorChave(ctx, c, ['b2_pos_porque']);
+    },
+    /* Objetivos: negócio e North Star, e os objetivos de marketing numa lista com a alavanca */
+    'e4/alinhamento': function (c, ctx) {
+      var obj = [1, 2, 3].filter(function (i) { return !vazio(c['b4_obj_mktg' + i]); });
+      return camposPorChave(ctx, c, ['b4_obj_negocio', 'b4_north_star']) +
+        (obj.length ? subHtml('Objetivos de marketing') + '<ol class="r-lista">' + obj.map(function (i) {
+          return '<li value="' + i + '">' + celulaHtml(c['b4_obj_mktg' + i], [['Alavanca', c['b4_obj' + i + '_alavanca']]]) + '</li>';
+        }).join('') + '</ol>' : '') + camposPorChave(ctx, c, ['b4_conta_fecha']);
+    },
+    /* Dashboard: um KPI por linha (o que medir, de onde partimos, para onde vamos); a lógica das metas logo abaixo */
+    'e4/kpis': function (c, ctx) {
+      var ks = [1, 2, 3, 4, 5].filter(function (i) {
+        return !c['na__b_kpis__kpi-' + i] && ['nome', 'obj', 'tipo', 'formula', 'ferr', 'base', 'fonte', 'origem', 'meta', 'prazo', 'resp', 'logtipo', 'logica'].some(function (s) { return !vazio(c['b4_kpi' + i + '_' + s]); });
+      });
+      if (!ks.length) return '';
+      var f = function (i, s) { return c['b4_kpi' + i + '_' + s]; };
+      var nome = function (i) { return f(i, 'nome') || nomeSubRel(ctx, 'kpis', 'kpi-' + i); };
+      var linhas = ks.map(function (i) {
+        return { r: esc(nome(i)) + celulaHtml('', [f(i, 'tipo'), ['Mede', f(i, 'obj')]]), c: [
+          celulaHtml(f(i, 'formula'), [['Fonte', f(i, 'ferr')]]),
+          celulaHtml(f(i, 'base'), [f(i, 'fonte'), f(i, 'origem')]),
+          celulaHtml(f(i, 'meta'), [['Prazo', f(i, 'prazo')]]),
+          celulaHtml(f(i, 'resp'))] };
+      });
+      var log = ks.filter(function (i) { return !vazio(f(i, 'logica')) || !vazio(f(i, 'logtipo')); });
+      return tabelaSimples(['Como medir', 'Ponto de partida', 'Meta', 'Responsável'], linhas, { canto: 'Indicador' }) +
+        (log.length ? subHtml('Por que as metas são realistas') + '<ul class="r-lista">' + log.map(function (i) {
+          return '<li><b>' + esc(nome(i)) + '</b>' + (f(i, 'logtipo') ? ' (' + esc(f(i, 'logtipo')) + ')' : '') + (f(i, 'logica') ? ': ' + paragrafos(f(i, 'logica')) : '') + '</li>';
+        }).join('') + '</ul>' : '');
+    },
+    /* Plano de ação: as ações do ciclo em cartões, na ordem do ICE (o ranking); as do Banco numa tabela curta */
+    'e4/5w2h': function (c, ctx) {
+      var execucao = function (a) { return a.who || a.where || a.ini || a.fim || a.when || a.how || a.temValor || a.premissa || a.horas || a.recursos; };
+      var todas = acoesE4(c).filter(function (a) { return a.what || a.why || a.kpi || execucao(a); });
+      var porIce = function (x, y) { return y.score - x.score || x.n - y.n; };
+      var ciclo = todas.filter(function (a) { return a.dec === 'Ciclo'; }).sort(porIce);
+      var detalhadas = todas.filter(function (a) { return !a.dec && execucao(a); }).sort(porIce);
+      var banco = todas.filter(function (a) { return a.dec === 'Banco' || (!a.dec && !execucao(a)); }).sort(porIce);
+      var nome = function (a) { return nomeSubRel(ctx, '5w2h', 'acao-' + a.n); };
+      var ice = function (a) { return a.score ? 'ICE ' + a.score + ' (impacto ' + c[a.p + 'imp'] + ' × confiança ' + c[a.p + 'conf'] + ' × facilidade ' + c[a.p + 'fac'] + ')' : ''; };
+      var custo = function (a) {
+        if (!a.temValor) return '';
+        if (!a.total) return 'Sem custo financeiro';
+        var tri = a.tri.map(function (v, t) { return v ? 'T' + (t + 1) + ': ' + moeda(v) : ''; }).filter(Boolean).join('; ');
+        var cats = a.custos.filter(function (l) { return l.cat && l.tri.some(function (x) { return x; }); }).map(function (l) { return l.cat; });
+        return moeda(a.total) + (tri ? ' (' + tri + ')' : '') + (cats.length ? ' · ' + cats.join(', ') : '');
+      };
+      var cartao = function (a) {
+        var tags = [c[a.p + 'tipo'] ? 'Tipo: ' + c[a.p + 'tipo'] : '', a.kpi ? 'KPI: ' + a.kpi : '', ice(a)].filter(Boolean);
+        var quando = [a.ini ? dataBR(a.ini) : '', a.fim ? dataBR(a.fim) : ''].filter(Boolean).join(' a ');
+        return '<div class="r-acao"><h3 class="r-subtitulo">' + esc(nome(a)) + '</h3>' +
+          (a.what ? '<p class="r-acao-what">' + paragrafos(a.what) + '</p>' : '') +
+          (tags.length ? '<p class="r-acao-tags">' + tags.map(esc).join(' · ') + '</p>' : '') +
+          listaCampos([['Por quê', a.why], ['Quem', a.who], ['Onde', a.where], ['Quando', quando], ['Marcos', a.when], ['Como', a.how],
+            ['Investimento', custo(a)], ['Premissa do valor', a.premissa], ['Horas por semana', a.horas], ['Material e tecnologia', a.recursos]]) + '</div>';
+      };
+      var h = '';
+      if (ciclo.length) h += subHtml('Ações do ciclo, em ordem de prioridade') + ciclo.map(cartao).join('');
+      if (detalhadas.length) h += subHtml(ciclo.length ? 'Outras ações detalhadas' : 'Ações') + detalhadas.map(cartao).join('');
+      if (banco.length) {
+        h += subHtml(ciclo.length || detalhadas.length ? 'Banco de ações (para ciclos futuros)' : 'Ações avaliadas') +
+          tabelaSimples(['O quê', 'KPI', 'ICE'], banco.map(function (a) { return { r: esc(nome(a)), c: [celulaHtml(a.what), celulaHtml(a.kpi), a.score ? String(a.score) : ''] }; }), { canto: 'Ação' });
+      }
+      return h + camposPorChave(ctx, c, ['b5_ice_criterios', 'b5_corte_just']);
+    },
+    /* Orçamento: os parâmetros numa linha; da tabela, só as categorias e os trimestres com valor */
+    'e4/orcamento': function (c, ctx) {
+      var tab = ctx.itens.filter(function (it) { return it.t === 'tabela' && it.calculada; })[0];
+      var valor = function (k) { return numBR(c[k]); };
+      var reais = function (v) { return vazio(v) ? '' : (numBR(v) > 0 ? moeda(numBR(v)) : String(v)); };
+      var algum = tab && tab.linhas.some(function (l) { return l.k.some(function (k) { return !vazio(c[k]); }); });
+      var total = valor('b5_orc_tot_total');
+      var h = paresHtml([['Ano de referência', c.b5_ano_plano], ['Método de orçamento', c.b5_orc_metodo], ['Receita anual de referência', reais(c.b5_orc_receita_anual)],
+        ['Teto de caixa por mês', reais(c.b5_teto_caixa)], ['Investimento em marketing / faturamento', total > 0 ? c.b5_orc_pct_calc : '']]);
+      if (tab && total > 0) {
+        var tri = [0, 1, 2, 3].filter(function (t) { return valor('b5_orc_tot_t' + (t + 1)) > 0; });
+        var linhas = tab.linhas.filter(function (l) { return valor(l.k[4]) > 0; }).map(function (l) {
+          var rot = /^b5_orc7_/.test(l.k[0]) ? 'Reserva / contingência (' + String(pctReserva(c)).replace('.', ',') + '%)' : l.r.replace(/\s*\(.*\)$/, '');
+          return { r: esc(rot), total: l.total, c: tri.map(function (t) { return esc(c[l.k[t]] || ''); }).concat([esc(c[l.k[4]] || '')]) };
+        });
+        h += tabelaSimples(tri.map(function (t) { return 'T' + (t + 1); }).concat(['Total']), linhas, { canto: 'Categoria' });
+      } else if (algum) {
+        h += notaHtml('As ações do ciclo não preveem gasto financeiro.');
+      }
+      return h + camposPorChave(ctx, c, ['b5_orc_justif']);
+    }
+  };
+
+  /* Seções do relatório que têm conteúdo, na ordem: { s, html, bloco }. contexto: 'entrega' (PDF de uma entrega) ou 'plano'. */
+  function secoesRel(esp, campos, contexto) {
+    var ctx = { esp: esp, contexto: contexto || 'entrega', compacto: ehEntrega(esp), num: numeracao(esp, campos) }, out = [];
+    esp.secoes.forEach(function (s) {
+      if (s.id === 'checklist' && !s.itens.some(function (i) { return i.t === 'especial'; })) return;
+      if (fora(s) || (ctx.contexto === 'plano' && s.planoFinal === false)) return;
+      if (naSecao(esp, s, campos)) return;
+      var sctx = Object.assign({}, ctx, { s: s, itens: itensDaSecao(esp, s, campos, ctx.num).itens });
+      var f = ctx.compacto && RELATORIO_SECAO[esp.id + '/' + s.id];
+      var html = f ? f(campos, sctx) : rfItens(sctx.itens, campos, sctx);
+      if (!String(html || '').replace(/<[^>]+>|\s/g, '')) return;
+      var m = /^(\d+)\.\d+$/.exec(s.n || '');
+      out.push({ s: s, html: html, bloco: m ? m[1] : null });
+    });
+    return out;
+  }
+  /* Número de cada seção no documento: "1.2" conta só as seções do bloco que aparecem; mapaBloco troca o bloco (plano completo). */
+  function montarCorpo(lista, mapaBloco) {
+    var cont = {};
+    return lista.map(function (x) {
+      var n = x.s.n;
+      if (x.bloco) {
+        cont[x.bloco] = (cont[x.bloco] || 0) + 1;
+        n = (mapaBloco && mapaBloco[x.bloco] != null ? mapaBloco[x.bloco] : x.bloco) + '.' + cont[x.bloco];
+      }
+      return '<section class="r-secao"><h2>' + (n && /\d/.test(n) ? '<span>' + esc(n) + '</span>' : '') + esc(x.s.tituloRel || x.s.titulo) + '</h2>' + x.html + '</section>';
+    }).join('');
+  }
+  function rfCorpo(esp, campos, op) {
+    op = op || {};
+    if (naEntrega(esp, campos)) {
+      return '<div class="r-na"><strong>Esta entrega não se aplica a esta empresa.</strong>' +
+        (campos.na__entrega_motivo ? '<p>' + paragrafos(campos.na__entrega_motivo) + '</p>' : '') + '</div>';
+    }
+    return montarCorpo(op.secoes || secoesRel(esp, campos, op.contexto), op.mapaBloco);
+  }
   function capa(titulo, subtitulo, meta) {
     var m = meta || ((VD.dados('e0') || {}).campos) || {};
     var s = VD.sessao();
@@ -1061,8 +1473,70 @@
       '<nav class="r-indice"><h2>Conteúdo</h2><ol>' + indice.join('') + '</ol></nav>' + partes.join('');
   }
 
+  /* ================= página "Relatório Final" ================= */
+  /* Relatório Final: entram só as entregas com resposta (as que não se aplicam e as ainda vazias saem);
+   * partes e blocos são renumerados na sequência do que aparece. Devolve { pendentes: [títulos sem resposta] }. */
+  function relatorioFinal(alvo) {
+    var partes = [], indice = [], dados = {}, lista = [], pendentes = [], ordemBlocos = [];
+    PM.ENTREGAS.forEach(function (id) {
+      var e = PM.ESPEC[id], c = ((VD.dados(id) || {}).campos) || {};
+      Object.assign(c, calcular(e, c));
+      dados[id] = c;
+      if (naEntrega(e, c)) return;
+      var secs = secoesRel(e, c, 'plano');
+      if (!secs.length) { pendentes.push(e.tituloFinal || e.titulo); return; }
+      lista.push({ id: id, e: e, c: c, secs: secs });
+      secs.forEach(function (x) { if (x.bloco && ordemBlocos.indexOf(x.bloco) < 0) ordemBlocos.push(x.bloco); });
+    });
+    var mapaBloco = {};
+    ordemBlocos.forEach(function (b, i) { mapaBloco[b] = String(ordemBlocos[0] === '0' ? i : i + 1); });
+    lista.forEach(function (p, i) {
+      var titulo = p.e.tituloFinal || p.e.titulo;
+      indice.push('<li class="tem"><a href="#p-' + p.id + '"><b>' + (i + 1) + '</b> ' + esc(titulo) + '</a></li>');
+      partes.push('<section class="r-entrega" id="p-' + p.id + '"><div class="r-entrega-cab"><span>' + (i + 1) + '</span><div><h2>' + esc(titulo) + '</h2></div></div>' +
+        rfCorpo(p.e, p.c, { secoes: p.secs, mapaBloco: mapaBloco }) + '</section>');
+    });
+    var res = resumoPlano(dados);
+    alvo.innerHTML = capa('Plano de marketing', 'Relatório final, da análise de mercado à governança') +
+      (lista.length ? '<nav class="r-indice"><h2>Conteúdo</h2><ol>' + (res ? '<li class="tem"><a href="#p-resumo"><b>·</b> Resumo do plano</a></li>' : '') + indice.join('') + '</ol></nav>' + res + partes.join('')
+        : '<p class="r-vazio">Ainda não há respostas para montar o plano.</p>');
+    return { pendentes: pendentes };
+  }
+  /* Resumo do plano (abre o Relatório Final): as decisões centrais, em poucas linhas, só com o que foi preenchido. */
+  function resumoPlano(d) {
+    var itens = [];
+    var usa = function (id, sec) {
+      var e = PM.ESPEC[id], c = d[id] || {};
+      if (naEntrega(e, c)) return null;
+      var s = e.secoes.filter(function (x) { return x.id === sec; })[0];
+      return s && !naSecao(e, s, c) ? c : null;
+    };
+    var add = function (rot, v) { if (!vazio(v)) itens.push([rot, String(v).trim()]); };
+    var c1 = usa('e1', 'sintese'), c2 = usa('e2', 'segmentacao'), cp = usa('e2', 'personas'), cpos = usa('e2', 'posicionamento');
+    var c4 = usa('e4', 'alinhamento'), ca = usa('e4', '5w2h'), co = usa('e4', 'orcamento'), c6 = usa('e6', 'sintese');
+    if (c1) { add('Principal oportunidade', c1.b1_sintese_oport); add('Principal risco', c1.b1_sintese_risco); }
+    if (c2) add('Segmento prioritário', c2.b2_segmento_prio);
+    if (cp) {
+      add('Persona', [1, 2].filter(function (n) { return !cp['na__b_personas__persona-' + n] && (cp['b2_persona' + n + '_nome'] || cp['b2_p' + n + '_resumo']); }).map(function (n) {
+        return [cp['b2_persona' + n + '_nome'], cp['b2_p' + n + '_resumo']].filter(Boolean).join(': ');
+      }).join('\n'));
+    }
+    if (cpos) add('Posicionamento', cpos.b2_pos_final);
+    if (c4) { add('Objetivo de negócio', c4.b4_obj_negocio); add('Indicador principal (North Star)', c4.b4_north_star); }
+    if (ca) {
+      add('Ações prioritárias', acoesE4(ca).filter(function (a) { return a.dec === 'Ciclo' && a.what; })
+        .sort(function (x, y) { return y.score - x.score || x.n - y.n; }).map(function (a) { return '• ' + a.what; }).join('\n'));
+    }
+    if (co && numBR(co.b5_orc_tot_total) > 0) add('Investimento previsto', co.b5_orc_tot_total + (co.b5_ano_plano ? ' em ' + co.b5_ano_plano : '') + ', com reserva');
+    if (c6) { add('Hipótese central', c6.sint_hipotese); add('Primeiro sinal de que funciona (30 dias)', c6.sint_sinal30d); }
+    if (itens.length < 3) return '';
+    return '<section class="r-resumo" id="p-resumo"><h2>Resumo do plano</h2><dl>' +
+      itens.map(function (x) { return '<div><dt>' + esc(x[0]) + '</dt><dd>' + paragrafos(x[1]) + '</dd></div>'; }).join('') + '</dl></section>';
+  }
+
   PM.iniciar = iniciar;
   PM.plano = plano;
+  PM.relatorioFinal = relatorioFinal;
   PM.resumo = resumo;
   PM.calcular = calcular;
   PM.chavesDe = chavesDe;

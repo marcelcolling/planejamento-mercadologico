@@ -257,6 +257,15 @@ const dadosNoServidor = (est, f) => { const r = Object.entries(est.dados).find((
     ok(doc.includes('Torrefação Exemplo') && doc.includes('Tradição familiar') && doc.includes('Clientes recorrentes') && doc.includes('Premium'), 'plano completo junta as respostas de todas as entregas');
     ok(w.document.querySelectorAll('.r-entrega').length === 7 && semXss(w), 'plano completo: sete partes, escapado');
 
+    /* ---- Relatório Final (página à parte; o plano completo acima não muda) ---- */
+    w = await carregar('/relatorio-final.html');
+    await sleep(2000);
+    let rf = q(w, '#doc').textContent;
+    ok(rf.includes('Torrefação Exemplo') && w.document.querySelectorAll('.r-entrega').length === 5 && !rf.includes('Comunicação e marca') && /A empresa parceira; Comunicação e marca/.test(q(w, '#aviso').textContent) && semXss(w), 'Relatório Final: só as partes com resposta (a E0, só com capa e acordo, e a E5 vazia saem e aparecem no aviso da tela), escapado');
+    ok(q(w, '#p-resumo') && q(w, '#p-resumo').textContent.includes('Principal oportunidade') && !rf.includes('Termo de aceite') && !rf.includes('Identificação do plano'), 'Relatório Final: abre com o resumo; termo e identificação (já na capa) ficam fora');
+    ok(rf.includes('Ações do ciclo') && rf.includes('Banco de ações') && !rf.includes('Ranking das ações') && !rf.includes('Frentes novas') && !rf.includes('(opcional)') && !rf.includes('Pessoa do Banco'), 'Relatório Final: ações do ciclo em cartões, Banco numa tabela, sem ranking, frentes novas nem instruções');
+    ok(!!w.document.querySelector('link[href="assets/css/relatorio-final.css"]') && parseFloat(w.getComputedStyle(q(w, '.r-secao')).fontSize) < parseFloat(w.getComputedStyle(w.document.body).fontSize), 'Relatório Final: estilos próprios carregados (respostas em letra menor)');
+
     /* ---- "Não se aplica" na entrega inteira ---- */
     w = await carregar('/entregas/e5.html');
     q(w, '.btn-na-entrega').click();
@@ -271,6 +280,10 @@ const dadosNoServidor = (est, f) => { const r = Object.entries(est.dados).find((
     await sleep(2000);
     doc = q(w, '#doc').textContent;
     ok(w.document.querySelectorAll('.r-entrega').length === 6 && !doc.includes('Comunicação e marca') && doc.includes('6.1Painel de acompanhamento'), 'plano completo: a entrega sai e os blocos seguintes são renumerados (bloco 7 vira 6)');
+    w = await carregar('/relatorio-final.html');
+    await sleep(2000);
+    rf = q(w, '#doc').textContent;
+    ok(w.document.querySelectorAll('.r-entrega').length === 5 && !rf.includes('Comunicação e marca') && !q(w, '#aviso').textContent.includes('Comunicação') && rf.includes('6.1Painel de acompanhamento'), 'Relatório Final: a entrega que não se aplica sai e os blocos seguintes são renumerados');
 
     /* ---- outro computador ---- */
     r = await w.VD.entrar({ nome: 'grupo teste', chave: 'errada' });
@@ -342,6 +355,7 @@ const dadosNoServidor = (est, f) => { const r = Object.entries(est.dados).find((
     ok(!/\b(Aulas?|Encontros?)\s+\d/.test(w.document.body.innerText) && q(w, 'a[href="leituras/proposta-de-valor-e-posicionamento.html"]'), 'home sem menção a aulas e com a leitura de proposta de valor');
     ok(!q(w, '#avaliacao') && !/Avalia[çc][ãa]o/i.test(w.document.body.textContent) && w.document.body.textContent.includes("6 questões"), 'home sem a seção de avaliação e com o número de questões das leituras');
     ok(q(w, 'a.rec-leitura[href="leituras/objetivos-kpis-e-plano-de-acao.html"]') && !/SMART/.test(w.document.body.textContent), 'home com a leitura da E4 e sem citar SMART');
+    ok(q(w, '#relatorio-final a[href="relatorio-final.html"]') && q(w, '#relatorio-final').textContent.includes('Gerar Relatório Final') && q(w, '.etapas').compareDocumentPosition(q(w, '#relatorio-final')) & 4 && q(w, '.faixa a[href="plano.html"]') && q(w, 'a.rec[href="plano.html"]'), 'home: botão "Gerar Relatório Final" depois da última etapa, sem tirar os links do plano completo');
     w.VD.sair();
     await sleep(300);
     ok(!w.VD.sessao(), 'sair encerra a sessão');

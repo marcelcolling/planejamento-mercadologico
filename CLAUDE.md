@@ -35,6 +35,7 @@ entregas/e0..e6.html       cascas: chamam PM.iniciar('eN'); a página é montada
 atividades/roteiro.html    idem (Aula 2: roteiro de entrevista + registro das respostas)
 atividades/auditoria.html  idem (Aula 2: auditoria de coerência, caso Grão Nascente)
 plano.html                 "Plano completo": junta os relatórios de E0 a E6 (PM.plano)
+relatorio-final.html       "Relatório Final": versão enxuta do plano (PM.relatorioFinal + assets/css/relatorio-final.css); botão na home
 assets/js/especificacoes.js  ESPECIFICAÇÃO de cada entrega/atividade: seções, campos, tabelas, checklists, botões "Trazer"
 assets/js/entrega.js       MOTOR: monta a página, coletar/aplicar/resumo, cálculos (ICE, orçamento), "Trazer",
                            espelhos e referências entre entregas, frase de posicionamento, termo de aceite,
@@ -70,6 +71,23 @@ ferramentas/               gerar_leituras, conferir_integridade, preparar_materi
 - `trazer` com `substituir: true` também apaga no destino o que ficou vazio na origem (pede confirmação, como o resto).
 - O `importar` da E4 leva o JSON antigo da Ferramenta (`b5_ice*`, `b5_5w2h*`, `b4_s*_frase`, `b4_base*`) para cartões livres.
 - O exemplo do Estúdio Alinha é o mesmo da leitura da E3 e foi conferido com simulação mês a mês. O ponto de partida: 100 contatos por mês × 25% × 40% = 10 entradas, que repõem as 10 saídas (11,1% de 90). **Se mudar um número, confira a seção 2.4, a tabela da seção 5, a seção 9 e o orçamento da 10.1** (a reserva da leitura é arredondada ao real, como a tela), além das seções da E3 listadas nas pendências.
+
+## Relatório Final (documento enxuto para a empresa, 18/11/2026)
+
+Pedido do professor: um documento completo, mas palatável para a empresa, sem repetições e sem campos vazios, **como acréscimo**: o PDF de cada entrega e a página "Plano completo" (`plano.html`) continuam exatamente como eram (foi conferido texto a texto com os PDFs do site). O botão **"Gerar Relatório Final"** fica na home, depois da última etapa (`#relatorio-final`), e abre `relatorio-final.html`, que chama `PM.relatorioFinal(doc)`.
+
+- Motor próprio em `entrega.js` (bloco "Relatório Final", logo depois do relatório antigo, e a função `relatorioFinal` depois de `plano`): `rfTabela`, `rfItens`, `rfCorpo`, `secoesRel`, `montarCorpo`, `RELATORIO_SECAO`, `resumoPlano`. **Não mexa** em `relatorioTabela`, `relatorioItens`, `relatorioCorpo` e `plano`: são o PDF antigo.
+- Estilos em `assets/css/relatorio-final.css`, carregado só nessa página, depois de `entrega.css` (que não mudou).
+- Só lê as respostas: não muda chaves, salvamento, resumo da planilha nem a tela.
+- Anotações só do Relatório Final em `especificacoes.js` (documentadas no topo): `rr`, `tituloRel`, `relFinal: false`, `planoFinal: false`, `tituloFinal`, `dRel`, `relCartoes`, `colapsar`, `relSob`, `igualRel`. O antigo não lê nenhuma delas; `relatorio: false` (que já existia) vale para os dois. Não use `relatorio: false` para tirar algo só do Relatório Final.
+- Só entra o que foi preenchido. A numeração das seções segue o que aparece no documento; os sub-blocos ("Ação 2", "Persona 1") continuam numerados pelo "não se aplica".
+- Instruções não entram: o rótulo perde "(opcional)", "(1 a 10)" etc. (`limparRotulo`); a dica de cada linha de tabela só com `dRel`.
+- Respostas curtas viram pares "rótulo: valor"; coluna com o mesmo valor em 3 ou mais linhas vira uma nota; célula igual à da coluna ao lado vira "Igual a…" (ou o texto de `igualRel`).
+- Seções condensadas (`RELATORIO_SECAO`): SWOT em grade 2×2; segmentos e MASDA numa tabela, com o prioritário em destaque; persona em ficha; canvas sem repetir o que veio da Persona 1 pelo "Trazer"; só a declaração escolhida (componentes e versões só se ela faltar); objetivos em lista; KPIs numa tabela (um por linha) com a lógica das metas; ações do ciclo em cartões pela ordem do ICE (o ranking não se repete), Banco numa tabela curta, custo zero como "Sem custo financeiro"; orçamento só com as categorias e os trimestres que têm valor.
+- Saem: identificação da E0 (está na capa), "Do benchmarking para a SWOT" (o resultado está na SWOT), "Frentes novas" (conferência interna), ranking, avisos, checklists, acordo de trabalho e termo (ficam no PDF da E0).
+- Abre com o **Resumo do plano** (oportunidade, risco, segmento, persona, posicionamento, objetivo, North Star, ações do ciclo, investimento, hipótese e sinal de 30 dias, só o que existir); partes sem resposta saem e aparecem num aviso na tela (`#aviso`); as partes seguem em sequência, sem página nova obrigatória.
+- Hierarquia visual (pedido do professor: o título do campo precisa destacar mais que a resposta): respostas em letra menor (`.r-secao`, 0,86rem); título do campo maior, em negrito e com fio amarelo (`.r-campo h4`); respostas curtas numa ficha de fundo claro (`.r-pares`); grupos ("Tarefas", "Concorrentes analisados") em versalete com fio (`.r-sub`); tabelas com cabeçalho azul; cartões (jornada, ações) com faixa de título.
+- Para conferir com dados reais: baixar a planilha pelo conector do Drive (xlsx, aba `_dados`), carregar o JSON de cada grupo no `localStorage` (`pm_dados_v1::<id>`, sessão em modo local) e gerar o PDF por CDP. Em 18/11/2026, o grupo mais adiantado tinha 42 páginas no plano completo e 24 no Relatório Final; os outros, de 23 a 27 contra 14 a 18.
 
 ## "Não se aplica"
 
@@ -116,7 +134,7 @@ O professor cola o `Codigo.gs` novo no editor, salva e vai em **Implantar › Ge
 ## Como validar antes de publicar
 
 1. `python ferramentas/gerar_leituras.py` e `python ferramentas/conferir_integridade.py` → tudo OK.
-2. `.\ferramentas\testes\rodar_testes.ps1` → `FAIL/ERRO: 0` (92 verificações: prefixos, login, rascunho anônimo, salvamento, resumo, relatório, termo, roteiro, referências, "Trazer", cálculos da E4 (ICE, orçamento, cronograma, avisos, CSV), importação do JSON, "não se aplica" em seção, sub-bloco e entrega com renumeração na tela, no PDF, na planilha e no plano completo, outro computador, conflito, questões das oito leituras com salvamento, pistas e resumo, `Codigo.gs` válido, home sem aulas e sem avaliação). Leva uns 5 minutos; o limite do executor é de 8.
+2. `.\ferramentas\testes\rodar_testes.ps1` → `FAIL/ERRO: 0` (98 verificações: prefixos, login, rascunho anônimo, salvamento, resumo, relatório, Relatório Final (partes vazias, resumo, ações, estilos, botão na home), termo, roteiro, referências, "Trazer", cálculos da E4 (ICE, orçamento, cronograma, avisos, CSV), importação do JSON, "não se aplica" em seção, sub-bloco e entrega com renumeração na tela, no PDF, na planilha e no plano completo, outro computador, conflito, questões das oito leituras com salvamento, pistas e resumo, `Codigo.gs` válido, home sem aulas e sem avaliação). Leva uns 5 minutos; o limite do executor é de 8.
 3. `python ferramentas/capturar_telas.py <pasta>` e olhar as capturas (1366px e 520px).
 4. Se mexeu no back-end ou na URL: teste contra o Apps Script real com um grupo "Teste (apagar)" e leia a planilha pelo conector do Drive; depois peça ao professor para removê-lo (**Portal da disciplina › Remover um grupo…**).
 5. `git add -A; git commit; git push` e confira o site (cache: `?x=aleatório`).
